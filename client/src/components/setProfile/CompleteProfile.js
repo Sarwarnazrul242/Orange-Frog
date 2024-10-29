@@ -31,21 +31,27 @@ function CompleteProfile() {
     const handleProfileCompletion = async (e) => {
         e.preventDefault();
         try {
-            await axios.post('http://localhost:8000/complete-profile', { 
+            const response = await axios.post('http://localhost:8000/complete-profile', { 
                 email, 
                 address, 
                 dob, 
                 phone, 
-                height: `${feet}ft ${inches}in`, 
+                height: { feet, inches },
                 gender, 
                 allergies: allergies.includes("Food Allergy") ? [...allergies, foodAllergyDetail] : allergies 
             });
-            navigate('/home');
+    
+            if (response.status === 200) {
+                // Redirect to home page after successful profile completion
+                navigate('/home');
+            } else {
+                setError('Error completing profile');
+            }
         } catch (error) {
             setError('Error completing profile');
         }
     };
-
+    
     // Autocomplete address input
     useEffect(() => {
         if (window.google) {
@@ -207,7 +213,7 @@ function CompleteProfile() {
                     </div>
 
                     {/* Submit Button */}
-                    <div className="col-span-2">
+                    <div className="col-span-2  flex justify-center">
                         <button type="submit" className="w-full py-2 bg-white text-black font-semibold rounded-full hover:bg-gray-200">
                             Complete Profile
                         </button>

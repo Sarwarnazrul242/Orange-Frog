@@ -33,13 +33,21 @@ export default function Login() {
         const data = await response.json();
     
         if (response.status === 200) {
-            localStorage.setItem('isAuthenticated', true);
-            localStorage.setItem('email', form.email); 
+            Cookies.set('isAuthenticated', true);
+            Cookies.set('email', form.email); 
+           
     
+            // First, check if the user needs to reset their password
             if (data.resetRequired) {
                 navigate('/reset-password');
-            } else if (data.completeProfile) {
+            } 
+            // Next, check if the profile needs completion
+            else if (data.completeProfile) {
                 navigate('/complete-profile');
+            } 
+            // Otherwise, redirect based on role
+            else if (data.role === 'admin') {
+                navigate('/admin'); 
             } else {
                 navigate('/home');
             }
@@ -47,6 +55,7 @@ export default function Login() {
             setErrorMessage(data.message);
         }
     };
+    
 
 
     return (

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
+import Cookies from 'js-cookie';
 
 export default function Navbar() {
     const [showMenu, setShowMenu] = useState(false);
@@ -7,18 +8,20 @@ export default function Navbar() {
     const navigate = useNavigate();
     const location = useLocation();  
 
-    const isAuthenticated = localStorage.getItem('isAuthenticated');
+    // Check if the user is authenticated using cookies
+    const isAuthenticated = Cookies.get('isAuthenticated');
 
     const handleLogout = () => {
-        localStorage.removeItem('isAuthenticated'); 
-        navigate('/'); 
+        // Remove cookies for logout
+        Cookies.remove('isAuthenticated');
+        Cookies.remove('email'); 
+        navigate('/');
     };
 
     return (
         <div>
             <header className="md:flex md:justify-between md:items-center md:px-4 md:py-0" style={{ height: '80px' }}>
                 <div className="flex items-center justify-between px-4 py-1 md:p-0">
-                   
                     <div className='w-36 md:w-56 ml-5 md:ml-28 mt-4'>
                         <Link to={"/"}>
                             <img src={require('../images/logo.png')} alt="Logo" className="w-full cursor-pointer md:mt-1 md:mb-1" />

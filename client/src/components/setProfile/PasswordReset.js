@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import '../login/loginstyle.css'; // Same style as the login page for consistency
+import Cookies from 'js-cookie';
+import '../login/loginstyle.css'; 
 
 export default function PasswordReset() {
-    const [tempPassword, setTempPassword] = useState(''); // Add field for temp password
+    const [tempPassword, setTempPassword] = useState(''); 
     const [newPassword, setNewPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
     const [showPassword, setShowPassword] = useState(false);
@@ -22,7 +23,7 @@ export default function PasswordReset() {
         }
 
         try {
-            const email = localStorage.getItem('email'); // Retrieve email from localStorage
+            const email = Cookies.get('email'); 
 
             const response = await fetch('http://localhost:8000/reset-password', {
                 method: 'POST',
