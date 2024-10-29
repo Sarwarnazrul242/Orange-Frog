@@ -1,0 +1,37 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat&display=swap');
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Montserrat', sans-serif;
+}
+
+html, body {
+  height: 100%;
+  width: 100%;
+  overflow: hidden; 
+}
+
+.background-wrapper {
+  /* display: flex; */
+  /* justify-content: center; */
+  /* align-items: center;
+  /* height: 100vh; */
+  height: 100%;
+  background-position: -10%;
+  /* width: 100%;  */
+  /* background: url('http://codingstella.com/wp-content/uploads/2024/01/download-5.jpeg') no-repeat; */
+  /* set background image to components/images/bg_temp.png */
+  /* background: url('components/images/bg_temp.png') no-repeat; */
+  background-size: cover;
+  background-position: center;
+  /* animation: animateBg 5s linear infinite; */
+}
+
+
+@keyframes animateBg {
+  100% {
+    filter: hue-rotate(360deg);
+  }
+}
