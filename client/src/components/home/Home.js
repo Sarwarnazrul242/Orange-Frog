@@ -73,7 +73,7 @@ export default function Home() {
                         ))}
                     </ul>
                 </div>
-                <div className="flex-1 md:max-w-6xl ml-auto h-auto md:h-[750px] bg-gray-400/40 backdrop-blur-md p-10 rounded-xl flex flex-col items-center justify-center border border-white/40 shadow-xl overflow-y-auto max-h-full">
+                <div className="flex-1 md:max-w-6xl ml-auto h-auto md:h-[750px] bg-gray-400/40 backdrop-blur-md p-10 rounded-xl flex flex-col items-center justify-start border border-white/40 shadow-xl overflow-y-auto max-h-full">
                     <h1 className="text-white text-3xl font-semibold mb-6">{selectedMenu}</h1>
                     <div className="w-full overflow-y-auto max-h-full flex items-center justify-center">
                         {menuComponents[selectedMenu]}

@@ -93,7 +93,7 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                     name="email"
                     value={profileData.email}
                     onChange={handleInputChange}
-                    className="w-full p-3 border rounded-md"
+                    className="w-full p-3 border rounded-md bg-white"
                     disabled
                 />
             </div>
