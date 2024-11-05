@@ -19,6 +19,7 @@ const deleteUserRoute = require("./routes/delete-user");
 const userProfileRoute = require("./routes/user-profile");
 const updateProfileRoute = require("./routes/update-profile");
 const createEventRoute = require("./routes/create-event");
+const eventsRoute = require("./routes/events");
 
 app.use("/users", usersRoute);
 app.use("/create-user", createUserRoute);
@@ -29,6 +30,7 @@ app.use("/delete-user/", deleteUserRoute);
 app.use("/user-profile/", userProfileRoute);
 app.use("/update-profile/", updateProfileRoute);
 app.use("/create-event", createEventRoute);
+app.use("/events", eventsRoute);
 /*END OF NEW STUFF*/
 
 

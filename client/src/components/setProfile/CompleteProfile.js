@@ -99,7 +99,7 @@ function CompleteProfile() {
                 <form onSubmit={handleProfileCompletion} className="grid grid-cols-2 gap-2">
                     {/* Address (Full Row) */}
                     <div className="col-span-2 mb-6">
-                        <label className="block text-white mb-2">Address</label>
+                        <label className="block text-white mb-2">Address <span className="text-red-500">*</span></label>
                         <div className="relative">
                             <FaMapMarkerAlt className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <input
@@ -116,7 +116,7 @@ function CompleteProfile() {
 
                     {/* Date of Birth */}
                     <div className="mb-6">
-                        <label className="block text-white mb-2">Date of Birth</label>
+                        <label className="block text-white mb-2">Date of Birth <span className="text-red-500">*</span></label>
                         <div className="relative">
                             <FaCalendarAlt className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <input
@@ -131,7 +131,7 @@ function CompleteProfile() {
 
                     {/* Phone Number */}
                     <div className="mb-6">
-                        <label className="block text-white mb-2">Phone Number</label>
+                        <label className="block text-white mb-2">Phone Number <span className="text-red-500">*</span></label>
                         <div className="relative">
                             <FaPhone className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <input
@@ -140,13 +140,14 @@ function CompleteProfile() {
                                 onChange={handlePhoneChange}
                                 placeholder="(000) 000-0000"
                                 className="w-full pl-8 p-2 border rounded-md"
+                                required
                             />
                         </div>
                     </div>
 
                     {/* Height */}
                     <div className="mb-6">
-                        <label className="block text-white mb-2">Height</label>
+                        <label className="block text-white mb-2">Height <span className="text-red-500">*</span></label>
                         <div className="flex space-x-2">
                             <input
                                 type="text"
@@ -155,6 +156,7 @@ function CompleteProfile() {
                                 placeholder="ft"
                                 className="w-1/2 p-2 border rounded-md text-center"
                                 maxLength="1"
+                                required
                             />
                             <input
                                 type="text"
@@ -163,18 +165,20 @@ function CompleteProfile() {
                                 placeholder="in"
                                 className="w-1/2 p-2 border rounded-md text-center"
                                 maxLength="2"
+                                required
                             />
                         </div>
                     </div>
 
                     {/* Gender */}
                     <div className="col-span-2 mb-6">
-                        <label className="block text-white mb-2">Gender</label>
+                        <label className="block text-white mb-2">Gender <span className="text-red-500">*</span></label>
                         <div className="relative">
                             <FaVenusMars className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
                             <select 
                                 value={gender} 
                                 onChange={(e) => setGender(e.target.value)} 
+                                required 
                                 className="w-full pl-8 p-2 border rounded-md"
                             >
                                 <option value="">Select Gender</option>

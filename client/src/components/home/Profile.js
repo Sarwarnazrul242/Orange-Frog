@@ -7,10 +7,16 @@ export default function Profile({ profileData, setProfileData, handleInputChange
     const [showPasswordPopup, setShowPasswordPopup] = useState(false);
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
-    const [tempAllergies, setTempAllergies] = useState([...profileData.allergies]);
+    const [tempAllergies, setTempAllergies] = useState([]);
     const [buttonState, setButtonState] = useState("Update Profile");
 
     const allergyOptions = ["Vegetarian", "Vegan", "Halal", "Kosher", "Gluten-free", "Food Allergy", "Other", "None"];
+
+    useEffect(() => {
+        if (showAllergyPopup) {
+            setTempAllergies([...profileData.allergies]);
+        }
+    }, [showAllergyPopup, profileData.allergies]);
 
     const handleProfileUpdate = (e) => {
         e.preventDefault();
@@ -48,7 +54,6 @@ export default function Profile({ profileData, setProfileData, handleInputChange
         }
     };
 
-  
     const handleAllergySave = () => {
         setProfileData({ ...profileData, allergies: tempAllergies });
         setShowAllergyPopup(false);
@@ -98,7 +103,6 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                 />
             </div>
 
-            
             <div className="col-span-2">
                 <label className="block text-white mb-2">Address</label>
                 <input
@@ -109,10 +113,8 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                     className="w-full p-3 border rounded-md"
                     ref={addressInputRef} 
                 />
-
             </div>
 
-           
             <div className="col-span-1">
                 <label className="block text-white mb-2">Phone</label>
                 <input
@@ -171,7 +173,6 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                 </select>
             </div>
 
-          
             <div className="col-span-2">
                 <label className="block text-white mb-2">Allergies</label>
                 <button type="button" onClick={() => setShowAllergyPopup(true)} className="bg-white hover:bg-gray-400 text-black p-1 rounded-md">Change Allergies</button>
@@ -201,8 +202,7 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                     </div>
                 )}
             </div>
-            
-          
+
             <div className="col-span-2">
                 <label className="block text-white mb-2">Password</label>
                 <button type="button" onClick={() => setShowPasswordPopup(true)} className="bg-white hover:bg-gray-400 text-black p-1 rounded-md">Change Password</button>
@@ -243,7 +243,6 @@ export default function Profile({ profileData, setProfileData, handleInputChange
             </div>
 
             {message && <p className={`col-span-2 text-center ${message.includes('successfully') ? 'text-green-500' : 'text-red-500'} mt-4`}>{message}</p>}
-
         </form>
     );
 }

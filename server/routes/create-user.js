@@ -50,9 +50,9 @@ await transporter.sendMail({
             <img src="https://orangefrog.swbdatabases3.com/wp-content/uploads/2024/03/orange-frog-logo.png" alt="Company Logo" style="width: 150px; height: auto;">
         </div>
         
-        <div style="background-color: #f8f9fa; padding: 30px; border-radius: 8px;">
-            <h2 style="color: #333;">Hello, ${name}</h2>
-            <p style="font-size: 16px; color: #555;">
+        <div style="background-color: #F16636; padding: 30px; border-radius: 8px;">
+            <h2 style="color: #ffffff;">Hello, ${name}</h2>
+            <p style="font-size: 16px; color: #ffffff;">
                 We’re excited to welcome you to our platform! Your account has been created, and you can now log in using the credentials below:
             </p>
             
@@ -61,19 +61,19 @@ await transporter.sendMail({
                 <p style="font-size: 16px; margin: 0;"><strong>Temporary Password:</strong> ${tempPassword}</p>
             </div>
 
-            <p style="font-size: 16px; color: #555;">
+            <p style="font-size: 16px; color: #ffffff;">
                 Please log in with these credentials and update your password at your earliest convenience.
             </p>
 
             <div style="text-align: center; margin-top: 20px;">
-                <a href="http://localhost:3000/" style="background-color: #1ECD97; color: white; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-size: 16px;">
+                <a href="http://localhost:3000/" style="background-color: #ffffff; color: black; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-size: 16px;">
                     Log In to Your Account
                 </a>
             </div>
         </div>
         
         <p style="font-size: 14px; color: #777; text-align: center; margin-top: 30px;">
-            If you have any questions, feel free to <a href="mailto:support@yourcompany.com" style="color: #1ECD97; text-decoration: none;">contact our support team</a>.
+            If you have any questions, feel free to <a href="mailto:support@yourcompany.com" style="color: #F16636; text-decoration: none;">contact our support team</a>.
         </p>
         
         <div style="text-align: center; padding: 10px 0; font-size: 12px; color: #aaa;">

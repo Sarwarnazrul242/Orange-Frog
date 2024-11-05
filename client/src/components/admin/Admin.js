@@ -4,6 +4,7 @@ import axios from 'axios';
 import BackgroundWrapper from '../../BackgroundWrapper';
 import CreateEvent from './CreateEvent';
 import ManageUsers from './ManageUsers';
+import ViewEvent from './ViewEvent';
 
 export default function Admin() {
     const [selectedMenu, setSelectedMenu] = useState('Create Event');
@@ -72,16 +73,21 @@ export default function Admin() {
                 <div className="w-full h-auto mb-5 md:w-72 md:h-[500px] bg-gray-400/40 backdrop-blur-md p-5 rounded-xl md:mr-5 flex flex-col justify-start border border-white/40 shadow-xl">
                     <h3 className="text-white mb-5 font-semibold">Admin Menu:</h3>
                     <ul className="flex md:block overflow-x-scroll md:overflow-visible scrollbar-hide">
-                        <li onClick={() => setSelectedMenu("Create Event")} className={`px-4 py-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "Create Event" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>Create Event</li>
-                        <li onClick={() => setSelectedMenu("Manage Users")} className={`px-4 py-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "Manage Users" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>Manage Users</li>
+                        <li onClick={() => setSelectedMenu("Create Event")} className={`px-4 py-2 mb-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "Create Event" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>Create Event</li>
+                        <li onClick={() => setSelectedMenu("Manage Users")} className={`px-4 py-2 mb-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "Manage Users" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>Manage Users</li>
+                        <li onClick={() => setSelectedMenu("View Event")} className={`px-4 py-2 mb-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "View Event" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>View Event</li>
                     </ul>
                 </div>
 
-                <div className="flex-1 h-auto md:h-[650px] bg-gray-400/40 backdrop-blur-md p-5 rounded-xl flex flex-col items-center border border-white/40 shadow-xl">
-                    {selectedMenu === "Create Event" ? (
+                <div className="flex-1 h-auto md:h-[650px] bg-gray-400/40 backdrop-blur-md p-5 rounded-xl flex flex-col items-center border border-white/40 shadow-xl overflow-y-auto max-h-[650px]">
+                    {selectedMenu === "Create Event" && (
                         <CreateEvent formData={formData} handleInputChange={handleInputChange} handleSubmit={handleSubmit} message={message} />
-                    ) : (
+                    )}
+                    {selectedMenu === "Manage Users" && (
                         <ManageUsers users={users} formData={formData} handleInputChange={handleInputChange} handleSubmit={handleSubmit} showForm={showForm} setShowForm={setShowForm} handleEdit={handleEdit} handleDelete={handleDelete} showPopup={showPopup} confirmDelete={confirmDelete} setShowPopup={setShowPopup} />
+                    )}
+                    {selectedMenu === "View Event" && (
+                        <ViewEvent />
                     )}
                 </div>
             </div>

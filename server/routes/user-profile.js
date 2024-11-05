@@ -15,7 +15,7 @@ router.get('/:email', async (req, res) => {
                 address: user.address,
                 dob: user.dob,
                 phone: user.phone,
-                height: user.height, // assuming this is stored as { feet: '', inches: '' }
+                height: user.height, 
                 gender: user.gender,
                 allergies: user.allergies
             };

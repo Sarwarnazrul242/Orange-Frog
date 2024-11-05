@@ -69,7 +69,7 @@ export default function Home() {
                     <h3 className="text-white mb-5 font-semibold">My Stuff:</h3>
                     <ul className="flex md:block overflow-x-scroll md:overflow-visible scrollbar-hide">
                         {Object.keys(menuComponents).map(option => (
-                            <li key={option} onClick={() => setSelectedMenu(option)} className={`px-4 py-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === option ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>{option}</li>
+                            <li key={option} onClick={() => setSelectedMenu(option)} className={`px-4 py-2 rounded-full mb-2 text-white whitespace-nowrap cursor-pointer ${selectedMenu === option ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>{option}</li>
                         ))}
                     </ul>
                 </div>
