@@ -99,7 +99,11 @@ export default function ViewEvent() {
     };
 
     if (loading) {
-        return <p>Loading events...</p>;
+        return (
+            <div className="h-screen flex justify-center items-center">
+              <p className="text-white">Loading events...</p>
+            </div>
+          );
     }
 
     return (

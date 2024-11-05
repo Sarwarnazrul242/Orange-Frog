@@ -38,13 +38,13 @@ export default function JobBook() {
     };
 
     return (
-        <div className="p-5 w-full border border-gray-300">
+        <div className="p-5 w-full">
             <div className="flex items-center justify-between mb-5">
                 <h2 className="text-2xl font-semibold">Job Posted</h2>
                 <div className="relative">
                     <button 
                         onClick={() => setShowSortDropdown(!showSortDropdown)} 
-                        className="px-4 py-2 bg-gray-200 rounded text-black"
+                        className="px-4 py-2 bg-gray-200 rounded-4xl text-black"
                     >
                         Sort by
                     </button>
