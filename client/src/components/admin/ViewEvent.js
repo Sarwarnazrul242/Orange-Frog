@@ -98,7 +98,7 @@ export default function ViewEvent() {
                     events.map((event) => (
                         <div
                             key={event._id}
-                            className={`bg-gray-800 p-4 rounded shadow-md text-white border border-gray-300 ${
+                            className={`bg-gray-800 p-4 rounded-lg shadow-md text-white ${
                                 view === 'list' ? 'w-full' : ''
                             }`}
                         >

@@ -16,7 +16,7 @@ router.put('/:email', async (req, res) => {
             user.address = address || user.address;
             user.dob = dob || user.dob;
             user.phone = phone || user.phone;
-            user.height = height || user.height; // Store as { feet: '', inches: '' }
+            user.height = height || user.height; 
             user.gender = gender || user.gender;
             user.allergies = allergies || user.allergies;
 

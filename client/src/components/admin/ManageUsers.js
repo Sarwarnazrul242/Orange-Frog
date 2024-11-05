@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { FaTh, FaList, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import autoAnimate from '@formkit/auto-animate';
 import { motion, AnimatePresence } from 'framer-motion';
+import axios from 'axios';
 
 // UserRow Component
 const UserRow = ({ name, email, status, onEdit, onDelete }) => (
@@ -60,31 +61,68 @@ const ConfirmationPopup = ({ onConfirm, onCancel }) => (
     </div>
 );
 
-export default function ManageUsers({ users, formData, handleInputChange, handleSubmit, showForm, setShowForm, handleEdit, handleDelete, showPopup, confirmDelete, setShowPopup }) {
+export default function ManageUsers({ formData, handleInputChange, handleSubmit, showForm, setShowForm, handleDelete, showPopup, confirmDelete, setShowPopup }) {
     const [isGridView, setIsGridView] = useState(false);
+    const [users, setUsers] = useState([]);
     const [buttonState, setButtonState] = useState("Create User");
+    const [editingUser, setEditingUser] = useState(null);
+    const [editFormData, setEditFormData] = useState({});
+
     const formParent = useRef(null);
 
     useEffect(() => {
         formParent.current && autoAnimate(formParent.current);
     }, [formParent]);
 
+    const fetchUsers = async () => {
+        try {
+            const response = await axios.get("http://localhost:8000/users");
+            setUsers(response.data);
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchUsers();
+    }, []);
+
     const handleFormSubmit = (e) => {
         e.preventDefault();
         setButtonState("Loading...");
 
-        // Simulate an async action like a server request
         setTimeout(() => {
             setButtonState("Created");
-
-            // After 3 seconds, revert button to original state
             setTimeout(() => {
                 setButtonState("Create User");
             }, 3000);
         }, 1500);
 
-        // Call the original handleSubmit function
         handleSubmit(e);
+    };
+
+    const handleEdit = (user) => {
+        setEditingUser(user);
+        setEditFormData(user);
+    };
+
+    const handleEditInputChange = (e) => {
+        const { name, value } = e.target;
+        setEditFormData({ ...editFormData, [name]: value });
+    };
+
+    const handleEditSubmit = async (e) => {
+        e.preventDefault();
+        try {
+            const response = await axios.put(`http://localhost:8000/update-user/${editingUser._id}`, editFormData);
+            if (response.status === 200) {
+                const updatedUsers = users.map((user) => (user._id === editingUser._id ? response.data : user));
+                setUsers(updatedUsers);
+                setEditingUser(null);
+            }
+        } catch (error) {
+            console.error("Error updating user:", error);
+        }
     };
 
     return (
@@ -92,7 +130,7 @@ export default function ManageUsers({ users, formData, handleInputChange, handle
             <div className="w-full flex justify-between items-center mb-3">
                 <h1 className="text-white text-2xl font-semibold">Current Users:</h1>
                 <div ref={formParent}>
-                    {!showForm && (
+                    {!showForm && !editingUser && (
                         <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-white text-black hover:bg-gray-300 rounded-full transition duration-300 ease-in-out" style={{ width: '170px' }}>
                             <span className="mr-2">+</span> Add New User
                         </button>
@@ -105,7 +143,6 @@ export default function ManageUsers({ users, formData, handleInputChange, handle
                                 initial={{ opacity: 0, x: '100%' }}
                                 animate={{ opacity: 1, x: 0 }}
                                 exit={{ opacity: 0, x: '100%' }}
-                                onAnimationComplete={() => !showForm && setShowForm(false)}
                             >
                                 <div className="flex flex-col w-[30%]">
                                     <label htmlFor="name" className="text-white mb-1">Name</label>
@@ -133,6 +170,119 @@ export default function ManageUsers({ users, formData, handleInputChange, handle
                     </AnimatePresence>
                 </div>
             </div>
+
+            {editingUser && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+                    <div className="bg-white p-8 rounded-md shadow-lg max-w-2xl w-full">
+                        <h2 className="text-2xl mb-4">Edit User</h2>
+                        <form onSubmit={handleEditSubmit} className="grid grid-cols-2 gap-8">
+                            <div className="col-span-1">
+                                <label className="block text-gray-700 mb-2">Name</label>
+                                <input
+                                    type="text"
+                                    name="name"
+                                    value={editFormData.name}
+                                    className="w-full p-3 border rounded-md"
+                                    readOnly
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-gray-700 mb-2">Email</label>
+                                <input
+                                    type="email"
+                                    name="email"
+                                    value={editFormData.email}
+                                    onChange={handleEditInputChange}
+                                    className="w-full p-3 border rounded-md bg-white"
+                                    required
+                                />
+                            </div>
+                            <div className="col-span-2">
+                                <label className="block text-gray-700 mb-2">Address</label>
+                                <input
+                                    type="text"
+                                    name="address"
+                                    value={editFormData.address || ''}
+                                    className="w-full p-3 border rounded-md"
+                                    readOnly
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-gray-700 mb-2">Phone</label>
+                                <input
+                                    type="text"
+                                    name="phone"
+                                    value={editFormData.phone || ''}
+                                    className="w-full p-3 border rounded-md"
+                                    readOnly
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-gray-700 mb-2">Date of Birth</label>
+                                <input
+                                    type="date"
+                                    name="dob"
+                                    value={editFormData.dob || ''}
+                                    className="w-full p-3 border rounded-md"
+                                    readOnly
+                                />
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-gray-700 mb-2">Height (ft/in)</label>
+                                <div className="flex space-x-2">
+                                    <input
+                                        type="text"
+                                        name="feet"
+                                        value={editFormData.height?.feet || ''}
+                                        className="w-1/2 p-3 border rounded-md text-center"
+                                        placeholder="ft"
+                                        readOnly
+                                    />
+                                    <input
+                                        type="text"
+                                        name="inches"
+                                        value={editFormData.height?.inches || ''}
+                                        className="w-1/2 p-3 border rounded-md text-center"
+                                        placeholder="in"
+                                        readOnly
+                                    />
+                                </div>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-gray-700 mb-2">Gender</label>
+                                <select
+                                    name="gender"
+                                    value={editFormData.gender}
+                                    className="w-full p-3 border rounded-md"
+                                    disabled
+                                >
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                            </div>
+                            <div className="col-span-2">
+                                <label className="block text-gray-700 mb-2">Allergies</label>
+                                <ul className="list-disc list-inside text-gray-700">
+                                    {editFormData.allergies?.length > 0 ? (
+                                        editFormData.allergies.map((allergy, index) => (
+                                            <li key={index}>{allergy}</li>
+                                        ))
+                                    ) : (
+                                        <li>No allergies listed</li>
+                                    )}
+                                </ul>
+                            </div>
+                            <div className="col-span-2 flex justify-center mt-4">
+                                <button type="button" onClick={() => setEditingUser(null)} className="px-4 py-2 bg-gray-500 text-white rounded-full mr-4">Cancel</button>
+                                <button type="submit" className="px-4 py-2 bg-black text-white rounded-full">Save Changes</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
             <div className="w-full flex items-center mb-5">
                 <div className="flex space-x-2">
                     <button onClick={() => setIsGridView(false)} className={`px-4 py-2 ${!isGridView ? 'bg-gray-500' : 'bg-gray-300'} text-white rounded-l-full flex items-center`}>
@@ -143,8 +293,9 @@ export default function ManageUsers({ users, formData, handleInputChange, handle
                     </button>
                 </div>
             </div>
+
             <section className="w-full flex flex-col items-center mb-10">
-                {!isGridView && (
+                {!isGridView && !editingUser && (
                     <>
                         <header className="grid grid-cols-4 items-center gap-4 w-full border-b-2 border-b-white/40 pb-2">
                             <div className="col-span-1 px-5 text-white font-bold">Name</div>
@@ -153,14 +304,14 @@ export default function ManageUsers({ users, formData, handleInputChange, handle
                             <div className="col-span-1 px-5 text-white font-bold">Actions</div>
                         </header>
                         {users.map((user) => (
-                            <UserRow key={user._id} name={user.name} email={user.email} status={user.temporaryPassword ? 'Pending' : 'Active'} onEdit={() => handleEdit(user._id)} onDelete={() => handleDelete(user._id)} />
+                            <UserRow key={user._id} name={user.name} email={user.email} status={user.temporaryPassword ? 'Pending' : 'Active'} onEdit={() => handleEdit(user)} onDelete={() => handleDelete(user._id)} />
                         ))}
                     </>
                 )}
-                {isGridView && (
+                {isGridView && !editingUser && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
                         {users.map((user) => (
-                            <UserCard key={user._id} name={user.name} email={user.email} status={user.temporaryPassword ? 'Pending' : 'Active'} onEdit={() => handleEdit(user._id)} onDelete={() => handleDelete(user._id)} />
+                            <UserCard key={user._id} name={user.name} email={user.email} status={user.temporaryPassword ? 'Pending' : 'Active'} onEdit={() => handleEdit(user)} onDelete={() => handleDelete(user._id)} />
                         ))}
                     </div>
                 )}

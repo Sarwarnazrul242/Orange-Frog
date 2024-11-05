@@ -22,6 +22,7 @@ const createEventRoute = require("./routes/create-event");
 const eventsRoute = require("./routes/events");
 
 app.use("/users", usersRoute);
+app.use("/update-user", userProfileRoute);
 app.use("/create-user", createUserRoute);
 app.use("/login", loginRoute);
 app.use("/reset-password", resetPasswordRoute);
