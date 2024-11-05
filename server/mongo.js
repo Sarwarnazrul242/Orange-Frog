@@ -46,7 +46,8 @@ const eventSchema = new mongoose.Schema({
     eventLoadOut: { type: Date, required: true },
     eventLocation: { type: String, required: true },
     eventHours: { type: Number },
-    eventDescription: { type: String }
+    eventDescription: { type: String },
+    assignedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }] 
 });
   
 const eventCollection = mongoose.model('eventCollection', eventSchema);

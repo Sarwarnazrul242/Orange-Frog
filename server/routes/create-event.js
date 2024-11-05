@@ -5,11 +5,10 @@ const router = express.Router();
 const { eventCollection } = require('../mongo');
 
 
+// src/routes/create-event.js
 router.post('/', async (req, res) => {
-    const { eventName, eventLoadIn, eventLoadOut, eventLocation, eventHours, eventDescription } = req.body;
-    if (!eventName || !eventLoadIn || !eventLoadOut || !eventLocation) {
-        return res.status(400).json({ message: 'Event Name, Date, and Location are required' });
-    }
+    const { eventName, eventLoadIn, eventLoadOut, eventLocation, eventHours, eventDescription, assignedContractors } = req.body;
+
     try {
         const newEvent = new eventCollection({
             eventName,
@@ -17,7 +16,8 @@ router.post('/', async (req, res) => {
             eventLoadOut,
             eventLocation,
             eventHours, 
-            eventDescription
+            eventDescription,
+            assignedContractors 
         });
     
         await newEvent.save();
@@ -27,6 +27,7 @@ router.post('/', async (req, res) => {
         res.status(500).json({ message: 'Error creating event' });
     }
 });
+
 
 module.exports = router;
 /*END OF NEW STUFF*/

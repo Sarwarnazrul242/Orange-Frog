@@ -9,13 +9,14 @@ const { eventCollection } = require('../mongo');
 // Route to get all events
 router.get('/', async (req, res) => {
     try {
-        const events = await eventCollection.find({});
+        const events = await eventCollection.find({}).populate('assignedContractors', 'name');
         res.status(200).json(events);
     } catch (error) {
         console.error('Error fetching events:', error);
         res.status(500).json({ message: 'Error fetching events' });
     }
 });
+
 
 // Route to delete an event by ID
 router.delete('/:id', async (req, res) => {

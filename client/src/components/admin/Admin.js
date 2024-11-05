@@ -15,7 +15,8 @@ export default function Admin() {
         eventLocation: '',
         eventDescription: '',
         name: '',
-        email: ''
+        email: '',
+        assignedContractors: []
     });
     const [users, setUsers] = useState([]);
     const [showForm, setShowForm] = useState(false);
@@ -31,21 +32,29 @@ export default function Admin() {
 
     const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
+    const handleSubmit = async (updatedFormData) => {
         const endpoint = selectedMenu === 'Create Event' ? '/create-event' : '/create-user';
-
+    
         try {
             const response = await fetch(`http://localhost:8000${endpoint}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
+                body: JSON.stringify(updatedFormData),
             });
             const result = await response.json();
-
+    
             if (response.ok) {
                 setMessage(`${selectedMenu} created successfully!`);
-                setFormData({ eventName: '', eventLoadIn: '', eventLoadOut: '', eventLocation: '', eventDescription: '', name: '', email: '' });
+                setFormData({
+                    eventName: '',
+                    eventLoadIn: '',
+                    eventLoadOut: '',
+                    eventLocation: '',
+                    eventDescription: '',
+                    name: '',
+                    email: '',
+                    assignedContractors: []
+                });
                 if (selectedMenu === 'Manage Users') setUsers([...users, result.user]);
             } else {
                 setMessage(result.message || 'Error creating entry');
@@ -55,6 +64,7 @@ export default function Admin() {
             setMessage('Server error, please try again later');
         }
     };
+    
 
     const handleEdit = (id) => console.log(`Edit user with id: ${id}`);
     const handleDelete = (id) => { setSelectedUser(id); setShowPopup(true); };
