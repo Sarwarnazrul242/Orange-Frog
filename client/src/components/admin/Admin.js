@@ -1,6 +1,5 @@
 // src/components/admin/Admin.js
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState } from 'react';
 import BackgroundWrapper from '../../BackgroundWrapper';
 import CreateEvent from './CreateEvent';
 import ManageUsers from './ManageUsers';
@@ -8,74 +7,6 @@ import ViewEvent from './ViewEvent';
 
 export default function Admin() {
     const [selectedMenu, setSelectedMenu] = useState('Create Event');
-    const [formData, setFormData] = useState({
-        eventName: '',
-        eventLoadIn: '',
-        eventLoadOut: '',
-        eventLocation: '',
-        eventDescription: '',
-        name: '',
-        email: '',
-        assignedContractors: []
-    });
-    const [users, setUsers] = useState([]);
-    const [showForm, setShowForm] = useState(false);
-    const [message, setMessage] = useState('');
-    const [showPopup, setShowPopup] = useState(false);
-    const [selectedUser, setSelectedUser] = useState(null);
-
-    useEffect(() => {
-        axios.get('http://localhost:8000/users')
-            .then((response) => setUsers(response.data))
-            .catch((error) => console.error('Error fetching users:', error));
-    }, []);
-
-    const handleInputChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
-
-    const handleSubmit = async (updatedFormData) => {
-        const endpoint = selectedMenu === 'Create Event' ? '/create-event' : '/create-user';
-    
-        try {
-            const response = await fetch(`http://localhost:8000${endpoint}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(updatedFormData),
-            });
-            const result = await response.json();
-    
-            if (response.ok) {
-                setMessage(`${selectedMenu} created successfully!`);
-                setFormData({
-                    eventName: '',
-                    eventLoadIn: '',
-                    eventLoadOut: '',
-                    eventLocation: '',
-                    eventDescription: '',
-                    name: '',
-                    email: '',
-                    assignedContractors: []
-                });
-                if (selectedMenu === 'Manage Users') setUsers([...users, result.user]);
-            } else {
-                setMessage(result.message || 'Error creating entry');
-            }
-        } catch (error) {
-            console.error('Error:', error);
-            setMessage('Server error, please try again later');
-        }
-    };
-    
-
-    const handleEdit = (id) => console.log(`Edit user with id: ${id}`);
-    const handleDelete = (id) => { setSelectedUser(id); setShowPopup(true); };
-    const confirmDelete = () => {
-        axios.delete(`http://localhost:8000/delete-user/${selectedUser}`)
-            .then(() => {
-                setUsers(users.filter(user => user._id !== selectedUser));
-                setShowPopup(false);
-            })
-            .catch((error) => console.error('Error deleting user:', error));
-    };
 
     return (
         <BackgroundWrapper>
@@ -90,15 +21,9 @@ export default function Admin() {
                 </div>
 
                 <div className="flex-1 h-auto md:h-[800px] bg-gray-400/40 backdrop-blur-md p-5 rounded-xl flex flex-col items-center border border-white/40 shadow-xl overflow-y-auto max-h-[800px]">
-                    {selectedMenu === "Create Event" && (
-                        <CreateEvent formData={formData} handleInputChange={handleInputChange} handleSubmit={handleSubmit} message={message} />
-                    )}
-                    {selectedMenu === "Manage Users" && (
-                        <ManageUsers users={users} formData={formData} handleInputChange={handleInputChange} handleSubmit={handleSubmit} showForm={showForm} setShowForm={setShowForm} handleEdit={handleEdit} handleDelete={handleDelete} showPopup={showPopup} confirmDelete={confirmDelete} setShowPopup={setShowPopup} />
-                    )}
-                    {selectedMenu === "View Event" && (
-                        <ViewEvent />
-                    )}
+                    {selectedMenu === "Create Event" && <CreateEvent />}
+                    {selectedMenu === "Manage Users" && <ManageUsers />}
+                    {selectedMenu === "View Event" && <ViewEvent />}
                 </div>
             </div>
         </BackgroundWrapper>

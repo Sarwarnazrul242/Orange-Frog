@@ -12,6 +12,13 @@ code {
     monospace;
 }
 
+.sonner-toast {
+  font-size: 1.25rem; /* Increase font size */
+  padding: 1rem 1.5rem; /* Increase padding */
+  max-width: 400px; /* Set a wider max width */
+  min-height: 60px; /* Set a minimum height for larger appearance */
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;

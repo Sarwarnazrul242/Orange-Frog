@@ -2,28 +2,76 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FaUserPlus } from 'react-icons/fa';
+import MultiSelect from './MultiSelect';
+import { toast } from 'sonner';
 
-export default function CreateEvent({ formData, handleInputChange, handleSubmit, message }) {
+export default function CreateEvent() {
+    const [formData, setFormData] = useState({
+        eventName: '',
+        eventLoadIn: '',
+        eventLoadOut: '',
+        eventLocation: '',
+        eventDescription: '',
+        eventHours: '',
+        assignedContractors: []
+    });
     const [showContractorPopup, setShowContractorPopup] = useState(false);
     const [contractors, setContractors] = useState([]);
     const [selectedContractors, setSelectedContractors] = useState([]);
+    const [message, setMessage] = useState('');
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         axios.get('http://localhost:8000/users')
-            .then((response) => setContractors(response.data.filter(user => user.status === 'active')))
-            .catch((error) => console.error('Error fetching contractors:', error));
+            .then(response => setContractors(response.data.filter(user => user.status === 'active')))
+            .catch(error => console.error('Error fetching contractors:', error));
     }, []);
 
-    const handleContractorChange = (id) => {
-        setSelectedContractors(prev => 
-            prev.includes(id) ? prev.filter(cid => cid !== id) : [...prev, id]
-        );
+    const handleInputChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleFormSubmit = (e) => {
+    const handleContractorChange = (selectedOptions) => {
+        setSelectedContractors(selectedOptions.map(option => option.value));
+    };
+
+    const handleFormSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true);
         const updatedFormData = { ...formData, assignedContractors: selectedContractors };
-        handleSubmit(updatedFormData);
+        
+        try {
+            const response = await fetch('http://localhost:8000/create-event', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(updatedFormData),
+            });
+            const result = await response.json();
+
+            if (response.ok) {
+                setMessage('Event created successfully!');
+                setFormData({
+                    eventName: '',
+                    eventLoadIn: '',
+                    eventLoadOut: '',
+                    eventLocation: '',
+                    eventDescription: '',
+                    eventHours: '',
+                    assignedContractors: []
+                });
+                setSelectedContractors([]);
+                toast.success('Event created successfully!'); // Success toast
+            } else {
+                setMessage(result.message || 'Error creating event');
+                toast.error(result.message || 'Error creating event'); // Error toast
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            setMessage('Server error, please try again later');
+            toast.error('Server error, please try again later'); // Error toast
+        }
+
+        setLoading(false);
     };
 
     return (
@@ -97,35 +145,20 @@ export default function CreateEvent({ formData, handleInputChange, handleSubmit,
                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                         <div className="bg-white p-8 rounded-lg shadow-lg w-[80%] max-w-md relative">
                             <h2 className="text-xl font-semibold text-black mb-6 text-center">Select Contractors</h2>
-                            <div className="flex justify-center gap-4 mb-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedContractors(contractors.map(contractor => contractor._id))}
-                                    className="px-1 py-1 rounded-full bg-black text-white text-lg"
-                                >
-                                    Select All
-                                </button>
-                                <button
-                                    type="button"
-                                    onClick={() => setSelectedContractors([])}
-                                    className="px-1 py-1 rounded-full bg-black text-white text-lg"
-                                >
-                                    Deselect All
-                                </button>
-                            </div>
-                            <div className="max-h-48 overflow-y-auto border rounded-md p-4">
-                                {contractors.map((contractor) => (
-                                    <label key={contractor._id} className="block mb-3 text-lg">
-                                        <input
-                                            type="checkbox"
-                                            className="mr-2"
-                                            checked={selectedContractors.includes(contractor._id)}
-                                            onChange={() => handleContractorChange(contractor._id)}
-                                        />
-                                        {contractor.name}
-                                    </label>
-                                ))}
-                            </div>
+                            <MultiSelect
+                                options={contractors.map(contractor => ({
+                                    value: contractor._id,
+                                    label: contractor.name
+                                }))}
+                                value={selectedContractors.map(id => ({
+                                    value: id,
+                                    label: contractors.find(contractor => contractor._id === id)?.name
+                                }))}
+                                onChange={handleContractorChange}
+                                isMulti
+                                closeMenuOnSelect={false}
+                                hideSelectedOptions={false}
+                            />
                             <div className="flex justify-center mt-6">
                                 <button
                                     onClick={() => setShowContractorPopup(false)}
@@ -167,10 +200,34 @@ export default function CreateEvent({ formData, handleInputChange, handleSubmit,
                 </div>
                 <div className="flex justify-center">
                     <button
-                        className="bg-zinc-950 hover:bg-gray-900 text-white font-bold py-1 px-6 rounded-full text-lg"
+                        className="bg-zinc-950 hover:bg-gray-900 text-white font-bold py-1 px-6 rounded-full text-lg flex items-center justify-center"
                         type="submit"
+                        disabled={loading} // Disable button while loading
                     >
-                        Create
+                        {loading ? (
+                            <svg
+                                className="animate-spin h-5 w-5 text-white mr-2"
+                                xmlns="http://www.w3.org/2000/svg"
+                                fill="none"
+                                viewBox="0 0 24 24"
+                            >
+                                <circle
+                                    className="opacity-25"
+                                    cx="12"
+                                    cy="12"
+                                    r="10"
+                                    stroke="currentColor"
+                                    strokeWidth="4"
+                                ></circle>
+                                <path
+                                    className="opacity-75"
+                                    fill="currentColor"
+                                    d="M4 12a8 8 0 018-8v8z"
+                                ></path>
+                            </svg>
+                        ) : (
+                            'Create'
+                        )}
                     </button>
                 </div>
             </form>

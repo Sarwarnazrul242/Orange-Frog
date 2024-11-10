@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from 'sonner';
+import './index.css';
 
 import Home from './components/home/Home';
 import Navbar from './components/navbar/Navbar';
@@ -21,7 +22,7 @@ function App() {
 
       {/* Content */}
       <div className="relative z-10">
-        <Toaster richColors />
+        <Toaster position="top-right" duration={3000} toastOptions={{ className: "sonner-toast" }}  richColors />
 
         <Router>
           <Navbar />
