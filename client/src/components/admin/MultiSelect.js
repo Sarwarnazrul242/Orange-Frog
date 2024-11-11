@@ -7,14 +7,14 @@ const MultiSelect = (props) => {
   const [allSelected, setAllSelected] = useState(false); // Track the "Select All" checkbox state
 
   // Filter options based on input
-  const filterOptions = (options, input) =>
-    options?.filter(({ label }) =>
-      label.toLowerCase().includes(input.toLowerCase())
-    );
+  // const filterOptions = (options, input) =>
+  //   options?.filter(({ label }) =>
+  //     label.toLowerCase().includes(input.toLowerCase())
+  //   );
 
-  const comparator = (v1, v2) => (v1.value - v2.value);
+  // const comparator = (v1, v2) => (v1.value - v2.value);
 
-  let filteredOptions = filterOptions(props.options, selectInput);
+  // let filteredOptions = filterOptions(props.options, selectInput);
 
   // Custom Option component with a checkbox
   const Option = (optionProps) => {

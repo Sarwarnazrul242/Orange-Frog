@@ -75,7 +75,7 @@ export default function CreateEvent() {
     };
 
     return (
-        <div className="w-full flex flex-col items-center">
+        <div className="w-full flex overflow-scroll h-4/5 flex-col items-center">
             <h1 className="self-start text-white text-3xl font-semibold mb-10">Event Creation:</h1>
             <form className="space-y-6 w-[70%]" onSubmit={handleFormSubmit}>
                 <div className="flex flex-wrap -mx-3 mb-6">
@@ -96,7 +96,7 @@ export default function CreateEvent() {
                     <div className="w-full md:w-1/2 px-3">
                         <label className="block text-white text-lg font-bold mb-2">Load In <span className="text-red-500">*</span></label>
                         <input
-                            className="appearance-none border rounded w-full py-3 px-4 text-black text-lg leading-tight focus:outline-none"
+                            className="appearance-none border rounded w-full py-3 px-4 text-black/50 text-lg leading-tight focus:outline-none"
                             type="datetime-local"
                             name="eventLoadIn"
                             value={formData.eventLoadIn}
@@ -107,7 +107,7 @@ export default function CreateEvent() {
                     <div className="w-full md:w-1/2 px-3">
                         <label className="block text-white text-lg font-bold mb-2">Load Out <span className="text-red-500">*</span></label>
                         <input
-                            className="appearance-none border rounded w-full py-3 px-4 text-black text-lg leading-tight focus:outline-none"
+                            className="appearance-none border rounded w-full py-3 px-4 text-black/50 text-lg leading-tight focus:outline-none"
                             type="datetime-local"
                             name="eventLoadOut"
                             value={formData.eventLoadOut}
@@ -134,7 +134,7 @@ export default function CreateEvent() {
                         <button
                             type="button"
                             onClick={() => setShowContractorPopup(true)}
-                            className="appearance-none border rounded w-max py-1 px-4 text-white bg-gray-500 hover:bg-gray-700 leading-tight focus:outline-none text-lg flex items-center"
+                            className="appearance-none border rounded w-max py-6 px-4 text-white bg-gray-500 hover:bg-gray-700 leading-tight focus:outline-none text-lg flex items-center justify-center mt-2"
                         >
                             Select Contractors <FaUserPlus className="w-5 h-5 inline-block ml-2" />
                         </button>
