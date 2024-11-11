@@ -17,6 +17,8 @@ export default function ViewEvent() {
     const [showEditPopup, setShowEditPopup] = useState(false);
     const [eventToEdit, setEventToEdit] = useState(null);
     const [showContractorPopup, setShowContractorPopup] = useState(false);
+    const [sortField, setSortField] = useState(null);
+    const [sortDirection, setSortDirection] = useState('asc');
     
 
     useEffect(() => {
@@ -108,6 +110,48 @@ export default function ViewEvent() {
         setEventToEdit({ ...eventToEdit, [name]: value });
     };
 
+    const handleSortChange = (e) => {
+        const value = e.target.value;
+        const [field, direction] = value.split('-');
+        setSortField(field);
+        setSortDirection(direction);
+    };
+
+    const getSortedEvents = () => {
+        if (!sortField) return events;
+
+        return [...events].sort((a, b) => {
+            switch (sortField) {
+                case 'name':
+                    const aName = a.eventName.toLowerCase();
+                    const bName = b.eventName.toLowerCase();
+                    return sortDirection === 'asc' 
+                        ? aName.localeCompare(bName)
+                        : bName.localeCompare(aName);
+                case 'loadIn':
+                    const aLoadIn = new Date(a.eventLoadIn);
+                    const bLoadIn = new Date(b.eventLoadIn);
+                    return sortDirection === 'asc' 
+                        ? aLoadIn - bLoadIn 
+                        : bLoadIn - aLoadIn;
+                case 'loadOut':
+                    const aLoadOut = new Date(a.eventLoadOut);
+                    const bLoadOut = new Date(b.eventLoadOut);
+                    return sortDirection === 'asc' 
+                        ? aLoadOut - bLoadOut 
+                        : bLoadOut - aLoadOut;
+                case 'hours':
+                    const aHours = a.eventHours || 0;
+                    const bHours = b.eventHours || 0;
+                    return sortDirection === 'asc' 
+                        ? aHours - bHours 
+                        : bHours - aHours;
+                default:
+                    return 0;
+            }
+        });
+    };
+
     if (loading) {
         return (
             <div className="h-screen flex justify-center items-center">
@@ -120,27 +164,43 @@ export default function ViewEvent() {
         <div className="w-full p-5">
             <div className="flex justify-between items-center mb-5">
                 <h2 className="text-2xl font-semibold">Event List</h2>
-                <div className="flex space-x-4">
-                    <button
-                        onClick={() => setView('grid')}
-                        className={`p-2 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-200'} hover:bg-gray-300`}
+                <div className="flex items-center gap-2">
+                    <select
+                        onChange={handleSortChange}
+                        className="px-4 py-2 bg-gray-700 text-white rounded-lg outline-none h-[40px]"
                     >
-                        <FaTh className="text-xl" />
-                    </button>
-                    <button
-                        onClick={() => setView('list')}
-                        className={`p-2 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-200'} hover:bg-gray-300`}
-                    >
-                        <FaList className="text-xl" />
-                    </button>
+                        <option value="">Sort By</option>
+                        <option value="name-asc">Event Name (A-Z)</option>
+                        <option value="name-desc">Event Name (Z-A)</option>
+                        <option value="loadIn-asc">Load In (Earliest First)</option>
+                        <option value="loadIn-desc">Load In (Latest First)</option>
+                        <option value="loadOut-asc">Load Out (Earliest First)</option>
+                        <option value="loadOut-desc">Load Out (Latest First)</option>
+                        <option value="hours-asc">Hours (Low to High)</option>
+                        <option value="hours-desc">Hours (High to Low)</option>
+                    </select>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setView('grid')}
+                            className={`p-2 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-200'} hover:bg-gray-300`}
+                        >
+                            <FaTh className="text-xl" />
+                        </button>
+                        <button
+                            onClick={() => setView('list')}
+                            className={`p-2 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-200'} hover:bg-gray-300`}
+                        >
+                            <FaList className="text-xl" />
+                        </button>
+                    </div>
                 </div>
             </div>
 
             <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4' : 'space-y-4'}>
-                {events.length === 0 ? (
+                {getSortedEvents().length === 0 ? (
                     <p>No events found.</p>
                 ) : (
-                    events.map((event) => (
+                    getSortedEvents().map((event) => (
                         <div
                             key={event._id}
                             className={`bg-gray-800 p-4 rounded-lg shadow-md text-white ${view === 'list' ? 'w-full' : ''}`}

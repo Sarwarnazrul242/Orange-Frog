@@ -374,10 +374,10 @@ export default function ManageUsers() {
 
             <div className="w-full flex items-center mb-5">
                 <div className="flex space-x-2">
-                    <button onClick={() => setIsGridView(false)} className={`px-4 py-2 ${!isGridView ? 'bg-gray-300': 'bg-gray-500'} text-white rounded-l-full flex items-center `}>
+                    <button onClick={() => setIsGridView(false)} className={`px-4 py-2 ${!isGridView ? 'bg-gray-300': 'bg-gray-500'} text-white rounded-l-full flex items-center mt-0`}>
                         <FaList className="mr-1" />
                     </button>
-                    <button onClick={() => setIsGridView(true)} className={`px-4 py-2 ${isGridView ? 'bg-gray-300' : 'bg-gray-500'} text-white rounded-r-full flex items-center`}>
+                    <button onClick={() => setIsGridView(true)} className={`px-4 py-2 ${isGridView ? 'bg-gray-300' : 'bg-gray-500'} text-white rounded-r-full flex items-center mt-0 `}>
                         <FaTh className="mr-1" />
                     </button>
                     <select

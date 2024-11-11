@@ -11,6 +11,22 @@ import PasswordReset from './components/setProfile/PasswordReset';
 import CompleteProfile from './components/setProfile/CompleteProfile';
 
 function App() {
+  const [browserZoom, setBrowserZoom] = React.useState(100);
+
+  React.useEffect(() => {
+    const updateZoom = () => {
+      const zoom = Math.round(window.outerWidth / window.innerWidth * 100);
+      setBrowserZoom(zoom);
+    };
+
+    // Initial check
+    updateZoom();
+
+    // Add event listener for resize (which includes zoom changes)
+    window.addEventListener('resize', updateZoom);
+    return () => window.removeEventListener('resize', updateZoom);
+  }, []);
+
   return (
     <div className="relative h-screen w-full bg-cover bg-center bg-no-repeat"
       style={{ 
@@ -21,7 +37,9 @@ function App() {
       <div className="absolute inset-0 bg-black opacity-50 z-0"></div>
 
       {/* Content */}
-      <div className="relative z-10">
+      <div className="relative z-10 h-full overflow-x-hidden" style={{
+        overflowY: browserZoom >= 100 ? 'auto' : 'hidden'
+      }}>
         <Toaster position="top-right" duration={3000} toastOptions={{ className: "sonner-toast" }}  richColors />
 
         <Router>
