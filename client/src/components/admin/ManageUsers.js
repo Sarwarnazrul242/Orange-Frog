@@ -1,10 +1,11 @@
 // src/components/admin/ManageUsers.js
 import React, { useState, useEffect, useRef } from 'react';
-import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo } from 'react-icons/fa';
+import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSort } from 'react-icons/fa';
 import autoAnimate from '@formkit/auto-animate';
 import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'sonner';
+
 
 const UserRow = ({ name, email, status, onEdit, onDelete, onResendEmail }) => (
     <article className="grid grid-cols-4 items-center gap-4 w-full border-b-[1px] border-b-white/40 relative">
@@ -80,6 +81,8 @@ export default function ManageUsers() {
     const [showPopup, setShowPopup] = useState(false);
     const [selectedUser, setSelectedUser] = useState(null);
     const [isGridView, setIsGridView] = useState(false);
+    const [sortField, setSortField] = useState(null);
+    const [sortDirection, setSortDirection] = useState('asc');
 
     const formParent = useRef(null);
 
@@ -170,6 +173,37 @@ export default function ManageUsers() {
             console.error("Error updating user:", error);
             toast.error('Failed to update user information');
         }
+    };
+
+    if (loading) {
+        return (
+            <div className="h-screen flex justify-center items-center">
+                <p className="text-white">Loading Users...</p>
+            </div>
+        );
+    }
+
+    const handleSortChange = (e) => {
+        const value = e.target.value;
+        const [field, direction] = value.split('-');
+        setSortField(field);
+        setSortDirection(direction);
+    };
+
+
+    const getSortedUsers = () => {
+        if (!sortField) return users;
+
+        return [...users].sort((a, b) => {
+            const aValue = a[sortField].toLowerCase();
+            const bValue = b[sortField].toLowerCase();
+
+            if (sortDirection === 'asc') {
+                return aValue.localeCompare(bValue);
+            } else {
+                return bValue.localeCompare(aValue);
+            }
+        });
     };
 
     if (loading) {
@@ -340,28 +374,34 @@ export default function ManageUsers() {
 
             <div className="w-full flex items-center mb-5">
                 <div className="flex space-x-2">
-                    <button onClick={() => setIsGridView(false)} className={`px-4 py-2 ${!isGridView ? 'bg-gray-500' : 'bg-gray-300'} text-white rounded-l-full flex items-center`}>
+                    <button onClick={() => setIsGridView(false)} className={`px-4 py-2 ${!isGridView ? 'bg-gray-300': 'bg-gray-500'} text-white rounded-l-full flex items-center `}>
                         <FaList className="mr-1" />
                     </button>
-                    <button onClick={() => setIsGridView(true)} className={`px-4 py-2 ${isGridView ? 'bg-gray-500' : 'bg-gray-300'} text-white rounded-r-full flex items-center`}>
+                    <button onClick={() => setIsGridView(true)} className={`px-4 py-2 ${isGridView ? 'bg-gray-300' : 'bg-gray-500'} text-white rounded-r-full flex items-center`}>
                         <FaTh className="mr-1" />
                     </button>
+                    <select
+                        onChange={handleSortChange}
+                        className="px-4 py-2 bg-gray-500 text-white rounded-full  outline-none"
+                    >
+                        <option value="">Sort</option>
+                        <option value="name-asc">Name (A-Z)</option>
+                        <option value="name-desc">Name (Z-A)</option>
+                        <option value="email-asc">Email (A-Z)</option>
+                        <option value="email-desc">Email (Z-A)</option>
+                    </select>
                 </div>
             </div>
 
             <section className="w-full flex flex-col items-center mb-10">
-                {!isGridView && !editingUser && (
-                    <>
-                        <header className="grid grid-cols-4 items-center gap-4 w-full border-b-2 border-b-white/40 pb-2">
-                            <div className="col-span-1 px-5 text-white font-bold">Name</div>
-                            <div className="col-span-1 px-5 text-white font-bold">Email</div>
-                            <div className="col-span-1 px-5 text-white font-bold">Status</div>
-                            <div className="col-span-1 px-5 text-white font-bold">Actions</div>
-                        </header>
-                        {users.map(user => (
-                            <UserRow
+                
+                
+            {isGridView && !editingUser && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
+                        {getSortedUsers().map(user => (
+                            <UserCard
                                 key={user._id}
-                                name={user.name} 
+                                name={user.name}
                                 email={user.email}
                                 status={user.temporaryPassword ? 'Pending' : 'Active'}
                                 onEdit={() => handleEdit(user)}
@@ -369,22 +409,39 @@ export default function ManageUsers() {
                                 onResendEmail={() => handleResendEmail(user._id)}
                             />
                         ))}
-                    </>
-                )}
-                {isGridView && !editingUser && (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
-                        {users.map(user => (
-                            <UserCard key={user._id} 
-                            name={user.name} 
-                            email={user.email} 
-                            status={user.temporaryPassword ? 'Pending' : 'Active'} 
-                            onEdit={() => handleEdit(user)} 
-                            onDelete={() => handleDelete(user._id)}
-                            onResendEmail={() => handleResendEmail(user._id)}
-                         />
-                        ))}
                     </div>
                 )}
+            {!isGridView && !editingUser && (
+                <>
+                    <header className="grid grid-cols-4 items-center gap-4 w-full border-b-2 border-b-white/40 pb-2">
+                        <div className="col-span-1 px-5 text-white font-bold flex items-center">
+                            Name
+                            
+                        </div>
+                        <div className="col-span-1 px-5 text-white font-bold flex items-center">
+                            Email
+                        </div>
+                        <div className="col-span-1 px-5 text-white font-bold">Status</div>
+                        <div className="col-span-1 px-5 text-white font-bold">Actions</div>
+                    </header>
+                
+            
+                    
+                    {getSortedUsers().map(user => (
+                        <UserRow
+                            key={user._id}
+                            name={user.name}
+                            email={user.email}
+                            status={user.temporaryPassword ? 'Pending' : 'Active'}
+                            onEdit={() => handleEdit(user)}
+                            onDelete={() => handleDelete(user._id)}
+                            onResendEmail={() => handleResendEmail(user._id)}
+                        />
+                    ))}
+                
+                
+                </>
+            )}
             </section>
             {showPopup && <ConfirmationPopup onConfirm={confirmDelete} onCancel={() => setShowPopup(false)} />}
         </div>
