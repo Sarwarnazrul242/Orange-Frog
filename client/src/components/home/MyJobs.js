@@ -37,6 +37,7 @@ export default function MyJobs() {
     return (
         <div className="p-5 w-full">
             {/* Controls Section */}
+            <h1 className="text-2xl text-white">My Jobs</h1>
             <div className="flex justify-between mb-5">
                 {/* View Toggle (Grid/List) */}
                 <div className="flex items-center space-x-2">

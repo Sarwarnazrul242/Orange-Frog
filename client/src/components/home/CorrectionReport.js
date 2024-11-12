@@ -1,9 +1,10 @@
 // src/components/home/IncidentReport.js
 import React from 'react';
 
-export default function IncidentReport() {
+export default function CorrectionReport() {
     return (
-        <form className="w-full max-w-2xl grid grid-cols-2 gap-8 mt-52 mb-10">
+        <form className="w-full max-w-2xl grid grid-cols-2 gap-8 mb-10 h-auto">
+        <h1 className="text-white text-2xl mb-5">Correction Report</h1>
             <div className="col-span-2">
             <label className="block text-white mb-2">Event Name</label>
                 <input
@@ -59,7 +60,7 @@ export default function IncidentReport() {
             </div>
 
             <div className="col-span-2">
-            <label className="block text-white mb-2">Incident Description</label>
+            <label className="block text-white mb-2">Correction Description</label>
                 <textarea
                     name="name"
                     value=""

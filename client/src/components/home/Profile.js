@@ -18,6 +18,7 @@ export default function Profile({ profileData, setProfileData, handleInputChange
         }
     }, [showAllergyPopup, profileData.allergies]);
 
+
     const handleProfileUpdate = (e) => {
         e.preventDefault();
         setButtonState("Loading..."); 
@@ -75,11 +76,12 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                 }
             });
         }
-    }, []);
+    }, [setProfileData]);
 
     return (
-        <form onSubmit={handleProfileUpdate} className="w-full max-w-4xl grid grid-cols-2 gap-8 mt-52 mb-10">
+        <form onSubmit={handleProfileUpdate} className="w-full max-w-4xl grid grid-cols-2 gap-8  mb-10">
             {/* Existing fields */}
+            <h1 className="col-span-2 text-2xl text-white mb-4 mt-56">Update Profile</h1>
             <div className="col-span-1">
                 <label className="block text-white mb-2">Name</label>
                 <input

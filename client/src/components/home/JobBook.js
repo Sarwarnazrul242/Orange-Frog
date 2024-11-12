@@ -1,34 +1,37 @@
-// src/components/home/JobBook.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
-export default function JobBook() {
+export default function JobBook({ userId }) {
     const [sortOption, setSortOption] = useState("recent");
     const [showSortDropdown, setShowSortDropdown] = useState(false);
+    const [jobs, setJobs] = useState([]);
+    const [jobStatuses, setJobStatuses] = useState({});
 
-    // Demo job data
-    const jobs = [
-        { id: 1, jobName: "Job 1", location: "Location A", loadInDate: "2024-11-05", loadInTime: "09:00 AM", loadOutDate: "2024-11-05", loadOutTime: "05:00 PM", hours: 8, description: "Description for Job 1", status: "" },
-        { id: 2, jobName: "Job 2", location: "Location B", loadInDate: "2024-11-10", loadInTime: "10:00 AM", loadOutDate: "2024-11-10", loadOutTime: "06:00 PM", hours: 8, description: "Description for Job 2", status: "" },
-        { id: 3, jobName: "Job 3", location: "Location C", loadInDate: "2024-11-07", loadInTime: "08:00 AM", loadOutDate: "2024-11-07", loadOutTime: "04:00 PM", hours: 8, description: "Description for Job 3", status: "" },
-    ];
+    // JobBook.js
+    useEffect(() => {
+        if (!userId) return;
 
-    const [jobStatuses, setJobStatuses] = useState(
-        jobs.reduce((acc, job) => {
-            acc[job.id] = job.status; // Initialize each job's status as an empty string
-            return acc;
-        }, {})
-    );
+        const fetchAssignedJobs = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8000/events/assigned/${userId}`);
+                setJobs(response.data);
+            } catch (error) {
+                console.error('Error fetching assigned jobs:', error);
+            }
+        };
 
-    // Sort jobs based on selected option
+        fetchAssignedJobs();
+    }, [userId]);
+
+
     const sortedJobs = [...jobs].sort((a, b) => {
         if (sortOption === "recent") {
-            return new Date(b.loadInDate) - new Date(a.loadInDate); // Sort by most recent post
+            return new Date(b.eventLoadIn) - new Date(a.eventLoadIn);
         } else {
-            return new Date(a.loadInDate) - new Date(b.loadInDate); // Sort by closest date
+            return new Date(a.eventLoadIn) - new Date(b.eventLoadIn);
         }
     });
 
-    // Handle accept and reject actions
     const handleAccept = (id) => {
         setJobStatuses((prev) => ({ ...prev, [id]: "Accepted" }));
     };
@@ -38,14 +41,11 @@ export default function JobBook() {
     };
 
     return (
-        <div className="p-5 w-full">
+        <div className="p-5 w-full  "> 
             <div className="flex items-center justify-between mb-5">
-                <h2 className="text-2xl font-semibold">Job Posted</h2>
+                <h1 className="text-2xl text-white">Posted Jobs</h1>
                 <div className="relative">
-                    <button 
-                        onClick={() => setShowSortDropdown(!showSortDropdown)} 
-                        className="px-4 py-2 bg-gray-200 rounded-4xl text-black"
-                    >
+                    <button onClick={() => setShowSortDropdown(!showSortDropdown)} className="px-4 py-2 bg-gray-200 rounded-4xl text-black">
                         Sort by
                     </button>
                     {showSortDropdown && (
@@ -58,24 +58,24 @@ export default function JobBook() {
             </div>
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
                 {sortedJobs.map((job) => (
-                    <div key={job.id} className="bg-white p-4 rounded shadow-md text-black border border-gray-300 flex flex-col justify-between">
+                    <div key={job._id} className="bg-white p-4 rounded shadow-md text-black border border-gray-300 flex flex-col justify-between">
                         <div>
-                            <h3 className="text-lg font-semibold">{job.jobName}</h3>
-                            <p className="text-sm">Location: {job.location}</p>
-                            <p className="text-sm">Load In: {job.loadInDate} at {job.loadInTime}</p>
-                            <p className="text-sm">Load Out: {job.loadOutDate} at {job.loadOutTime}</p>
-                            <p className="text-sm">Hours: {job.hours}</p>
-                            <p className="text-sm">Description: {job.description}</p>
+                            <h3 className="text-lg font-semibold">{job.eventName}</h3>
+                            <p className="text-sm">Location: {job.eventLocation}</p>
+                            <p className="text-sm">Load In: {new Date(job.eventLoadIn).toLocaleString()}</p>
+                            <p className="text-sm">Load Out: {new Date(job.eventLoadOut).toLocaleString()}</p>
+                            <p className="text-sm">Hours: {job.eventHours}</p>
+                            <p className="text-sm">Description: {job.eventDescription}</p>
                         </div>
                         <div className="flex justify-between mt-4">
-                            {jobStatuses[job.id] === "" ? (
+                            {jobStatuses[job._id] === "" ? (
                                 <>
-                                    <button onClick={() => handleAccept(job.id)} className="text-green-600 hover:bg-gray-200 font-semibold">✔ Accept</button>
-                                    <button onClick={() => handleReject(job.id)} className="text-red-600 hover:bg-gray-200 font-semibold">✖ Reject</button>
+                                    <button onClick={() => handleAccept(job._id)} className="text-green-600 hover:bg-gray-200 font-semibold">✔ Accept</button>
+                                    <button onClick={() => handleReject(job._id)} className="text-red-600 hover:bg-gray-200 font-semibold">✖ Reject</button>
                                 </>
                             ) : (
-                                <p className={`text-lg font-semibold ${jobStatuses[job.id] === "Accepted" ? "text-green-600" : "text-red-600"}`}>
-                                    {jobStatuses[job.id] === "Accepted" ? "✔ Accepted" : "✖ Rejected"}
+                                <p className={`text-lg font-semibold ${jobStatuses[job._id] === "Accepted" ? "text-green-600" : "text-red-600"}`}>
+                                    {jobStatuses[job._id] === "Accepted" ? "✔ Accepted" : "✖ Rejected"}
                                 </p>
                             )}
                         </div>

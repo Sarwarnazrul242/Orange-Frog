@@ -9,7 +9,7 @@ import JobBook from './JobBook';
 import MyJobs from './MyJobs';
 import Profile from './Profile';
 import TimeCard from './TimeCard';
-import IncidentReport from './IncidentReport';
+import IncidentReport from './CorrectionReport';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -26,6 +26,7 @@ export default function Home() {
         password: '',
     });
     const [message, setMessage] = useState('');
+    const [currentUserId, setCurrentUserId] = useState(null); // Added state for userId
 
     useEffect(() => {
         const isAuthenticated = Cookies.get('isAuthenticated');
@@ -33,14 +34,22 @@ export default function Home() {
 
         if (!isAuthenticated) {
             navigate('/');
-        } else if (selectedMenu === "Profile") {
-            axios.get(`http://localhost:8000/user-profile/${email}`)
+        } else {
+            axios.get(`http://localhost:8000/users/email/${email}`)
                 .then(response => {
-                    const { name, email, address, dob, phone, height, gender, allergies } = response.data;
-                    const formattedDob = dob ? new Date(dob).toISOString().split('T')[0] : '';
-                    setProfileData({ name, email, address, dob: formattedDob, phone, height, gender, allergies });
+                    setCurrentUserId(response.data._id); // Ensure _id is stored as currentUserId
                 })
-                .catch(error => console.error('Error fetching profile data:', error));
+                .catch(error => console.error('Error fetching user ID:', error));
+
+            if (selectedMenu === "Profile") {
+                axios.get(`http://localhost:8000/user-profile/${email}`)
+                    .then(response => {
+                        const { name, email, address, dob, phone, height, gender, allergies } = response.data;
+                        const formattedDob = dob ? new Date(dob).toISOString().split('T')[0] : '';
+                        setProfileData({ name, email, address, dob: formattedDob, phone, height, gender, allergies });
+                    })
+                    .catch(error => console.error('Error fetching profile data:', error));
+            }
         }
     }, [navigate, selectedMenu]);
 
@@ -55,7 +64,7 @@ export default function Home() {
 
     const menuComponents = {
         "Chat Room": <ChatRoom />,
-        "Job Book": <JobBook />,
+        "Job Book": currentUserId ? <JobBook userId={currentUserId} /> : <p>Loading...</p>, // Pass userId to JobBook or show Loading
         "My Jobs": <MyJobs />,
         "Profile": <Profile profileData={profileData} setProfileData={setProfileData} handleInputChange={handleInputChange} message={message} setMessage={setMessage} />,
         "Time Card": <TimeCard />,
@@ -64,8 +73,8 @@ export default function Home() {
 
     return (
         <BackgroundWrapper>
-            <div className="flex flex-col h-screen md:flex-row p-14">
-                <div className="w-full h-auto mb-5 md:w-72 md:h-[500px] bg-gray-400/40 backdrop-blur-md p-5 rounded-xl md:ml-20 flex flex-col justify-start border border-white/40 shadow-xl">
+            <div className="flex flex-col h-auto overflow-y-auto md:flex-row p-5 ml-24 mr-8">
+            <div className="w-full h-full mb-5 md:w-[200px] lg:w-[250px] xl:w-[300px] md:h-[500px] bg-gray-500/40 backdrop-blur-md p-5 rounded-xl md:mr-5 flex flex-col md:block justify-start overflow-x-auto md:overflow-visible border border-white/40 shadow-xl">
                     <h3 className="text-white mb-5 font-semibold">My Stuff:</h3>
                     <ul className="flex md:block overflow-x-scroll md:overflow-visible scrollbar-hide">
                         {Object.keys(menuComponents).map(option => (
@@ -73,8 +82,8 @@ export default function Home() {
                         ))}
                     </ul>
                 </div>
-                <div className="flex-1 md:max-w-6xl ml-auto h-auto md:h-[750px] bg-gray-400/40 backdrop-blur-md p-10 rounded-xl flex flex-col items-center justify-start border border-white/40 shadow-xl overflow-y-auto max-h-full">
-                    <h1 className="text-white text-3xl font-semibold mb-6">{selectedMenu}</h1>
+                <div className="flex-1 h-auto md:h-[800px] bg-gray-500/40 backdrop-blur-md p-5 rounded-xl flex flex-col items-center border border-white/40 shadow-xl overflow-y-auto max-h-[800px]">
+                    {/* <h1 className="text-white text-3xl font-semibold mb-6">{selectedMenu}</h1> */}
                     <div className="w-full overflow-y-auto max-h-full flex items-center justify-center">
                         {menuComponents[selectedMenu]}
                     </div>
