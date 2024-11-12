@@ -1,5 +1,5 @@
 // src/components/admin/ViewEvent.js
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { FaTh, FaList, FaEdit, FaTrashAlt } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
@@ -17,6 +17,7 @@ export default function ViewEvent() {
     const [showEditPopup, setShowEditPopup] = useState(false);
     const [eventToEdit, setEventToEdit] = useState(null);
     const [showContractorPopup, setShowContractorPopup] = useState(false);
+    const selectRef = useRef(null);
     const [sortField, setSortField] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
     
@@ -115,7 +116,21 @@ export default function ViewEvent() {
         const [field, direction] = value.split('-');
         setSortField(field);
         setSortDirection(direction);
+        adjustSelectWidth();
     };
+
+    const adjustSelectWidth = () => {
+        const selectElement = selectRef.current;
+        if (selectElement) {
+            const selectedOption = selectElement.options[selectElement.selectedIndex];
+            const width = selectedOption.text.length * 8 + 78; // Adjust multiplier for font size
+            selectElement.style.width = `${width}px`;
+        }
+    };
+
+    useEffect(() => {
+        adjustSelectWidth(); // Set initial width
+    }, []);
 
     const getSortedEvents = () => {
         if (!sortField) return events;
@@ -134,12 +149,6 @@ export default function ViewEvent() {
                     return sortDirection === 'asc' 
                         ? aLoadIn - bLoadIn 
                         : bLoadIn - aLoadIn;
-                case 'loadOut':
-                    const aLoadOut = new Date(a.eventLoadOut);
-                    const bLoadOut = new Date(b.eventLoadOut);
-                    return sortDirection === 'asc' 
-                        ? aLoadOut - bLoadOut 
-                        : bLoadOut - aLoadOut;
                 case 'hours':
                     const aHours = a.eventHours || 0;
                     const bHours = b.eventHours || 0;
@@ -163,38 +172,37 @@ export default function ViewEvent() {
     return (
         <div className="w-full p-5">
             <div className="flex justify-between items-center mb-5">
-                <h2 className="text-2xl font-semibold">Event List</h2>
-                <div className="flex items-center gap-2">
-                    <select
-                        onChange={handleSortChange}
-                        className="px-4 py-2 bg-gray-700 text-white rounded-lg outline-none h-[40px]"
-                    >
-                        <option value="">Sort By</option>
-                        <option value="name-asc">Event Name (A-Z)</option>
-                        <option value="name-desc">Event Name (Z-A)</option>
-                        <option value="loadIn-asc">Load In (Earliest First)</option>
-                        <option value="loadIn-desc">Load In (Latest First)</option>
-                        <option value="loadOut-asc">Load Out (Earliest First)</option>
-                        <option value="loadOut-desc">Load Out (Latest First)</option>
-                        <option value="hours-asc">Hours (Low to High)</option>
-                        <option value="hours-desc">Hours (High to Low)</option>
-                    </select>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setView('grid')}
-                            className={`p-2 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-200'} hover:bg-gray-300`}
+                    <h2 className="text-2xl font-semibold">Event List</h2>
+                    <div className="flex items-center gap-2">
+                        <select
+                            ref={selectRef}
+                            onChange={handleSortChange}
+                            className="px-4 py-2 mt-6 mx-4 bg-gray-700 text-white rounded-lg outline-none h-[40px]"
                         >
-                            <FaTh className="text-xl" />
-                        </button>
-                        <button
-                            onClick={() => setView('list')}
-                            className={`p-2 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-200'} hover:bg-gray-300`}
-                        >
-                            <FaList className="text-xl" />
-                        </button>
+                            <option value="">Sort By</option>
+                            <option value="name-asc">Event Name A-Z</option>
+                            <option value="name-desc">Event Name Z-A</option>
+                            <option value="loadIn-asc">Oldest to Newest</option>
+                            <option value="loadIn-desc">Newest to Oldest</option>
+                            <option value="hours-asc">Hours Acending</option>
+                            <option value="hours-desc">Hours Decending</option>
+                        </select>
+                        <div className="flex gap-2">
+                            <button
+                                onClick={() => setView('grid')}
+                                className={`p-2 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
+                            >
+                                <FaTh className="text-xl" />
+                            </button>
+                            <button
+                                onClick={() => setView('list')}
+                                className={`p-2 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
+                            >
+                                <FaList className="text-xl" />
+                            </button>
+                        </div>
                     </div>
                 </div>
-            </div>
 
             <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4' : 'space-y-4'}>
                 {getSortedEvents().length === 0 ? (

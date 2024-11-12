@@ -1,8 +1,8 @@
 // src/components/admin/ManageUsers.js
 import React, { useState, useEffect, useRef } from 'react';
-import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSort } from 'react-icons/fa';
+import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import autoAnimate from '@formkit/auto-animate';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'sonner';
 
@@ -83,6 +83,8 @@ export default function ManageUsers() {
     const [isGridView, setIsGridView] = useState(false);
     const [sortField, setSortField] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
+    const [searchText, setSearchText] = useState(""); 
+    const [showSearchBox, setShowSearchBox] = useState(false);
 
     const formParent = useRef(null);
 
@@ -183,18 +185,26 @@ export default function ManageUsers() {
         );
     }
 
-    const handleSortChange = (e) => {
-        const value = e.target.value;
-        const [field, direction] = value.split('-');
-        setSortField(field);
-        setSortDirection(direction);
+    const handleSort = (field) => {
+        if (sortField === field) {
+            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+        } else {
+            setSortField(field);
+            setSortDirection('asc');
+        }
     };
 
 
-    const getSortedUsers = () => {
-        if (!sortField) return users;
+    const getFilteredAndSortedUsers = () => {
+        // Filter users by search text
+        const filteredUsers = users.filter(user =>
+            user.name.toLowerCase().includes(searchText.toLowerCase())
+        );
 
-        return [...users].sort((a, b) => {
+        // Sort filtered users
+        if (!sortField) return filteredUsers;
+
+        return [...filteredUsers].sort((a, b) => {
             const aValue = a[sortField].toLowerCase();
             const bValue = b[sortField].toLowerCase();
 
@@ -206,14 +216,6 @@ export default function ManageUsers() {
         });
     };
 
-    if (loading) {
-        return (
-            <div className="h-screen flex justify-center items-center">
-                <p className="text-white">Loading Users...</p>
-            </div>
-        );
-    }
-
     return (
         <div className="w-full flex flex-col items-center">
             <div className="w-full flex justify-between items-center mb-3">
@@ -224,39 +226,68 @@ export default function ManageUsers() {
                             <span className="mr-2">+</span> Add New User
                         </button>
                     )}
-                    <AnimatePresence>
-                        {showForm && (
-                            <motion.form
-                                className="flex items-center space-x-4 w-full justify-end transition-all duration-500 ease-in-out"
-                                onSubmit={handleFormSubmit}
-                                initial={{ opacity: 0, x: '100%' }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: '100%' }}
-                            >
-                                <div className="flex flex-col w-[30%]">
-                                    <label htmlFor="name" className="text-white mb-1">Name</label>
-                                    <input type="text" id="name" name="name" placeholder="Name" value={editFormData.name} onChange={handleEditInputChange} required className="appearance-none border rounded py-2 px-3 text-black leading-tight focus:outline-none" />
-                                </div>
-                                <div className="flex flex-col w-[50%]">
-                                    <label htmlFor="email" className="text-white mb-1">Email</label>
-                                    <input type="email" id="email" name="email" placeholder="Email" value={editFormData.email} onChange={handleEditInputChange} required className="appearance-none border rounded py-2 px-3 text-black leading-tight focus:outline-none" />
-                                </div>
-                                <div className="flex items-center space-x-2 mt-2">
-                                    <button type="submit" className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-4 rounded-full" style={{ height: '38px', width: '140px' }}>
-                                        {buttonState === "Loading..." ? (
-                                            <div className="flex items-center space-x-2">
-                                                <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></span>
-                                                <span>{buttonState}</span>
-                                            </div>
-                                        ) : (
-                                            buttonState
-                                        )}
-                                    </button>
-                                    <button type="button" onClick={() => setShowForm(false)} className="bg-red-700 hover:bg-red-900 text-white font-bold py-1 px-4 rounded-full" style={{ height: '38px', width: '140px' }}>Cancel</button>
-                                </div>
-                            </motion.form>
-                        )}
-                    </AnimatePresence>
+{showForm && (
+    <motion.form
+        className="flex items-center space-x-4 w-full justify-end"
+        onSubmit={handleFormSubmit}
+        initial={{ x: "100%", opacity: 0 }} // Slide in from the right with opacity
+        animate={{ x: 0, opacity: 1 }} // Animate to its original position with full opacity
+        exit={{ opacity: 0 }} // Fade out on exit (no slide out)
+        transition={{ type: "spring", stiffness: 300, damping: 30 }} // Smooth spring effect
+    >
+        <div className="flex flex-col w-[30%]">
+            <label htmlFor="name" className="text-white mb-1">Name</label>
+            <input
+                type="text"
+                id="name"
+                name="name"
+                placeholder="Name"
+                value={editFormData.name}
+                onChange={handleEditInputChange}
+                required
+                className="appearance-none border rounded py-2 px-3 text-black leading-tight focus:outline-none"
+            />
+        </div>
+        <div className="flex flex-col w-[50%]">
+            <label htmlFor="email" className="text-white mb-1">Email</label>
+            <input
+                type="email"
+                id="email"
+                name="email"
+                placeholder="Email"
+                value={editFormData.email}
+                onChange={handleEditInputChange}
+                required
+                className="appearance-none border rounded py-2 px-3 text-black leading-tight focus:outline-none"
+            />
+        </div>
+        <div className="flex items-center space-x-2 mt-2">
+            <button
+                type="submit"
+                className="bg-gray-500 hover:bg-gray-600 text-white font-bold py-1 px-4 rounded-full"
+                style={{ height: '38px', width: '140px' }}
+            >
+                {buttonState === "Loading..." ? (
+                    <div className="flex items-center space-x-2">
+                        <span className="animate-spin rounded-full h-4 w-4 border-t-2 border-white"></span>
+                        <span>{buttonState}</span>
+                    </div>
+                ) : (
+                    buttonState
+                )}
+            </button>
+            <button
+                type="button"
+                onClick={() => setShowForm(false)}
+                className="bg-red-700 hover:bg-red-900 text-white font-bold py-1 px-4 rounded-full"
+                style={{ height: '38px', width: '140px' }}
+            >
+                Cancel
+            </button>
+        </div>
+    </motion.form>
+)}
+
                 </div>
             </div>
 
@@ -380,25 +411,27 @@ export default function ManageUsers() {
                     <button onClick={() => setIsGridView(true)} className={`px-4 py-2 ${isGridView ? 'bg-gray-300' : 'bg-gray-500'} text-white rounded-r-full flex items-center mt-0 `}>
                         <FaTh className="mr-1" />
                     </button>
-                    <select
-                        onChange={handleSortChange}
-                        className="px-4 py-2 bg-gray-500 text-white rounded-full  outline-none"
-                    >
-                        <option value="">Sort</option>
-                        <option value="name-asc">Name (A-Z)</option>
-                        <option value="name-desc">Name (Z-A)</option>
-                        <option value="email-asc">Email (A-Z)</option>
-                        <option value="email-desc">Email (Z-A)</option>
-                    </select>
+                    <span onClick={() => setShowSearchBox(!showSearchBox)} className="cursor-pointer text-white flex items-center mt-0 px-2"> 
+                        <FaSearch />
+                    </span>
+
+                    {showSearchBox && ( // Show search input box if search is active
+                        <input
+                            type="text"
+                            placeholder="Search by name"
+                            value={searchText}
+                            onChange={(e) => setSearchText(e.target.value)}
+                            className="px-3 py-2 rounded-full bg-gray-700 text-white outline-none"
+                        />
+                    )}
                 </div>
             </div>
 
+            
             <section className="w-full flex flex-col items-center mb-10">
-                
-                
-            {isGridView && !editingUser && (
+                {isGridView && !editingUser && (
                     <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
-                        {getSortedUsers().map(user => (
+                        {getFilteredAndSortedUsers().map(user => (
                             <UserCard
                                 key={user._id}
                                 name={user.name}
@@ -411,37 +444,44 @@ export default function ManageUsers() {
                         ))}
                     </div>
                 )}
-            {!isGridView && !editingUser && (
-                <>
-                    <header className="grid grid-cols-4 items-center gap-4 w-full border-b-2 border-b-white/40 pb-2">
-                        <div className="col-span-1 px-5 text-white font-bold flex items-center">
-                            Name
-                            
-                        </div>
-                        <div className="col-span-1 px-5 text-white font-bold flex items-center">
-                            Email
-                        </div>
-                        <div className="col-span-1 px-5 text-white font-bold">Status</div>
-                        <div className="col-span-1 px-5 text-white font-bold">Actions</div>
-                    </header>
-                
-            
-                    
-                    {getSortedUsers().map(user => (
-                        <UserRow
-                            key={user._id}
-                            name={user.name}
-                            email={user.email}
-                            status={user.temporaryPassword ? 'Pending' : 'Active'}
-                            onEdit={() => handleEdit(user)}
-                            onDelete={() => handleDelete(user._id)}
-                            onResendEmail={() => handleResendEmail(user._id)}
-                        />
-                    ))}
-                
-                
-                </>
-            )}
+                {!isGridView && !editingUser && (
+                    <>
+                        <header className="grid grid-cols-4 items-center gap-4 w-full border-b-2 border-b-white/40 pb-2">
+                            <div className="col-span-1 px-5 text-white font-bold flex items-center">
+                                Name
+                                <span onClick={() => handleSort('name')} className="ml-2 cursor-pointer text-white">
+                                    {sortField === 'name' && sortDirection === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
+                                </span>
+                            </div>
+                            <div className="col-span-1 px-5 text-white font-bold flex items-center">
+                                Email
+                                <span onClick={() => handleSort('email')} className="ml-2 cursor-pointer text-white">
+                                    {sortField === 'email' && sortDirection === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
+                                </span>
+                            </div>
+                            <div className="col-span-1 px-5 text-white font-bold flex items-center">
+                                Status
+                                <span onClick={() => handleSort('status')} className="ml-2 cursor-pointer text-white">
+                                    {sortField === 'status' && sortDirection === 'asc' ?  <FaArrowUp /> : <FaArrowDown />}
+                                </span>
+                            </div>
+
+                            <div className="col-span-1 px-5 text-white font-bold">Actions</div>
+                        </header>
+
+                        {getFilteredAndSortedUsers().map(user => (
+                            <UserRow
+                                key={user._id}
+                                name={user.name}
+                                email={user.email}
+                                status={user.temporaryPassword ? 'Pending' : 'Active'}
+                                onEdit={() => handleEdit(user)}
+                                onDelete={() => handleDelete(user._id)}
+                                onResendEmail={() => handleResendEmail(user._id)}
+                            />
+                        ))}
+                    </>
+                )}
             </section>
             {showPopup && <ConfirmationPopup onConfirm={confirmDelete} onCancel={() => setShowPopup(false)} />}
         </div>
