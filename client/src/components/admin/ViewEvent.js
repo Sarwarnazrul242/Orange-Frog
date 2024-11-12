@@ -1,7 +1,7 @@
 // src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaTh, FaList, FaEdit, FaTrashAlt } from 'react-icons/fa';
+import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 
@@ -20,11 +20,25 @@ export default function ViewEvent() {
     const selectRef = useRef(null);
     const [sortField, setSortField] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
+    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+    const [filterField, setFilterField] = useState(null);
+    const [filterValues, setFilterValues] = useState({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
+    const filterDropdownRef = useRef(null);
     
 
     useEffect(() => {
         fetchEvents();
         fetchContractors();
+    }, []);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+                setShowFilterDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const fetchEvents = async () => {
@@ -45,6 +59,10 @@ export default function ViewEvent() {
         } catch (error) {
             console.error('Error fetching contractors:', error);
         }
+    };
+
+    const resetFilters = () => {
+        setFilterValues({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
     };
 
     const handleDelete = (event) => {
@@ -123,7 +141,7 @@ export default function ViewEvent() {
         const selectElement = selectRef.current;
         if (selectElement) {
             const selectedOption = selectElement.options[selectElement.selectedIndex];
-            const width = selectedOption.text.length * 8 + 78; // Adjust multiplier for font size
+            const width = selectedOption.text.length * 8 + 78; 
             selectElement.style.width = `${width}px`;
         }
     };
@@ -132,34 +150,70 @@ export default function ViewEvent() {
         adjustSelectWidth(); // Set initial width
     }, []);
 
-    const getSortedEvents = () => {
-        if (!sortField) return events;
-
-        return [...events].sort((a, b) => {
-            switch (sortField) {
-                case 'name':
-                    const aName = a.eventName.toLowerCase();
-                    const bName = b.eventName.toLowerCase();
-                    return sortDirection === 'asc' 
-                        ? aName.localeCompare(bName)
-                        : bName.localeCompare(aName);
-                case 'loadIn':
-                    const aLoadIn = new Date(a.eventLoadIn);
-                    const bLoadIn = new Date(b.eventLoadIn);
-                    return sortDirection === 'asc' 
-                        ? aLoadIn - bLoadIn 
-                        : bLoadIn - aLoadIn;
-                case 'hours':
-                    const aHours = a.eventHours || 0;
-                    const bHours = b.eventHours || 0;
-                    return sortDirection === 'asc' 
-                        ? aHours - bHours 
-                        : bHours - aHours;
-                default:
-                    return 0;
-            }
-        });
+    const handleFilterFieldChange = (field) => {
+        setFilterField(field);
     };
+
+    const handleFilterChange = (e) => {
+        const { name, value } = e.target;
+        setFilterValues((prev) => ({ ...prev, [name]: value }));
+    };
+
+    const getFilteredAndSortedEvents = () => {
+        let filtered = events.filter(event => {
+            if (filterValues.name && !event.eventName.toLowerCase().includes(filterValues.name.toLowerCase())) {
+                return false;
+            }
+            
+            if (filterValues.location && !event.eventLocation.toLowerCase().includes(filterValues.location.toLowerCase())) {
+                return false;
+            }
+            
+            if (filterValues.startDate && new Date(event.eventLoadIn) < new Date(filterValues.startDate)) {
+                return false;
+            }
+            
+            if (filterValues.endDate && new Date(event.eventLoadOut) > new Date(filterValues.endDate)) {
+                return false;
+            }
+            
+            if (filterValues.contractor.length > 0 && 
+                !filterValues.contractor.some(contractorId =>
+                    event.assignedContractors.some(contractor => contractor._id === contractorId)
+                )) {
+                return false;
+            }
+            
+            return true;
+        });
+    
+        // Sort the filtered events
+        if (sortField) {
+            filtered.sort((a, b) => {
+                switch (sortField) {
+                    case 'name':
+                        return sortDirection === 'asc'
+                            ? a.eventName.localeCompare(b.eventName)
+                            : b.eventName.localeCompare(a.eventName);
+                    case 'loadIn':
+                        return sortDirection === 'asc'
+                            ? new Date(a.eventLoadIn) - new Date(b.eventLoadIn)
+                            : new Date(b.eventLoadIn) - new Date(a.eventLoadIn);
+                    case 'hours':
+                        return sortDirection === 'asc'
+                            ? (a.eventHours || 0) - (b.eventHours || 0)
+                            : (b.eventHours || 0) - (a.eventHours || 0);
+                    default:
+                        return 0;
+                }
+            });
+        }
+        
+        return filtered;
+    };
+    
+    
+    
 
     if (loading) {
         return (
@@ -172,69 +226,164 @@ export default function ViewEvent() {
     return (
         <div className="w-full p-5">
             <div className="flex justify-between items-center mb-5">
-                    <h2 className="text-2xl font-semibold">Event List</h2>
-                    <div className="flex items-center gap-2">
-                        <select
-                            ref={selectRef}
-                            onChange={handleSortChange}
-                            className="px-4 py-2 mt-6 mx-4 bg-gray-700 text-white rounded-lg outline-none h-[40px]"
-                        >
-                            <option value="">Sort By</option>
-                            <option value="name-asc">Event Name A-Z</option>
-                            <option value="name-desc">Event Name Z-A</option>
-                            <option value="loadIn-asc">Oldest to Newest</option>
-                            <option value="loadIn-desc">Newest to Oldest</option>
-                            <option value="hours-asc">Hours Acending</option>
-                            <option value="hours-desc">Hours Decending</option>
-                        </select>
-                        <div className="flex gap-2">
-                            <button
-                                onClick={() => setView('grid')}
-                                className={`p-2 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
-                            >
-                                <FaTh className="text-xl" />
-                            </button>
-                            <button
-                                onClick={() => setView('list')}
-                                className={`p-2 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
-                            >
-                                <FaList className="text-xl" />
-                            </button>
+                <h2 className="text-2xl font-semibold">Event List</h2>
+                <div className="flex items-center gap-2 relative">
+                    <button
+                        onClick={() => setShowFilterDropdown((prev) => !prev)}
+                        className="px-4 py-2 bg-gray-700 text-white rounded-lg"
+                    >
+                        Apply Filter
+                    </button>
+                    <select
+                        ref={selectRef}
+                        onChange={handleSortChange}
+                        className="px-4 py-2 mx-2 mt-5 bg-gray-700 text-white rounded-lg outline-none"
+                    >
+                        <option value="">Sort By</option>
+                        <option value="name-asc">Event Name A-Z</option>
+                        <option value="name-desc">Event Name Z-A</option>
+                        <option value="loadIn-asc">Oldest to Newest</option>
+                        <option value="loadIn-desc">Newest to Oldest</option>
+                        <option value="hours-asc">Hours Ascending</option>
+                        <option value="hours-desc">Hours Descending</option>
+                    </select>
+
+                    {showFilterDropdown && (
+                        <div ref={filterDropdownRef} className="absolute top-full mt-2 left-0 bg-gray-700 text-white rounded-lg shadow-lg w-52 z-10">
+                            <div className="flex justify-between items-center px-4 py-3">
+                                <p className="font-semibold">Select a filter:</p>
+                                <FaRedo
+                                    className="cursor-pointer hover:text-gray-300"
+                                    onClick={resetFilters}
+                                    title="Reset all filters"
+                                />
+                            </div>
+                            <div className="space-y-1 relative">
+                                {['name', 'location', 'startDate', 'endDate', 'contractor'].map((field) => (
+                                    <div key={field} className="relative group">
+                                        <button
+                                            onMouseEnter={() => handleFilterFieldChange(field)}
+                                            className="flex items-center justify-between text-left w-full px-4 py-2 text-white hover:text-gray-500"
+                                            style={{ backgroundColor: 'transparent' }}
+                                        >
+                                            {field.charAt(0).toUpperCase() + field.slice(1)}
+                                        </button>
+
+                                        {filterField === field && (
+                                            <div className="absolute right-full top-0 bg-gray-700 text-white rounded-lg shadow-lg p-4 w-72 z-20 mr-4">
+                                                <h3 className="font-semibold mb-2">
+                                                    Filter by {field.charAt(0).toUpperCase() + field.slice(1)}
+                                                </h3>
+                                                {field === 'startDate' || field === 'endDate' ? (
+                                                    <input
+                                                        type="date"
+                                                        name={field}
+                                                        value={filterValues[field]}
+                                                        onChange={handleFilterChange}
+                                                        className="w-full p-2 bg-gray-600 text-white rounded"
+                                                    />
+                                                ) : field === 'contractor' ? (
+                                                    <MultiSelect
+                                                        options={contractors.map(contractor => ({
+                                                            value: contractor._id,
+                                                            label: contractor.name
+                                                        }))}
+                                                        value={(Array.isArray(filterValues.contractor) ? filterValues.contractor : []).map(id => ({
+                                                            value: id,
+                                                            label: contractors.find(contractor => contractor._id === id)?.name
+                                                        }))}
+                                                        onChange={(selectedOptions) => {
+                                                            const selectedContractorIds = selectedOptions.map(option => option.value);
+                                                            setFilterValues((prev) => ({ ...prev, contractor: selectedContractorIds }));
+                                                        }}
+                                                        isMulti
+                                                        closeMenuOnSelect={false}
+                                                        hideSelectedOptions={false}
+                                                        placeholder="Select Contractors"
+                                                        className="w-full bg-gray-600 text-white rounded"
+                                                    />
+                                                ) : (
+                                                    <input
+                                                        type="text"
+                                                        name={field}
+                                                        placeholder={`Enter ${field}`}
+                                                        value={filterValues[field]}
+                                                        onChange={handleFilterChange}
+                                                        className="w-full p-2 bg-gray-600 text-white rounded"
+                                                    />
+                                                )}
+                                                <div className="flex justify-between mt-3">
+                                                    <button
+                                                        onClick={() => setFilterValues({ ...filterValues, [field]: '' })}
+                                                        className="bg-gray-500 text-white px-4 py-2 rounded"
+                                                    >
+                                                        Reset
+                                                    </button>
+                                                    <button
+                                                        onClick={() => setFilterField(null)}
+                                                        className="bg-white text-black ml-6 px-4 py-2 rounded"
+                                                    >
+                                                        Apply
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
+                    )}
+
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setView('grid')}
+                            className={`p-2 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
+                        >
+                            <FaTh className="text-xl" />
+                        </button>
+                        <button
+                            onClick={() => setView('list')}
+                            className={`p-2 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
+                        >
+                            <FaList className="text-xl" />
+                        </button>
                     </div>
                 </div>
+            </div>
+
 
             <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4' : 'space-y-4'}>
-                {getSortedEvents().length === 0 ? (
-                    <p>No events found.</p>
-                ) : (
-                    getSortedEvents().map((event) => (
-                        <div
-                            key={event._id}
-                            className={`bg-gray-800 p-4 rounded-lg shadow-md text-white ${view === 'list' ? 'w-full' : ''}`}
-                        >
-                            <div className="flex justify-between items-center">
-                                <h3 className="text-lg font-semibold">{event.eventName}</h3>
-                                <div className="flex space-x-2">
-                                    <FaEdit onClick={() => handleEdit(event)} className="text-blue-500 cursor-pointer text-xl" />
-                                    <FaTrashAlt onClick={() => handleDelete(event)} className="text-red-500 cursor-pointer text-xl" />
+                    {getFilteredAndSortedEvents().length === 0 ? (
+                        <p className='text-white'>No events found.</p>
+                    ) : (
+                        getFilteredAndSortedEvents().map((event) => (
+                            <div
+                                key={event._id}
+                                className={`bg-gray-800 p-4 rounded-lg shadow-md text-white ${view === 'list' ? 'w-full' : ''}`}
+                            >
+                                <div className="flex justify-between items-center">
+                                    <h3 className="text-lg font-semibold">{event.eventName}</h3>
+                                    <div className="flex space-x-2">
+                                        <FaEdit onClick={() => handleEdit(event)} className="text-blue-500 cursor-pointer text-xl" />
+                                        <FaTrashAlt onClick={() => handleDelete(event)} className="text-red-500 cursor-pointer text-xl" />
+                                    </div>
                                 </div>
+                                <p className="text-sm">Location: {event.eventLocation}</p>
+                                <p className="text-sm">Load In: {new Date(event.eventLoadIn).toLocaleString()}</p>
+                                <p className="text-sm">Load Out: {new Date(event.eventLoadOut).toLocaleString()}</p>
+                                <p className="text-sm">Hours: {event.eventHours || 'N/A'}</p>
+                                <p className="text-sm">Description: {event.eventDescription}</p>
+                                <p className="text-sm">
+                                    Contractors: {event.assignedContractors && event.assignedContractors.length === 0
+                                        ? 'No one has been selected'
+                                        : event.assignedContractors.map((contractor) => contractor.name).join(', ')
+                                    }
+                                </p>
                             </div>
-                            <p className="text-sm">Location: {event.eventLocation}</p>
-                            <p className="text-sm">Load In: {new Date(event.eventLoadIn).toLocaleString()}</p>
-                            <p className="text-sm">Load Out: {new Date(event.eventLoadOut).toLocaleString()}</p>
-                            <p className="text-sm">Hours: {event.eventHours || 'N/A'}</p>
-                            <p className="text-sm">Description: {event.eventDescription}</p>
-                            <p className="text-sm">
-                                Contractors: {event.assignedContractors && event.assignedContractors.length === 0
-                                    ? 'No one has been selected'
-                                    : event.assignedContractors.map((contractor) => contractor.name).join(', ')
-                                }
-                            </p>
-                        </div>
-                    ))
-                )}
+                        ))
+                    )}
             </div>
+
 
             {/* Delete Confirmation Popup */}
             {showDeletePopup && (
