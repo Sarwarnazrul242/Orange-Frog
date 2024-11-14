@@ -65,7 +65,8 @@ export default function Home() {
     const menuComponents = {
         "Chat Room": <ChatRoom />,
         "Job Book": currentUserId ? <JobBook userId={currentUserId} /> : <p>Loading...</p>, // Pass userId to JobBook or show Loading
-        "My Jobs": <MyJobs />,
+        "My Jobs": <MyJobs userId={currentUserId} />, 
+
         "Profile": <Profile profileData={profileData} setProfileData={setProfileData} handleInputChange={handleInputChange} message={message} setMessage={setMessage} />,
         "Time Card": <TimeCard />,
         "Incident Report": <IncidentReport />
@@ -74,7 +75,7 @@ export default function Home() {
     return (
         <BackgroundWrapper>
             <div className="flex flex-col h-auto overflow-y-auto md:flex-row p-5 ml-24 mr-8">
-            <div className="w-full h-full mb-5 md:w-[200px] lg:w-[250px] xl:w-[300px] md:h-[500px] bg-gray-500/40 backdrop-blur-md p-5 rounded-xl md:mr-5 flex flex-col md:block justify-start overflow-x-auto md:overflow-visible border border-white/40 shadow-xl">
+                <div className="w-full h-full mb-5 md:w-[200px] lg:w-[250px] xl:w-[300px] md:h-[500px] bg-gray-500/40 backdrop-blur-md p-5 rounded-xl md:mr-5 flex flex-col md:block justify-start overflow-x-auto md:overflow-visible border border-white/40 shadow-xl">
                     <h3 className="text-white mb-5 font-semibold">My Stuff:</h3>
                     <ul className="flex md:block overflow-x-scroll md:overflow-visible scrollbar-hide">
                         {Object.keys(menuComponents).map(option => (
