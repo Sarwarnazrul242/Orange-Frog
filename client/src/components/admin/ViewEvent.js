@@ -300,7 +300,7 @@ export default function ViewEvent() {
                                                         closeMenuOnSelect={false}
                                                         hideSelectedOptions={false}
                                                         placeholder="Select Contractors"
-                                                        className="w-full bg-gray-600 text-white rounded"
+                                                        className="w-full bg-gray-600 text-black rounded"
                                                     />
                                                 ) : (
                                                     <input

@@ -18,6 +18,7 @@ const userSchema = new mongoose.Schema({
     address: { type: String },
     dob: { type: Date },
     allergies: [{ type: String }], // Stores allergies as an array
+    foodAllergyDetail: { type: String },
     extraComments: { type: String },
     temporaryPassword: { type: Boolean, default: true },
     status: { type: String, default: 'pending' },
