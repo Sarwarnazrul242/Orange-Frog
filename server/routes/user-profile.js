@@ -15,8 +15,8 @@ router.get('/:email', async (req, res) => {
                 address: user.address,
                 dob: user.dob,
                 phone: user.phone,
-                height: user.height, 
-                gender: user.gender,
+                shirtSize: user.shirtSize,
+                firstAidCert: user.firstAidCert,
                 allergies: user.allergies
             };
             res.status(200).json(userData);

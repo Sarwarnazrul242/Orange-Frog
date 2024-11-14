@@ -8,9 +8,8 @@ function CompleteProfile() {
     const [address, setAddress] = useState('');
     const [dob, setDob] = useState('');
     const [phone, setPhone] = useState('');
-    const [feet, setFeet] = useState('');  // Separate input for feet
-    const [inches, setInches] = useState('');  // Separate input for inches
-    const [gender, setGender] = useState('');
+    const [shirtSize, setShirtSize] = useState('');
+    const [firstAidCert, setFirstAidCert] = useState('');
     const [allergies, setAllergies] = useState([]);
     const [foodAllergyDetail, setFoodAllergyDetail] = useState('');
     const [error, setError] = useState('');
@@ -35,9 +34,9 @@ function CompleteProfile() {
                 email, 
                 address, 
                 dob, 
-                phone, 
-                height: { feet, inches },
-                gender, 
+                phone,
+                shirtSize,
+                firstAidCert,
                 allergies: allergies.includes("Food Allergy") ? [...allergies, foodAllergyDetail] : allergies 
             });
     
@@ -76,17 +75,6 @@ function CompleteProfile() {
             .replace(/^(\d{3})(\d)/, '($1) $2')
             .replace(/(\d{3})(\d{1,4})$/, '$1-$2');
         setPhone(formattedPhone);
-    };
-
-    // Format height input fields for feet and inches
-    const handleFeetChange = (e) => {
-        const input = e.target.value.replace(/\D/g, '').slice(0, 2);  // Limit to 2 digits
-        setFeet(input);
-    };
-
-    const handleInchesChange = (e) => {
-        const input = e.target.value.replace(/\D/g, '').slice(0, 2);  // Limit to 2 digits
-        setInches(input);
     };
 
     return (
@@ -145,48 +133,39 @@ function CompleteProfile() {
                         </div>
                     </div>
 
-                    {/* Height */}
+                    {/* T-Shirt Size */}
                     <div className="mb-6">
-                        <label className="block text-white mb-2">Height <span className="text-red-500">*</span></label>
-                        <div className="flex space-x-2">
-                            <input
-                                type="text"
-                                value={feet}
-                                onChange={handleFeetChange}
-                                placeholder="ft"
-                                className="w-1/2 p-2 border rounded-md text-center"
-                                maxLength="1"
-                                required
-                            />
-                            <input
-                                type="text"
-                                value={inches}
-                                onChange={handleInchesChange}
-                                placeholder="in"
-                                className="w-1/2 p-2 border rounded-md text-center"
-                                maxLength="2"
-                                required
-                            />
-                        </div>
+                        <label className="block text-white mb-2">T-Shirt Size <span className="text-red-500">*</span></label>
+                        <select 
+                            value={shirtSize} 
+                            onChange={(e) => setShirtSize(e.target.value)} 
+                            required 
+                            className="w-full p-2 border rounded-md"
+                        >
+                            <option value="">Select Size</option>
+                            <option value="XS">XS</option>
+                            <option value="S">S</option>
+                            <option value="M">M</option>
+                            <option value="L">L</option>
+                            <option value="XL">XL</option>
+                            <option value="2XL">2XL</option>
+                            <option value="3XL">3XL</option>
+                        </select>
                     </div>
 
-                    {/* Gender */}
-                    <div className="col-span-2 mb-6">
-                        <label className="block text-white mb-2">Gender <span className="text-red-500">*</span></label>
-                        <div className="relative">
-                            <FaVenusMars className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                            <select 
-                                value={gender} 
-                                onChange={(e) => setGender(e.target.value)} 
-                                required 
-                                className="w-full pl-8 p-2 border rounded-md"
-                            >
-                                <option value="">Select Gender</option>
-                                <option value="Male">Male</option>
-                                <option value="Female">Female</option>
-                                <option value="Other">Other</option>
-                            </select>
-                        </div>
+                    {/* First Aid Certified */}
+                    <div className="mb-6">
+                        <label className="block text-white mb-2">First Aid Certified <span className="text-red-500">*</span></label>
+                        <select 
+                            value={firstAidCert} 
+                            onChange={(e) => setFirstAidCert(e.target.value)} 
+                            required 
+                            className="w-full p-2 border rounded-md"
+                        >
+                            <option value="">Select Option</option>
+                            <option value="Yes">Yes</option>
+                            <option value="No">No</option>
+                        </select>
                     </div>
 
                     {/* Dietary Restrictions */}

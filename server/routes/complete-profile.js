@@ -7,7 +7,7 @@ const router = express.Router();
 
 // Complete profile route
 router.post('/', async (req, res) => {
-    const { email, address, dob, allergies, phone, height, gender } = req.body;
+    const { email, address, dob, allergies, phone, shirtSize, firstAidCert } = req.body;
 
     console.log("Request Body:", req.body); // Log to see the incoming data
 
@@ -23,18 +23,8 @@ router.post('/', async (req, res) => {
         user.dob = dob;
         user.allergies = Array.isArray(allergies) ? allergies : []; // Ensure allergies is an array
         user.phone = phone;
-        
-        // If height is an object, update fields; otherwise, log an error.
-        if (height && typeof height === 'object') {
-            user.height = {
-                feet: parseInt(height.feet) || 0,
-                inches: parseInt(height.inches) || 0
-            };
-        } else {
-            console.error("Invalid height format:", height);
-        }
-
-        user.gender = gender;
+        user.shirtSize = shirtSize;
+        user.firstAidCert = firstAidCert;
         user.status = 'active';
 
         await user.save();

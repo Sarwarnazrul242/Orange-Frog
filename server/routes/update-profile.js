@@ -6,7 +6,7 @@ const { userCollection } = require('../mongo');
 
 router.put('/:email', async (req, res) => {
     const { email } = req.params;
-    const { name, address, dob, phone, height, gender, allergies, foodAllergyDetail, currentPassword, newPassword } = req.body;
+    const { name, address, dob, phone, shirtSize, firstAidCert, allergies, foodAllergyDetail, currentPassword, newPassword } = req.body;
 
     try {
         const user = await userCollection.findOne({ email });
@@ -27,10 +27,10 @@ router.put('/:email', async (req, res) => {
         user.address = address || user.address;
         user.dob = dob || user.dob;
         user.phone = phone || user.phone;
-        user.height = height || user.height;
-        user.gender = gender || user.gender;
+        user.shirtSize = shirtSize || user.shirtSize;
+        user.firstAidCert = firstAidCert || user.firstAidCert;
         user.allergies = allergies || user.allergies;
-        user.foodAllergyDetail = allergies.includes('Food Allergy') ? foodAllergyDetail : '';  // conditionally update foodAllergyDetail
+        user.foodAllergyDetail = allergies.includes('Food Allergy') ? foodAllergyDetail : '';
 
         await user.save();
         res.status(200).json({ message: 'Profile updated successfully' });
