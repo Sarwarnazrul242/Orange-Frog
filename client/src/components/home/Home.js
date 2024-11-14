@@ -9,7 +9,7 @@ import JobBook from './JobBook';
 import MyJobs from './MyJobs';
 import Profile from './Profile';
 import TimeCard from './TimeCard';
-import IncidentReport from './CorrectionReport';
+import CorrectionReport from './CorrectionReport';
 
 export default function Home() {
     const navigate = useNavigate();
@@ -64,11 +64,11 @@ export default function Home() {
 
     const menuComponents = {
         "Chat Room": <ChatRoom />,
-        "Job Book": currentUserId ? <JobBook userId={currentUserId} /> : <p>Loading...</p>, // Pass userId to JobBook or show Loading
+        "Job Offers": currentUserId ? <JobBook userId={currentUserId} /> : <p>Loading...</p>, // Pass userId to JobBook or show Loading
         "My Jobs": <MyJobs />,
         "Profile": <Profile profileData={profileData} setProfileData={setProfileData} handleInputChange={handleInputChange} message={message} setMessage={setMessage} />,
         "Time Card": <TimeCard />,
-        "Incident Report": <IncidentReport />
+        "Correction Report": <CorrectionReport />
     };
 
     return (

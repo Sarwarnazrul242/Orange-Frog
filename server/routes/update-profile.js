@@ -1,4 +1,3 @@
-// update-profile.js
 require('dotenv').config();
 const express = require("express");
 const router = express.Router();
@@ -7,32 +6,38 @@ const { userCollection } = require('../mongo');
 
 router.put('/:email', async (req, res) => {
     const { email } = req.params;
-    const { name, address, dob, phone, height, gender, allergies, password } = req.body;
+    const { name, address, dob, phone, height, gender, allergies, foodAllergyDetail, currentPassword, newPassword } = req.body;
 
     try {
         const user = await userCollection.findOne({ email });
-        if (user) {
-            user.name = name || user.name;
-            user.address = address || user.address;
-            user.dob = dob || user.dob;
-            user.phone = phone || user.phone;
-            user.height = height || user.height; 
-            user.gender = gender || user.gender;
-            user.allergies = allergies || user.allergies;
-
-            if (password) {
-                const hashedPassword = await bcrypt.hash(password, 10);
-                user.password = hashedPassword;
-            }
-
-            await user.save();
-            res.status(200).json({ message: 'Profile updated successfully' });
-        } else {
-            res.status(404).json({ message: 'User not found' });
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
         }
+
+        if (currentPassword && newPassword) {
+            const isMatch = await bcrypt.compare(currentPassword, user.password);
+            if (!isMatch) {
+                return res.status(400).json({ message: 'Current password is incorrect' });
+            }
+            const hashedPassword = await bcrypt.hash(newPassword, 10);
+            user.password = hashedPassword;
+        }
+
+        user.name = name || user.name;
+        user.address = address || user.address;
+        user.dob = dob || user.dob;
+        user.phone = phone || user.phone;
+        user.height = height || user.height;
+        user.gender = gender || user.gender;
+        user.allergies = allergies || user.allergies;
+        user.foodAllergyDetail = allergies.includes('Food Allergy') ? foodAllergyDetail : '';  // conditionally update foodAllergyDetail
+
+        await user.save();
+        res.status(200).json({ message: 'Profile updated successfully' });
     } catch (error) {
         res.status(500).json({ message: 'Server error' });
     }
 });
+
 
 module.exports = router;

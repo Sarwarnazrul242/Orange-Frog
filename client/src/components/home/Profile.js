@@ -1,13 +1,16 @@
 // src/components/home/Profile.js
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
+import { toast } from 'sonner';
 
 export default function Profile({ profileData, setProfileData, handleInputChange, message, setMessage }) {
     const [showAllergyPopup, setShowAllergyPopup] = useState(false);
     const [showPasswordPopup, setShowPasswordPopup] = useState(false);
+    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [tempAllergies, setTempAllergies] = useState([]);
+    const [foodAllergyDetail, setFoodAllergyDetail] = useState('');
     const [buttonState, setButtonState] = useState("Update Profile");
 
     const allergyOptions = ["Vegetarian", "Vegan", "Halal", "Kosher", "Gluten-free", "Food Allergy", "Other", "None"];
@@ -15,35 +18,55 @@ export default function Profile({ profileData, setProfileData, handleInputChange
     useEffect(() => {
         if (showAllergyPopup) {
             setTempAllergies([...profileData.allergies]);
+            if (profileData.allergies.includes("Food Allergy")) {
+                setFoodAllergyDetail(profileData.foodAllergyDetail || '');
+            }
         }
-    }, [showAllergyPopup, profileData.allergies]);
+    }, [showAllergyPopup, profileData.allergies, profileData.foodAllergyDetail]);
 
 
     const handleProfileUpdate = (e) => {
         e.preventDefault();
         setButtonState("Loading..."); 
-        axios.put(`http://localhost:8000/update-profile/${profileData.email}`, profileData)
+    
+        const updatedProfileData = {
+            ...profileData,
+            allergies: tempAllergies,
+            foodAllergyDetail: tempAllergies.includes("Food Allergy") ? foodAllergyDetail : ''
+        };
+    
+        axios.put(`http://localhost:8000/update-profile/${profileData.email}`, updatedProfileData) // send updatedProfileData
             .then(() => {
                 setMessage('Profile updated successfully!');
+                toast.success('Profile updated successfully!');
                 setButtonState("Completed"); 
             })
             .catch(() => {
                 setMessage('Error updating profile. Please try again.');
+                toast.error('Error updating profile. Please try again.');
                 setButtonState("Update Profile"); 
             });
     };
+    
 
-    const handlePasswordUpdate = () => {
+    const handlePasswordUpdate = async () => {
         if (newPassword !== confirmNewPassword) {
             setMessage('New passwords do not match');
+            toast.error('New passwords do not match');
             return;
         }
-        axios.put(`http://localhost:8000/update-password/${profileData.email}`, { password: newPassword })
-            .then(() => {
-                setMessage('Password updated successfully!');
-                setShowPasswordPopup(false);
-            })
-            .catch(() => setMessage('Error updating password. Please try again.'));
+        try {
+            const response = await axios.put(`http://localhost:8000/update-profile/${profileData.email}`, {
+                currentPassword,
+                newPassword
+            });
+            setMessage(response.data.message);
+            toast.success('Password updated successfully!');
+            setShowPasswordPopup(false);
+        } catch (error) {
+            setMessage(error.response?.data?.message || 'Error updating password. Please try again.');
+            toast.error('Failed to update password');
+        }
     };
 
     const handleAllergyChange = (e) => {
@@ -56,7 +79,11 @@ export default function Profile({ profileData, setProfileData, handleInputChange
     };
 
     const handleAllergySave = () => {
-        setProfileData({ ...profileData, allergies: tempAllergies });
+        setProfileData({
+            ...profileData,
+            allergies: tempAllergies,
+            foodAllergyDetail: tempAllergies.includes("Food Allergy") ? foodAllergyDetail : ''
+        });
         setShowAllergyPopup(false);
     };
     
@@ -196,8 +223,18 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                                     </label>
                                 ))}
                             </div>
+                            {/* Conditional input field for food allergy details */}
+                            {tempAllergies.includes("Food Allergy") && (
+                                <input
+                                    type="text"
+                                    value={foodAllergyDetail}
+                                    onChange={(e) => setFoodAllergyDetail(e.target.value)}
+                                    placeholder="Specify food allergy"
+                                    className="mt-2 p-2 border rounded-md w-full"
+                                />
+                            )}
                             <div className="flex justify-end gap-4 mt-4">
-                                <button onClick={() => setShowAllergyPopup(false)} className="px-4 py-2 bg-red-500 text-white rounded-full">Cancel</button>
+                                <button onClick={() => setShowAllergyPopup(false)} className="px-4 py-2 bg-gray-600 text-white rounded-full">Cancel</button>
                                 <button onClick={handleAllergySave} className="px-4 py-2 bg-black text-white rounded-full">Update</button>
                             </div>
                         </div>
@@ -211,23 +248,36 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                 {showPasswordPopup && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                         <div className="bg-white p-8 rounded-md shadow-md max-w-lg w-full">
-                            <h2 className="text-xl mb-4">Update Password</h2>
+                            <h2 className="text-xl text-black mb-4 font-bold">Update Password</h2>
+                            <label className="block text-black mb-0">Current Password</label>
+                            <input
+                                type="password"
+                                placeholder="Current Password"
+                                value={currentPassword}
+                                onChange={(e) => setCurrentPassword(e.target.value)}
+                                className="w-full mb-4 p-3 border rounded-md"
+                                required
+                            />
+                            <label className="block text-black mb-0">New Password</label>
                             <input
                                 type="password"
                                 placeholder="New Password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 className="w-full mb-4 p-3 border rounded-md"
+                                required
                             />
+                            <label className="block text-black mb-0">Confirm New Password</label>
                             <input
                                 type="password"
                                 placeholder="Confirm New Password"
                                 value={confirmNewPassword}
                                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                                 className="w-full mb-4 p-3 border rounded-md"
+                                required
                             />
                             <div className="flex justify-end gap-4">
-                                <button onClick={() => setShowPasswordPopup(false)} className="px-4 py-2 bg-red-500 text-white rounded-full">Cancel</button>
+                                <button onClick={() => setShowPasswordPopup(false)} className="px-4 py-2 bg-gray-600 text-white rounded-full">Cancel</button>
                                 <button onClick={handlePasswordUpdate} className="px-4 py-2 bg-black text-white rounded-full">Save</button>
                             </div>
                         </div>
