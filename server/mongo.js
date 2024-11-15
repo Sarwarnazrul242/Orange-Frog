@@ -18,7 +18,6 @@ const userSchema = new mongoose.Schema({
     address: { type: String },
     dob: { type: Date },
     allergies: [{ type: String }], // Stores allergies as an array
-    foodAllergyDetail: { type: String },
     extraComments: { type: String },
     temporaryPassword: { type: Boolean, default: true },
     status: { type: String, default: 'pending' },
@@ -55,9 +54,21 @@ const eventSchema = new mongoose.Schema({
 
 const eventCollection = mongoose.model('eventCollection', eventSchema);
 
+
+const incidentSchema = new mongoose.Schema({
+    incidentName: { type: String, required: true },
+    incidentStartDate: { type: Date, required: true },
+    incidentEndDate: { type: Date, required: true },
+    incidentRequest: { type: String },
+    incidentDescription: { type: String, required: true }
+});
+
+const incidentCollection = mongoose.model('incidentCollection', incidentSchema);
+
 const collection = {
     userCollection,
-    eventCollection
+    eventCollection,
+    incidentCollection
 };
 
 module.exports = collection;

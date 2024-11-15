@@ -20,6 +20,7 @@ const userProfileRoute = require("./routes/user-profile");
 const updateProfileRoute = require("./routes/update-profile");
 const createEventRoute = require("./routes/create-event");
 const eventsRoute = require("./routes/events");
+const incidentReportRoute = require("./routes/incident-report");
 
 app.use("/users", usersRoute);
 app.use("/update-user", userProfileRoute);
@@ -33,6 +34,7 @@ app.use("/user-profile/", userProfileRoute);
 app.use("/update-profile/", updateProfileRoute);
 app.use("/create-event", createEventRoute);
 app.use("/events", eventsRoute);
+app.use("/incident-report", incidentReportRoute);
 /*END OF NEW STUFF*/
 
 
