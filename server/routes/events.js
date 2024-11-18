@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require("express");
+const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const router = express.Router();
 const { eventCollection, userCollection } = require('../mongo');
@@ -130,15 +131,76 @@ router.post('/send-notifications', async (req, res) => {
     }
 });
 
-// events.js
 router.get('/assigned/:userId', async (req, res) => {
     try {
         const { userId } = req.params;
-        const events = await eventCollection.find({ assignedContractors: userId }).populate('assignedContractors', 'name');
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
+        const events = await eventCollection.find({
+            assignedContractors: userObjectId,
+            acceptedContractors: { $ne: userObjectId },
+            rejectedContractors: { $ne: userObjectId }
+        }).populate('assignedContractors', 'name');
+
         res.status(200).json(events);
     } catch (error) {
         console.error('Error fetching assigned events:', error);
         res.status(500).json({ message: 'Error fetching assigned events' });
+    }
+});
+
+
+// Route to accept an event
+router.post('/accept', async (req, res) => {
+    const { eventId, userId } = req.body;
+    try {
+        const event = await eventCollection.findById(eventId);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+
+        // Add user to accepted list and remove from rejected list if present
+        event.acceptedContractors = [...new Set([...event.acceptedContractors, userId])];
+        event.rejectedContractors = event.rejectedContractors.filter(id => id.toString() !== userId);
+
+        await event.save();
+        res.status(200).json({ message: 'Event accepted successfully' });
+    } catch (error) {
+        console.error('Error accepting event:', error);
+        res.status(500).json({ message: 'Error accepting event' });
+    }
+});
+
+// Route to reject an event
+router.post('/reject', async (req, res) => {
+    const { eventId, userId } = req.body;
+    try {
+        const event = await eventCollection.findById(eventId);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+
+        // Add user to rejected list and remove from accepted list if present
+        event.rejectedContractors = [...new Set([...event.rejectedContractors, userId])];
+        event.acceptedContractors = event.acceptedContractors.filter(id => id.toString() !== userId);
+
+        await event.save();
+        res.status(200).json({ message: 'Event rejected successfully' });
+    } catch (error) {
+        console.error('Error rejecting event:', error);
+        res.status(500).json({ message: 'Error rejecting event' });
+    }
+});
+
+// Route to fetch user jobs
+router.get('/user-jobs/:userId', async (req, res) => {
+    try {
+        const userId = new mongoose.Types.ObjectId(req.params.userId); // Use 'new' to create ObjectId
+
+        const acceptedJobs = await eventCollection.find({ acceptedContractors: userId, selectedContractor: null });
+        const completedJobs = await eventCollection.find({ selectedContractor: userId, eventStatus: "completed" });
+        const rejectedJobs = await eventCollection.find({ rejectedContractors: userId });
+
+        res.status(200).json({ acceptedJobs, completedJobs, rejectedJobs });
+    } catch (error) {
+        console.error('Error fetching user jobs:', error);
+        res.status(500).json({ message: 'Error fetching user jobs' });
     }
 });
 

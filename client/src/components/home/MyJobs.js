@@ -1,41 +1,54 @@
 // src/components/home/MyJobs.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 import { FaTh, FaList } from 'react-icons/fa';
 
-export default function MyJobs() {
+export default function MyJobs({ userId }) {
     const [viewType, setViewType] = useState("upcoming"); // "upcoming", "completed", or "rejected"
     const [sortOption, setSortOption] = useState("closest");
     const [isGridView, setIsGridView] = useState(false); // Toggle between grid and list view
     const [showViewDropdown, setShowViewDropdown] = useState(false);
     const [showSortDropdown, setShowSortDropdown] = useState(false);
+    const [jobs, setJobs] = useState({
+        upcoming: [],
+        completed: [],
+        rejected: []
+    });
 
-    const upcomingJobs = [
-        { jobName: "Job 1", location: "Location A", loadInDate: "2024-11-05", loadInTime: "09:00 AM", loadOutDate: "2024-11-05", loadOutTime: "05:00 PM", hours: 8, description: "Description for Job 1" },
-        { jobName: "Job 2", location: "Location B", loadInDate: "2024-11-10", loadInTime: "10:00 AM", loadOutDate: "2024-11-10", loadOutTime: "06:00 PM", hours: 8, description: "Description for Job 2" },
-        { jobName: "Job 3", location: "Location B", loadInDate: "2024-11-11", loadInTime: "10:00 AM", loadOutDate: "2024-11-11", loadOutTime: "06:00 PM", hours: 8, description: "Description for Job 2" }
-    ];
-
-    const completedJobs = [
-        { jobName: "Job 3", location: "Location C", loadInDate: "2024-10-05", loadInTime: "08:00 AM", loadOutDate: "2024-10-05", loadOutTime: "04:00 PM", hours: 8, description: "Description for Job 3" },
-        { jobName: "Job 4", location: "Location D", loadInDate: "2024-10-07", loadInTime: "09:00 AM", loadOutDate: "2024-10-07", loadOutTime: "05:00 PM", hours: 8, description: "Description for Job 4" }
-    ];
-
-    const rejectedJobs = [
-        { jobName: "Job 5", location: "Location E", loadInDate: "2024-09-01", loadInTime: "07:00 AM", loadOutDate: "2024-09-01", loadOutTime: "03:00 PM", hours: 8, description: "Description for Job 5" }
-    ];
+    useEffect(() => {
+        if (!userId) return; // Exit if userId is undefined
+    
+        const fetchUserJobs = async () => {
+            try {
+                const response = await axios.get(`http://localhost:8000/events/user-jobs/${userId}`);
+                const { acceptedJobs, completedJobs, rejectedJobs } = response.data;
+    
+                setJobs({
+                    upcoming: acceptedJobs.map(job => ({ ...job, status: "Processing" })),
+                    completed: completedJobs.map(job => ({ ...job, status: "Completed" })),
+                    rejected: rejectedJobs.map(job => ({ ...job, status: "Rejected" }))
+                });
+            } catch (error) {
+                console.error("Error fetching user jobs:", error);
+            }
+        };
+    
+        fetchUserJobs();
+    }, [userId]);
+    
 
     // Determine which jobs to display based on selected view type
-    const jobsToShow = viewType === "upcoming" ? upcomingJobs : viewType === "completed" ? completedJobs : rejectedJobs;
+    const jobsToShow = viewType === "upcoming" ? jobs.upcoming : viewType === "completed" ? jobs.completed : jobs.rejected;
 
     // Sort jobs based on the selected option
     const sortedJobs = [...jobsToShow].sort((a, b) => {
         return sortOption === "closest"
-            ? new Date(a.loadInDate) - new Date(b.loadInDate)
-            : new Date(b.loadInDate) - new Date(a.loadInDate);
+            ? new Date(a.eventLoadIn) - new Date(b.eventLoadIn)
+            : new Date(b.eventLoadIn) - new Date(a.eventLoadIn);
     });
 
     return (
-        <div className="p-5 w-full">
+        <div className="flex flex-col self-start p-5 w-full overflow-y-scroll ">
             {/* Controls Section */}
             <h1 className="text-2xl text-white">My Jobs</h1>
             <div className="flex justify-between mb-5">
@@ -88,14 +101,15 @@ export default function MyJobs() {
 
             {/* Jobs Display Section */}
             <div className={`space-y-4 ${isGridView ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4' : ''}`}>
-                {sortedJobs.map((job, index) => (
-                    <div key={index} className="bg-white p-4 rounded shadow-md text-black border border-gray-300">
-                        <h3 className="text-lg font-semibold">{job.jobName}</h3>
-                        <p className="text-sm">Location: {job.location}</p>
-                        <p className="text-sm">Load In: {job.loadInDate} at {job.loadInTime}</p>
-                        <p className="text-sm">Load Out: {job.loadOutDate} at {job.loadOutTime}</p>
-                        <p className="text-sm">Hours: {job.hours}</p>
-                        <p className="text-sm">Description: {job.description}</p>
+                {sortedJobs.map((job) => (
+                    <div key={job._id} className="bg-white p-4 rounded shadow-md text-black border border-gray-300">
+                        <h3 className="text-lg font-semibold">{job.eventName}</h3>
+                        <p className="text-sm">Location: {job.eventLocation}</p>
+                        <p className="text-sm">Load In: {new Date(job.eventLoadIn).toLocaleString()}</p>
+                        <p className="text-sm">Load Out: {new Date(job.eventLoadOut).toLocaleString()}</p>
+                        <p className="text-sm">Hours: {job.eventHours}</p>
+                        <p className="text-sm">Description: {job.eventDescription}</p>
+                        <p className="text-sm font-semibold text-yellow-600">Status: {job.status}</p>
                     </div>
                 ))}
             </div>

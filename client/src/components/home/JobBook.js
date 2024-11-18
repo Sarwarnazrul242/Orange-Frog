@@ -7,22 +7,34 @@ export default function JobBook({ userId }) {
     const [jobs, setJobs] = useState([]);
     const [jobStatuses, setJobStatuses] = useState({});
 
-    // JobBook.js
     useEffect(() => {
         if (!userId) return;
-
+    
         const fetchAssignedJobs = async () => {
             try {
                 const response = await axios.get(`http://localhost:8000/events/assigned/${userId}`);
-                setJobs(response.data);
+                const jobs = response.data;
+                setJobs(jobs);
+    
+                // Initialize jobStatuses based on user's existing accept/reject status
+                const statuses = {};
+                jobs.forEach(job => {
+                    if (job.acceptedContractors.includes(userId)) {
+                        statuses[job._id] = "Accepted";
+                    } else if (job.rejectedContractors.includes(userId)) {
+                        statuses[job._id] = "Rejected";
+                    } else {
+                        statuses[job._id] = ""; // No status if not accepted/rejected yet
+                    }
+                });
+                setJobStatuses(statuses);
             } catch (error) {
                 console.error('Error fetching assigned jobs:', error);
             }
         };
-
+    
         fetchAssignedJobs();
     }, [userId]);
-
 
     const sortedJobs = [...jobs].sort((a, b) => {
         if (sortOption === "recent") {
@@ -32,16 +44,32 @@ export default function JobBook({ userId }) {
         }
     });
 
-    const handleAccept = (id) => {
-        setJobStatuses((prev) => ({ ...prev, [id]: "Accepted" }));
+
+    const handleAccept = async (id) => {
+        try {
+            await axios.post('http://localhost:8000/events/accept', { eventId: id, userId });
+            setJobStatuses((prev) => ({ ...prev, [id]: "Accepted" }));
+            
+            setJobs((prevJobs) => prevJobs.filter(job => job._id !== id));
+        } catch (error) {
+            console.error('Error accepting job:', error);
+        }
     };
 
-    const handleReject = (id) => {
-        setJobStatuses((prev) => ({ ...prev, [id]: "Rejected" }));
+    const handleReject = async (id) => {
+        try {
+            await axios.post('http://localhost:8000/events/reject', { eventId: id, userId });
+            setJobStatuses((prev) => ({ ...prev, [id]: "Rejected" }));
+
+            setJobs((prevJobs) => prevJobs.filter(job => job._id !== id));
+        } catch (error) {
+            console.error('Error rejecting job:', error);
+        }
     };
+
 
     return (
-        <div className="p-5 w-full  "> 
+        <div className="flex flex-col self-start p-5 w-full"> 
             <div className="flex items-center justify-between mb-5">
                 <h1 className="text-2xl text-white">Posted Jobs</h1>
                 <div className="relative">

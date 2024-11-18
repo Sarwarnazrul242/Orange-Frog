@@ -35,7 +35,6 @@ const userSchema = new mongoose.Schema({
 
 const userCollection = mongoose.model('userCollection', userSchema);
 
-
 const eventSchema = new mongoose.Schema({
     eventName: { type: String, required: true },
     eventLoadIn: { type: Date, required: true },
@@ -43,14 +42,28 @@ const eventSchema = new mongoose.Schema({
     eventLocation: { type: String, required: true },
     eventHours: { type: Number },
     eventDescription: { type: String },
-    assignedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }] 
+    assignedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
+    eventStatus: { type: String, enum: ['published', 'processing', 'started', 'completed', 'canceled'], default: 'published' },
+    acceptedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
+    rejectedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }]
 });
-  
+
 const eventCollection = mongoose.model('eventCollection', eventSchema);
+
+const incidentSchema = new mongoose.Schema({
+    incidentName: { type: String, required: true },
+    incidentStartDate: { type: Date, required: true },
+    incidentEndDate: { type: Date, required: true },
+    incidentRequest: { type: String },
+    incidentDescription: { type: String, required: true }
+});
+
+const incidentCollection = mongoose.model('incidentCollection', incidentSchema);
 
 const collection = {
     userCollection,
-    eventCollection
+    eventCollection,
+    incidentCollection
 };
 
 module.exports = collection;
