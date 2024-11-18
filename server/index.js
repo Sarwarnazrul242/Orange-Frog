@@ -41,25 +41,12 @@ app.use("/events", eventsRoute);
 app.use("/incident-report", incidentReportRoute);
 app.use("/forgot-password", forgotPasswordRoute);
 /*END OF NEW STUFF*/
-
+app.use("/health", (req, res) => {
+  res.status(200).send("App is running!");
+});
 
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
 
 
-const url = `https://orange-frog-server.onrender.com/`; // Replace with your Render URL
-const interval = 30000; // Interval in milliseconds (30 seconds)
-
-function reloadWebsite() {
-  axios.get(url)
-    .then(response => {
-      console.log(`Reloaded at ${new Date().toISOString()}: Status Code ${response.status}`);
-    })
-    .catch(error => {
-      console.error(`Error reloading at ${new Date().toISOString()}:`, error.message);
-    });
-}
-
-
-setInterval(reloadWebsite, interval);
