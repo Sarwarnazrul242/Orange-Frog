@@ -35,7 +35,7 @@ export default function Home() {
         if (!isAuthenticated) {
             navigate('/');
         } else {
-            axios.get(`http://localhost:8000/users/email/${email}`)
+            axios.get(`/users/email/${email}`)
                 .then(response => {
                     setCurrentUserId(response.data._id); // Ensure _id is stored as currentUserId
                 })

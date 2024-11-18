@@ -1,20 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import Cookies from 'js-cookie';
+import { AuthContext } from '../../AuthContext';
 
 export default function Navbar() {
     const [showMenu, setShowMenu] = useState(false);
     const toggleMenu = () => setShowMenu(!showMenu);
     const navigate = useNavigate();
     const location = useLocation();  
-
-    // Check if the user is authenticated using cookies
-    const isAuthenticated = Cookies.get('isAuthenticated');
+    const { auth, logout: authLogout } = useContext(AuthContext);
 
     const handleLogout = () => {
-        // Remove cookies for logout
-        Cookies.remove('isAuthenticated');
-        Cookies.remove('email'); 
+        authLogout();
         navigate('/');
     };
 
@@ -35,7 +31,7 @@ export default function Navbar() {
                     </div>
                 </div>
 
-                {isAuthenticated && location.pathname !== '/' && (
+                {auth.isAuthenticated && location.pathname !== '/' && (
                     <div className="hidden md:block absolute top-4 right-12">
                         <button 
                             onClick={handleLogout} 
@@ -53,7 +49,7 @@ export default function Navbar() {
                         </button>
                     </div>
                     <div className="flex flex-col p-4 space-y-4">
-                        {isAuthenticated && location.pathname !== '/' && (
+                        {auth.isAuthenticated && location.pathname !== '/' && (
                             <button 
                                 onClick={handleLogout} 
                                 className="text-black bg-white py-2 px-4 rounded-full">
