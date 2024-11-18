@@ -43,7 +43,8 @@ export default function ViewEvent() {
 
     const fetchEvents = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/events');
+            // const response = await axios.get('http://localhost:8000/events');
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
             setEvents(response.data);
             setLoading(false);
         } catch (error) {
@@ -54,7 +55,8 @@ export default function ViewEvent() {
 
     const fetchContractors = async () => {
         try {
-            const response = await axios.get('http://localhost:8000/users');
+            // const response = await axios.get('http://localhost:8000/users');
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/users`);
             setContractors(response.data.filter(user => user.status === 'active'));
         } catch (error) {
             console.error('Error fetching contractors:', error);
@@ -72,7 +74,8 @@ export default function ViewEvent() {
 
     const confirmDelete = async () => {
         try {
-            await axios.delete(`http://localhost:8000/events/${eventToDelete._id}`);
+            // await axios.delete(`http://localhost:8000/events/${eventToDelete._id}`);
+            await axios.delete(`${process.env.REACT_APP_BACKEND}/events/${eventToDelete._id}`);
             setEvents(events.filter(e => e._id !== eventToDelete._id));
             setShowDeletePopup(false);
             toast.success('Event deleted successfully!');
@@ -102,11 +105,13 @@ export default function ViewEvent() {
             const newContractors = selectedContractors.filter(id => !originalContractors.includes(id));
 
             const updatedEvent = { ...eventToEdit, assignedContractors: selectedContractors };
-            await axios.put(`http://localhost:8000/events/${eventToEdit._id}`, updatedEvent);
+            // await axios.put(`http://localhost:8000/events/${eventToEdit._id}`, updatedEvent);
+            await axios.put(`${process.env.REACT_APP_BACKEND}/events/${eventToEdit._id}`, updatedEvent);
 
             // Send email notifications to new contractors
             if (newContractors.length > 0) {
-                await axios.post(`http://localhost:8000/events/send-notifications`, {
+                // await axios.post(`http://localhost:8000/events/send-notifications`, {
+                await axios.post(`${process.env.REACT_APP_BACKEND}/events/send-notifications`, {
                     eventId: eventToEdit._id,
                     contractorIds: newContractors
                 });

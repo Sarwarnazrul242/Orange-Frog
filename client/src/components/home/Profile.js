@@ -23,7 +23,8 @@ export default function Profile({ profileData, setProfileData, handleInputChange
         e.preventDefault();
         setButtonState("Loading...");
         try {
-            const response = await axios.put(`http://localhost:8000/update-profile/${profileData.email}`, {
+            // const response = await axios.put(`http://localhost:8000/update-profile/${profileData.email}`, {
+            const response = await axios.put(`${process.env.REACT_APP_BACKEND}/update-profile/${profileData.email}`, {
                 name: profileData.name,
                 address: profileData.address,
                 dob: profileData.dob,
@@ -54,7 +55,8 @@ export default function Profile({ profileData, setProfileData, handleInputChange
             setMessage('New passwords do not match');
             return;
         }
-        axios.put(`http://localhost:8000/update-password/${profileData.email}`, { password: newPassword })
+        // axios.put(`http://localhost:8000/update-password/${profileData.email}`, { password: newPassword })
+        axios.put(`${process.env.REACT_APP_BACKEND}/update-password/${profileData.email}`, { password: newPassword })
             .then(() => {
                 setMessage('Password updated successfully!');
                 setShowPasswordPopup(false);

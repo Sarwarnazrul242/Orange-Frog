@@ -95,7 +95,8 @@ export default function ManageUsers() {
 
     const fetchUsers = async () => {
         try {
-            const response = await axios.get("http://localhost:8000/users");
+            // const response = await axios.get("http://localhost:8000/users");
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/users`);
             setUsers(response.data);
             setLoading(false);
         } catch (error) {
@@ -106,7 +107,8 @@ export default function ManageUsers() {
 
     const handleResendEmail = async (userId) => {
         try {
-            await axios.post(`http://localhost:8000/resend-email/${userId}`);
+            // await axios.post(`http://localhost:8000/resend-email/${userId}`);
+            await axios.post(`${process.env.REACT_APP_BACKEND}/resend-email/${userId}`);
             toast.success('Email resent successfully!');
         } catch (error) {
             console.error("Error resending email:", error);
@@ -119,7 +121,8 @@ export default function ManageUsers() {
         setButtonState("Loading...");
         try {
             const newUser = { name: editFormData.name, email: editFormData.email };
-            const response = await axios.post("http://localhost:8000/create-user", newUser);
+            // const response = await axios.post("http://localhost:8000/create-user", newUser);
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND}/create-user`, newUser);
             if (response.status === 200) {
                 setUsers([...users, response.data.user]);
                 setButtonState("Created");
@@ -142,7 +145,8 @@ export default function ManageUsers() {
 
     const confirmDelete = async () => {
         try {
-            await axios.delete(`http://localhost:8000/delete-user/${selectedUser}`);
+            // await axios.delete(`http://localhost:8000/delete-user/${selectedUser}`);
+            await axios.delete(`${process.env.REACT_APP_BACKEND}/delete-user/${selectedUser}`);
             setUsers(users.filter(user => user._id !== selectedUser));
             setShowPopup(false);
             toast.success('User deleted successfully!');
@@ -165,7 +169,8 @@ export default function ManageUsers() {
     const handleEditSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.put(`http://localhost:8000/update-user/${editingUser._id}`, editFormData);
+            // const response = await axios.put(`http://localhost:8000/update-user/${editingUser._id}`, editFormData);
+            const response = await axios.put(`${process.env.REACT_APP_BACKEND}/update-user/${editingUser._id}`, editFormData);
             if (response.status === 200) {
                 setUsers(users.map(user => (user._id === editingUser._id ? response.data : user)));
                 setEditingUser(null);

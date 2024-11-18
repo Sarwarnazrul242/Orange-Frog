@@ -42,7 +42,8 @@ export default function Home() {
                 .catch(error => console.error('Error fetching user ID:', error));
 
             if (selectedMenu === "Profile") {
-                axios.get(`http://localhost:8000/user-profile/${email}`)
+                // axios.get(`http://localhost:8000/user-profile/${email}`)
+                axios.get(`${process.env.REACT_APP_BACKEND}/user-profile/${email}`)
                     .then(response => {
                         const { name, email, address, dob, phone, shirtSize, firstAidCert, allergies } = response.data;
                         const formattedDob = dob ? new Date(dob).toISOString().split('T')[0] : '';

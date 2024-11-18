@@ -52,7 +52,8 @@ const handleOtpChange = (e, index) => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/login', {
+            // const response = await fetch('http://localhost:8000/login', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND}/login`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -92,7 +93,8 @@ const handleOtpChange = (e, index) => {
         setLoading(true);
 
         try {
-            const response = await fetch('http://localhost:8000/forgot-password/send-otp', {
+            // const response = await fetch('http://localhost:8000/forgot-password/send-otp', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND}/forgot-password/send-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -124,7 +126,8 @@ const handleOtpChange = (e, index) => {
             // Combine OTP digits into a single string
             const otpString = otp.join(''); // Assumes `otp` is an array of individual digits
     
-            const response = await fetch('http://localhost:8000/forgot-password/verify-otp', {
+            // const response = await fetch('http://localhost:8000/forgot-password/verify-otp', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND}/forgot-password/verify-otp`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -161,7 +164,8 @@ const handleOtpChange = (e, index) => {
         }
     
         try {
-            const response = await fetch('http://localhost:8000/forgot-password/reset-password', {
+            // const response = await fetch('http://localhost:8000/forgot-password/reset-password', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND}/forgot-password/reset-password`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

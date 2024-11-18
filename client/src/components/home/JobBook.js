@@ -12,7 +12,8 @@ export default function JobBook({ userId }) {
     
         const fetchAssignedJobs = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/events/assigned/${userId}`);
+                // const response = await axios.get(`http://localhost:8000/events/assigned/${userId}`);
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events/assigned/${userId}`);
                 const jobs = response.data;
                 setJobs(jobs);
     
@@ -47,7 +48,8 @@ export default function JobBook({ userId }) {
 
     const handleAccept = async (id) => {
         try {
-            await axios.post('http://localhost:8000/events/accept', { eventId: id, userId });
+            // await axios.post('http://localhost:8000/events/accept', { eventId: id, userId });
+            await axios.post(`${process.env.REACT_APP_BACKEND}/events/accept`, { eventId: id, userId });
             setJobStatuses((prev) => ({ ...prev, [id]: "Accepted" }));
             
             setJobs((prevJobs) => prevJobs.filter(job => job._id !== id));
@@ -58,7 +60,8 @@ export default function JobBook({ userId }) {
 
     const handleReject = async (id) => {
         try {
-            await axios.post('http://localhost:8000/events/reject', { eventId: id, userId });
+            // await axios.post('http://localhost:8000/events/reject', { eventId: id, userId });
+            await axios.post(`${process.env.REACT_APP_BACKEND}/events/reject`, { eventId: id, userId });
             setJobStatuses((prev) => ({ ...prev, [id]: "Rejected" }));
 
             setJobs((prevJobs) => prevJobs.filter(job => job._id !== id));

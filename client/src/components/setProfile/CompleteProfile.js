@@ -30,7 +30,8 @@ function CompleteProfile() {
     const handleProfileCompletion = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:8000/complete-profile', { 
+            // const response = await axios.post('http://localhost:8000/complete-profile', { 
+            const response = await axios.post(`${process.env.REACT_APP_BACKEND}/complete-profile`, {
                 email, 
                 address, 
                 dob, 

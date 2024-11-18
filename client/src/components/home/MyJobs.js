@@ -20,7 +20,8 @@ export default function MyJobs({ userId }) {
     
         const fetchUserJobs = async () => {
             try {
-                const response = await axios.get(`http://localhost:8000/events/user-jobs/${userId}`);
+                // const response = await axios.get(`http://localhost:8000/events/user-jobs/${userId}`);
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events/user-jobs/${userId}`);
                 const { acceptedJobs, completedJobs, rejectedJobs } = response.data;
     
                 setJobs({

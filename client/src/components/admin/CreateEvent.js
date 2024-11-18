@@ -22,7 +22,8 @@ export default function CreateEvent() {
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
-        axios.get('http://localhost:8000/users')
+        // axios.get('http://localhost:8000/users')
+        axios.get(`${process.env.REACT_APP_BACKEND}/users`)
             .then(response => setContractors(response.data.filter(user => user.status === 'active')))
             .catch(error => console.error('Error fetching contractors:', error));
     }, []);
@@ -41,7 +42,8 @@ export default function CreateEvent() {
         const updatedFormData = { ...formData, assignedContractors: selectedContractors };
         
         try {
-            const response = await fetch('http://localhost:8000/create-event', {
+            // const response = await fetch('http://localhost:8000/create-event', {
+            const response = await fetch(`${process.env.REACT_APP_BACKEND}/create-event`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(updatedFormData),
