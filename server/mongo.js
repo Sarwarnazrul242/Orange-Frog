@@ -50,7 +50,6 @@ const eventSchema = new mongoose.Schema({
 
 const eventCollection = mongoose.model('eventCollection', eventSchema);
 
-
 const incidentSchema = new mongoose.Schema({
     incidentName: { type: String, required: true },
     incidentStartDate: { type: Date, required: true },
