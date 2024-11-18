@@ -1,16 +1,13 @@
 // src/components/home/Profile.js
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
-import { toast } from 'sonner';
 
 export default function Profile({ profileData, setProfileData, handleInputChange, message, setMessage }) {
     const [showAllergyPopup, setShowAllergyPopup] = useState(false);
     const [showPasswordPopup, setShowPasswordPopup] = useState(false);
-    const [currentPassword, setCurrentPassword] = useState('');
     const [newPassword, setNewPassword] = useState('');
     const [confirmNewPassword, setConfirmNewPassword] = useState('');
     const [tempAllergies, setTempAllergies] = useState([]);
-    const [foodAllergyDetail, setFoodAllergyDetail] = useState('');
     const [buttonState, setButtonState] = useState("Update Profile");
 
     const allergyOptions = ["Vegetarian", "Vegan", "Halal", "Kosher", "Gluten-free", "Food Allergy", "Other", "None"];
@@ -18,55 +15,51 @@ export default function Profile({ profileData, setProfileData, handleInputChange
     useEffect(() => {
         if (showAllergyPopup) {
             setTempAllergies([...profileData.allergies]);
-            if (profileData.allergies.includes("Food Allergy")) {
-                setFoodAllergyDetail(profileData.foodAllergyDetail || '');
-            }
         }
-    }, [showAllergyPopup, profileData.allergies, profileData.foodAllergyDetail]);
+    }, [showAllergyPopup, profileData.allergies]);
 
 
-    const handleProfileUpdate = (e) => {
+    const handleProfileUpdate = async (e) => {
         e.preventDefault();
-        setButtonState("Loading..."); 
-    
-        const updatedProfileData = {
-            ...profileData,
-            allergies: tempAllergies,
-            foodAllergyDetail: tempAllergies.includes("Food Allergy") ? foodAllergyDetail : ''
-        };
-    
-        axios.put(`http://localhost:8000/update-profile/${profileData.email}`, updatedProfileData) // send updatedProfileData
-            .then(() => {
-                setMessage('Profile updated successfully!');
-                toast.success('Profile updated successfully!');
-                setButtonState("Completed"); 
-            })
-            .catch(() => {
-                setMessage('Error updating profile. Please try again.');
-                toast.error('Error updating profile. Please try again.');
-                setButtonState("Update Profile"); 
-            });
-    };
-    
-
-    const handlePasswordUpdate = async () => {
-        if (newPassword !== confirmNewPassword) {
-            setMessage('New passwords do not match');
-            toast.error('New passwords do not match');
-            return;
-        }
+        setButtonState("Loading...");
         try {
             const response = await axios.put(`http://localhost:8000/update-profile/${profileData.email}`, {
-                currentPassword,
-                newPassword
+                name: profileData.name,
+                address: profileData.address,
+                dob: profileData.dob,
+                phone: profileData.phone,
+                shirtSize: profileData.shirtSize,
+                firstAidCert: profileData.firstAidCert,
+                allergies: profileData.allergies,
+                foodAllergyDetail: profileData.foodAllergyDetail
             });
-            setMessage(response.data.message);
-            toast.success('Password updated successfully!');
-            setShowPasswordPopup(false);
+
+            if (response.status === 200) {
+                setMessage('Profile updated successfully');
+                setButtonState("Updated!");
+                setTimeout(() => {
+                    setButtonState("Update Profile");
+                    setMessage('');
+                }, 3000);
+            }
         } catch (error) {
-            setMessage(error.response?.data?.message || 'Error updating password. Please try again.');
-            toast.error('Failed to update password');
+            setMessage('Error updating profile');
+            setButtonState("Update Profile");
+            console.error('Update error:', error);
         }
+    };
+
+    const handlePasswordUpdate = () => {
+        if (newPassword !== confirmNewPassword) {
+            setMessage('New passwords do not match');
+            return;
+        }
+        axios.put(`http://localhost:8000/update-password/${profileData.email}`, { password: newPassword })
+            .then(() => {
+                setMessage('Password updated successfully!');
+                setShowPasswordPopup(false);
+            })
+            .catch(() => setMessage('Error updating password. Please try again.'));
     };
 
     const handleAllergyChange = (e) => {
@@ -79,11 +72,7 @@ export default function Profile({ profileData, setProfileData, handleInputChange
     };
 
     const handleAllergySave = () => {
-        setProfileData({
-            ...profileData,
-            allergies: tempAllergies,
-            foodAllergyDetail: tempAllergies.includes("Food Allergy") ? foodAllergyDetail : ''
-        });
+        setProfileData({ ...profileData, allergies: tempAllergies });
         setShowAllergyPopup(false);
     };
     
@@ -166,39 +155,34 @@ export default function Profile({ profileData, setProfileData, handleInputChange
             </div>
 
             <div className="col-span-1">
-                <label className="block text-white mb-2">Height (ft/in)</label>
-                <div className="flex space-x-2">
-                    <input
-                        type="text"
-                        name="feet"
-                        value={profileData.height.feet}
-                        onChange={(e) => setProfileData({ ...profileData, height: { ...profileData.height, feet: e.target.value } })}
-                        placeholder="ft"
-                        className="w-1/2 p-3 border rounded-md text-center"
-                    />
-                    <input
-                        type="text"
-                        name="inches"
-                        value={profileData.height.inches}
-                        onChange={(e) => setProfileData({ ...profileData, height: { ...profileData.height, inches: e.target.value } })}
-                        placeholder="in"
-                        className="w-1/2 p-3 border rounded-md text-center"
-                    />
-                </div>
-            </div>
-
-            <div className="col-span-1">
-                <label className="block text-white mb-2">Gender</label>
-                <select 
-                    name="gender" 
-                    value={profileData.gender} 
-                    onChange={handleInputChange} 
+                <label className="block text-white mb-2">T-Shirt Size</label>
+                <select
+                    name="shirtSize"
+                    value={profileData.shirtSize || ''}
+                    onChange={handleInputChange}
                     className="w-full p-3 border rounded-md"
                 >
-                    <option value="">Select Gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                    <option value="Other">Other</option>
+                    <option value="">Select Size</option>
+                    <option value="XS">XS</option>
+                    <option value="S">S</option>
+                    <option value="M">M</option>
+                    <option value="L">L</option>
+                    <option value="XL">XL</option>
+                    <option value="2XL">2XL</option>
+                    <option value="3XL">3XL</option>
+                </select>
+            </div>
+            <div className="col-span-1">
+                <label className="block text-white mb-2">First Aid Certified</label>
+                <select
+                    name="firstAidCert"
+                    value={profileData.firstAidCert || ''}
+                    onChange={handleInputChange}
+                    className="w-full p-3 border rounded-md"
+                >
+                    <option value="">Select Option</option>
+                    <option value="Yes">Yes</option>
+                    <option value="No">No</option>
                 </select>
             </div>
 
@@ -223,18 +207,8 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                                     </label>
                                 ))}
                             </div>
-                            {/* Conditional input field for food allergy details */}
-                            {tempAllergies.includes("Food Allergy") && (
-                                <input
-                                    type="text"
-                                    value={foodAllergyDetail}
-                                    onChange={(e) => setFoodAllergyDetail(e.target.value)}
-                                    placeholder="Specify food allergy"
-                                    className="mt-2 p-2 border rounded-md w-full"
-                                />
-                            )}
                             <div className="flex justify-end gap-4 mt-4">
-                                <button onClick={() => setShowAllergyPopup(false)} className="px-4 py-2 bg-gray-600 text-white rounded-full">Cancel</button>
+                                <button onClick={() => setShowAllergyPopup(false)} className="px-4 py-2 bg-red-500 text-white rounded-full">Cancel</button>
                                 <button onClick={handleAllergySave} className="px-4 py-2 bg-black text-white rounded-full">Update</button>
                             </div>
                         </div>
@@ -248,36 +222,23 @@ export default function Profile({ profileData, setProfileData, handleInputChange
                 {showPasswordPopup && (
                     <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-75 z-50">
                         <div className="bg-white p-8 rounded-md shadow-md max-w-lg w-full">
-                            <h2 className="text-xl text-black mb-4 font-bold">Update Password</h2>
-                            <label className="block text-black mb-0">Current Password</label>
-                            <input
-                                type="password"
-                                placeholder="Current Password"
-                                value={currentPassword}
-                                onChange={(e) => setCurrentPassword(e.target.value)}
-                                className="w-full mb-4 p-3 border rounded-md"
-                                required
-                            />
-                            <label className="block text-black mb-0">New Password</label>
+                            <h2 className="text-xl mb-4">Update Password</h2>
                             <input
                                 type="password"
                                 placeholder="New Password"
                                 value={newPassword}
                                 onChange={(e) => setNewPassword(e.target.value)}
                                 className="w-full mb-4 p-3 border rounded-md"
-                                required
                             />
-                            <label className="block text-black mb-0">Confirm New Password</label>
                             <input
                                 type="password"
                                 placeholder="Confirm New Password"
                                 value={confirmNewPassword}
                                 onChange={(e) => setConfirmNewPassword(e.target.value)}
                                 className="w-full mb-4 p-3 border rounded-md"
-                                required
                             />
                             <div className="flex justify-end gap-4">
-                                <button onClick={() => setShowPasswordPopup(false)} className="px-4 py-2 bg-gray-600 text-white rounded-full">Cancel</button>
+                                <button onClick={() => setShowPasswordPopup(false)} className="px-4 py-2 bg-red-500 text-white rounded-full">Cancel</button>
                                 <button onClick={handlePasswordUpdate} className="px-4 py-2 bg-black text-white rounded-full">Save</button>
                             </div>
                         </div>

@@ -15,26 +15,22 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    address: { type: String },
-    dob: { type: Date },
-    allergies: [{ type: String }], // Stores allergies as an array
-    extraComments: { type: String },
-    temporaryPassword: { type: Boolean, default: true },
-    status: { type: String, default: 'pending' },
-    phone: { 
+    address: { type: String, default: '' },
+    dob: { type: Date, default: null },
+    allergies: { type: [String], default: [] },
+    phone: { type: String, default: '' },
+    shirtSize: { 
         type: String,
-        validate: {
-            validator: function(v) {
-                return /^\(\d{3}\) \d{3}-\d{4}$/.test(v); // Example format: (000) 000-0000
-            },
-            message: props => `${props.value} is not a valid phone number!`
-        }
+        default: '',
+        enum: ['', 'XS', 'S', 'M', 'L', 'XL', '2XL', '3XL']
     },
-    height: {
-        feet: { type: Number, min: 1, max: 9 },
-        inches: { type: Number, min: 0, max: 11 }
+    firstAidCert: {
+        type: String,
+        default: '',
+        enum: ['', 'Yes', 'No']
     },
-    gender: { type: String }
+    temporaryPassword: { type: Boolean, default: true },
+    status: { type: String, default: 'pending' }
 });
 
 const userCollection = mongoose.model('userCollection', userSchema);

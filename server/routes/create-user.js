@@ -33,9 +33,7 @@ router.post('/', async (req, res) => {
         const newUser = new userCollection({
             name,
             email,
-            password: hashedPassword,
-            temporaryPassword: true,
-            status: 'pending' // New user is always pending at first
+            password: hashedPassword
         });
         await newUser.save();
 

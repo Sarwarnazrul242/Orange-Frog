@@ -1,16 +1,19 @@
-import React, { useState } from "react";
+import React, { useState, useContext } from "react";
 import './loginstyle.css';  
 import logo from '../images/orange-frog-logo.png';
 import { useNavigate } from 'react-router-dom'; 
-import Cookies from 'js-cookie';
 import { toast } from 'sonner';
+import { AuthContext } from '../../AuthContext';
+
+
 
 export default function Login() {
     const [showPassword, setShowPassword] = useState(false);
     const [form, setForm] = useState({ email: '', password: '' });
     const [errorMessage, setErrorMessage] = useState('');
-    const [loading, setLoading] = useState(false); // State for loader
-    const navigate = useNavigate(); 
+    const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const { login } = useContext(AuthContext);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -23,41 +26,41 @@ export default function Login() {
 
     const submit = async (e) => {
         e.preventDefault();
-        setLoading(true); // Start loading
+        setLoading(true);
 
-        const response = await fetch('http://localhost:8000/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(form)
-        });
+        try {
+            const response = await fetch('http://localhost:8000/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(form)
+            });
 
-        const data = await response.json();
-        setLoading(false); // Stop loading
+            const data = await response.json();
+            setLoading(false);
 
-        if (response.status === 200) {
-            Cookies.set('isAuthenticated', true);
-            Cookies.set('email', form.email); 
-            toast.success('Login successful!');
+            if (response.status === 200) {
+                login(form.email, data.role);
+                toast.success('Login successful!');
 
-            // First, check if the user needs to reset their password
-            if (data.resetRequired) {
-                navigate('/reset-password');
-            } 
-            // Next, check if the profile needs completion
-            else if (data.completeProfile) {
-                navigate('/complete-profile');
-            } 
-            // Otherwise, redirect based on role
-            else if (data.role === 'admin') {
-                navigate('/admin'); 
+                if (data.resetRequired) {
+                    navigate('/reset-password');
+                } else if (data.completeProfile) {
+                    navigate('/complete-profile');
+                } else if (data.role === 'admin') {
+                    navigate('/admin');
+                } else {
+                    navigate('/home');
+                }
             } else {
-                navigate('/home');
+                setErrorMessage(data.message);
+                toast.error('Invalid credentials, please try again.');
             }
-        } else {
-            setErrorMessage(data.message);
-            toast.error('Invalid credentials, please try again.');
+        } catch (error) {
+            setLoading(false);
+            setErrorMessage('Server error');
+            toast.error('Server error, please try again.');
         }
     };
 

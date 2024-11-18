@@ -20,8 +20,8 @@ export default function Home() {
         address: '',
         dob: '',
         phone: '',
-        height: { feet: '', inches: '' },
-        gender: '',
+        shirtSize: '',
+        firstAidCert: '',
         allergies: [],
         password: '',
     });
@@ -35,7 +35,7 @@ export default function Home() {
         if (!isAuthenticated) {
             navigate('/');
         } else {
-            axios.get(`http://localhost:8000/users/email/${email}`)
+            axios.get(`/users/email/${email}`)
                 .then(response => {
                     setCurrentUserId(response.data._id); // Ensure _id is stored as currentUserId
                 })
@@ -44,9 +44,9 @@ export default function Home() {
             if (selectedMenu === "Profile") {
                 axios.get(`http://localhost:8000/user-profile/${email}`)
                     .then(response => {
-                        const { name, email, address, dob, phone, height, gender, allergies } = response.data;
+                        const { name, email, address, dob, phone, shirtSize, firstAidCert, allergies } = response.data;
                         const formattedDob = dob ? new Date(dob).toISOString().split('T')[0] : '';
-                        setProfileData({ name, email, address, dob: formattedDob, phone, height, gender, allergies });
+                        setProfileData({ name, email, address, dob: formattedDob, phone, shirtSize, firstAidCert, allergies });
                     })
                     .catch(error => console.error('Error fetching profile data:', error));
             }

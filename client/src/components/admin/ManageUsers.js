@@ -348,38 +348,34 @@ export default function ManageUsers() {
                                 />
                             </div>
                             <div className="col-span-1">
-                                <label className="block text-gray-700 mb-2">Height (ft/in)</label>
-                                <div className="flex space-x-2">
-                                    <input
-                                        type="text"
-                                        name="feet"
-                                        value={editFormData.height?.feet || ''}
-                                        className="w-1/2 p-3 border rounded-md text-center"
-                                        placeholder="ft"
-                                        readOnly
-                                    />
-                                    <input
-                                        type="text"
-                                        name="inches"
-                                        value={editFormData.height?.inches || ''}
-                                        className="w-1/2 p-3 border rounded-md text-center"
-                                        placeholder="in"
-                                        readOnly
-                                    />
-                                </div>
-                            </div>
-                            <div className="col-span-1">
-                                <label className="block text-gray-700 mb-2">Gender</label>
+                                <label className="block text-gray-700 mb-2">T-Shirt Size</label>
                                 <select
-                                    name="gender"
-                                    value={editFormData.gender}
+                                    name="shirtSize"
+                                    value={editFormData.shirtSize || ''}
                                     className="w-full p-3 border rounded-md"
                                     disabled
                                 >
-                                    <option value="">Select Gender</option>
-                                    <option value="Male">Male</option>
-                                    <option value="Female">Female</option>
-                                    <option value="Other">Other</option>
+                                    <option value="">Select Size</option>
+                                    <option value="XS">XS</option>
+                                    <option value="S">S</option>
+                                    <option value="M">M</option>
+                                    <option value="L">L</option>
+                                    <option value="XL">XL</option>
+                                    <option value="2XL">2XL</option>
+                                    <option value="3XL">3XL</option>
+                                </select>
+                            </div>
+                            <div className="col-span-1">
+                                <label className="block text-gray-700 mb-2">First Aid Certified</label>
+                                <select
+                                    name="firstAidCert"
+                                    value={editFormData.firstAidCert || ''}
+                                    className="w-full p-3 border rounded-md"
+                                    disabled
+                                >
+                                    <option value="">Select Option</option>
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
                                 </select>
                             </div>
                             <div className="col-span-2">
