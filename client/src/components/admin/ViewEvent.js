@@ -1,7 +1,7 @@
 // src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo } from 'react-icons/fa';
+import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 
@@ -342,24 +342,25 @@ export default function ViewEvent() {
                             <FaTh className="text-xl" />
                         </button>
                         <button
-                            onClick={() => setView('list')}
-                            className={`p-2 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
+                            onClick={() => setView('table')}
+                            className={`p-2 rounded ${view === 'table' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
                         >
-                            <FaList className="text-xl" />
+                            <FaTable className="text-xl" />
                         </button>
                     </div>
                 </div>
             </div>
 
 
-            <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4' : 'space-y-4'}>
-                    {getFilteredAndSortedEvents().length === 0 ? (
-                        <p className='text-white'>No events found.</p>
-                    ) : (
+            <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4' : 'overflow-x-auto'}>
+                {getFilteredAndSortedEvents().length === 0 ? (
+                    <p className="text-white">No events found.</p>
+                ) : (
+                    view === 'grid' ? (
                         getFilteredAndSortedEvents().map((event) => (
                             <div
                                 key={event._id}
-                                className={`bg-gray-800 p-4 rounded-lg shadow-md text-white ${view === 'list' ? 'w-full' : ''}`}
+                                className="bg-gray-800 p-4 rounded-lg shadow-md text-white"
                             >
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-semibold">{event.eventName}</h3>
@@ -372,17 +373,67 @@ export default function ViewEvent() {
                                 <p className="text-sm">Load In: {new Date(event.eventLoadIn).toLocaleString()}</p>
                                 <p className="text-sm">Load Out: {new Date(event.eventLoadOut).toLocaleString()}</p>
                                 <p className="text-sm">Hours: {event.eventHours || 'N/A'}</p>
-                                <p className="text-sm">Description: {event.eventDescription}</p>
                                 <p className="text-sm">
-                                    Contractors: {event.assignedContractors && event.assignedContractors.length === 0
-                                        ? 'No one has been selected'
-                                        : event.assignedContractors.map((contractor) => contractor.name).join(', ')
-                                    }
+                                    Contractors:
+                                    <ul className="list-disc ml-4">
+                                        {event.assignedContractors && event.assignedContractors.length > 0 ? (
+                                            event.assignedContractors.map((contractor) => (
+                                                <li key={contractor._id}>{contractor.name}</li>
+                                            ))
+                                        ) : (
+                                            <li>No one has been selected</li>
+                                        )}
+                                    </ul>
                                 </p>
                             </div>
                         ))
+                    ) : (
+                <table className="min-w-full text-white">
+                    <thead>
+                        <tr className="border-b-4 border-white">
+                            <th className="p-4 text-left">Event Name</th>
+                            <th className="p-4 text-left">Location</th>
+                            <th className="p-4 text-left">Load In</th>
+                            <th className="p-4 text-left">Load Out</th>
+                            <th className="p-4 text-left">Hours</th>
+                            <th className="p-4 text-left">Contractors</th>
+                            <th className="p-4 text-left">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {getFilteredAndSortedEvents().map((event) => (
+                            <tr key={event._id} className="border-t border-white hover:bg-gray-800/50 transition">
+                                <td className="p-4">{event.eventName}</td>
+                                <td className="p-4">{event.eventLocation}</td>
+                                <td className="p-4">{new Date(event.eventLoadIn).toLocaleString()}</td>
+                                <td className="p-4">{new Date(event.eventLoadOut).toLocaleString()}</td>
+                                <td className="p-4">{event.eventHours || 'N/A'}</td>
+                                <td className="p-4">
+                                    <ul className="list-disc ml-4">
+                                        {event.assignedContractors && event.assignedContractors.length > 0 ? (
+                                            event.assignedContractors.map((contractor) => (
+                                                <li key={contractor._id}>{contractor.name}</li>
+                                            ))
+                                        ) : (
+                                            <li>No one has been selected</li>
+                                        )}
+                                    </ul>
+                                </td>
+                                <td className="p-4">
+                                    <div className="flex space-x-2">
+                                        <FaEdit onClick={() => handleEdit(event)} className="text-blue-500 cursor-pointer text-xl" />
+                                        <FaTrashAlt onClick={() => handleDelete(event)} className="text-red-500 cursor-pointer text-xl" />
+                                    </div>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+
+                        )
                     )}
             </div>
+
 
 
             {/* Delete Confirmation Popup */}
