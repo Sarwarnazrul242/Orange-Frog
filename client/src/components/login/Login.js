@@ -230,12 +230,13 @@ const handleOtpChange = (e, index) => {
                             />
                             <label>Password</label>
                         </div>
-                        <div className="forgot-password">
-                            <a href="#" className="text-white flex justify-end underline" onClick={() => setView('forgotPassword')}>Forgot Password?</a>
-                        </div>
+                       
                         <button type="submit" disabled={loading}>
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
+                        <div className="forgot-password">
+                            <a href="#" className="text-white mt-3 flex justify-center underline" onClick={() => setView('forgotPassword')}>Forgot Password?</a>
+                        </div>
                     </form>
                 )}
 
