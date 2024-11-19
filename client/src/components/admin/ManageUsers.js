@@ -224,10 +224,10 @@ export default function ManageUsers() {
     return (
         <div className="w-full flex flex-col items-center">
             <div className="w-full flex justify-between items-center mb-3">
-                <h1 className="text-white text-2xl font-semibold">Current Users:</h1>
+                <h1 className="text-white text-2xl">Current Users:</h1>
                 <div ref={formParent}>
                     {!showForm && !editingUser && (
-                        <button onClick={() => setShowForm(true)} className="px-4 py-2 bg-white text-black hover:bg-gray-300 rounded-full transition duration-300 ease-in-out" style={{ width: '170px' }}>
+                        <button onClick={() => setShowForm(true)} className="px-2 mt-0 bg-white text-black hover:bg-gray-300 rounded-full transition duration-300 ease-in-out" style={{ width: '170px' }}>
                             <span className="mr-2">+</span> Add New User
                         </button>
                     )}

@@ -23,13 +23,17 @@ const transporter = nodemailer.createTransport({
 // Route to get all events, populating contractor names
 router.get('/', async (req, res) => {
     try {
-        const events = await eventCollection.find({}).populate('assignedContractors', 'name');
+        const events = await eventCollection
+            .find({})
+            .populate('acceptedContractors', 'name') // Populate accepted contractors' names
+            .populate('assignedContractors', 'name'); // Populate assigned contractors' names
         res.status(200).json(events);
     } catch (error) {
         console.error('Error fetching events:', error);
         res.status(500).json({ message: 'Error fetching events' });
     }
 });
+
 
 // Route to delete an event by ID
 router.delete('/:id', async (req, res) => {
@@ -153,40 +157,50 @@ router.get('/assigned/:userId', async (req, res) => {
 // Route to accept an event
 router.post('/accept', async (req, res) => {
     const { eventId, userId } = req.body;
+
     try {
         const event = await eventCollection.findById(eventId);
-        if (!event) return res.status(404).json({ message: 'Event not found' });
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
 
-        // Add user to accepted list and remove from rejected list if present
-        event.acceptedContractors = [...new Set([...event.acceptedContractors, userId])];
-        event.rejectedContractors = event.rejectedContractors.filter(id => id.toString() !== userId);
+        // Update acceptedContractors
+        if (!event.acceptedContractors.includes(userId)) {
+            event.acceptedContractors.push(userId);
+        }
 
         await event.save();
-        res.status(200).json({ message: 'Event accepted successfully' });
+        res.status(200).json({ message: 'Job accepted successfully' });
     } catch (error) {
-        console.error('Error accepting event:', error);
-        res.status(500).json({ message: 'Error accepting event' });
+        console.error('Error accepting job:', error);
+        res.status(500).json({ message: 'Error accepting job' });
     }
 });
+
 
 // Route to reject an event
 router.post('/reject', async (req, res) => {
     const { eventId, userId } = req.body;
+
     try {
         const event = await eventCollection.findById(eventId);
-        if (!event) return res.status(404).json({ message: 'Event not found' });
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
 
-        // Add user to rejected list and remove from accepted list if present
-        event.rejectedContractors = [...new Set([...event.rejectedContractors, userId])];
-        event.acceptedContractors = event.acceptedContractors.filter(id => id.toString() !== userId);
+        // Update rejectedContractors
+        if (!event.rejectedContractors.includes(userId)) {
+            event.rejectedContractors.push(userId);
+        }
 
         await event.save();
-        res.status(200).json({ message: 'Event rejected successfully' });
+        res.status(200).json({ message: 'Job rejected successfully' });
     } catch (error) {
-        console.error('Error rejecting event:', error);
-        res.status(500).json({ message: 'Error rejecting event' });
+        console.error('Error rejecting job:', error);
+        res.status(500).json({ message: 'Error rejecting job' });
     }
 });
+
 
 // Route to fetch user jobs
 router.get('/user-jobs/:userId', async (req, res) => {
@@ -203,6 +217,28 @@ router.get('/user-jobs/:userId', async (req, res) => {
         res.status(500).json({ message: 'Error fetching user jobs' });
     }
 });
+
+// Route to assign a contractor to an event
+router.put('/assign-contractor/:eventId', async (req, res) => {
+    const { eventId } = req.params;
+    const { contractorId } = req.body;
+
+    try {
+        const event = await eventCollection.findById(eventId);
+        if (!event) return res.status(404).json({ message: 'Event not found' });
+
+        // Update assignedContractors and eventStatus
+        event.assignedContractors = [contractorId];
+        event.eventStatus = 'processing';
+        await event.save();
+
+        res.status(200).json({ message: 'Contractor assigned successfully', event });
+    } catch (error) {
+        console.error('Error assigning contractor:', error);
+        res.status(500).json({ message: 'Error assigning contractor' });
+    }
+});
+
 
 
 module.exports = router;

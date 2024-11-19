@@ -60,8 +60,12 @@ export default function TimeCard() {
     const formattedDate = `${currentTime.toLocaleDateString()}, ${currentTime.toLocaleDateString('en-US', { weekday: 'long' })}`;
 
     return (
+        <div>
+            <h1 className="text-2xl text-white">Time Card</h1>
+    
         <div className="flex gap-20 mt-10">
             {/* Time Card Information */}
+            
             <div className="text-left w-1/2">
                 <div className="text-white mb-6">
                     <div className="text-6xl font-semibold mb-1">{formattedTime}</div>
@@ -126,6 +130,7 @@ export default function TimeCard() {
                     )}
                 </div>
             </div>
+        </div>
         </div>
     );
 }

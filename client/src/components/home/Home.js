@@ -35,7 +35,7 @@ export default function Home() {
         if (!isAuthenticated) {
             navigate('/');
         } else {
-            axios.get(`/users/email/${email}`)
+            axios.get(`${process.env.REACT_APP_BACKEND}/users/email/${email}`)
                 .then(response => {
                     setCurrentUserId(response.data._id); // Ensure _id is stored as currentUserId
                 })

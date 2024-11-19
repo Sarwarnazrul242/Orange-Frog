@@ -72,11 +72,11 @@ export default function JobBook({ userId }) {
 
 
     return (
-        <div className="flex flex-col self-start p-5 w-full"> 
-            <div className="flex items-center justify-between mb-5">
+        <div className="flex flex-col self-start  w-full"> 
+            <div className="flex  justify-between mb-5">
                 <h1 className="text-2xl text-white">Posted Jobs</h1>
                 <div className="relative">
-                    <button onClick={() => setShowSortDropdown(!showSortDropdown)} className="px-4 py-2 bg-gray-200 rounded-4xl text-black">
+                    <button onClick={() => setShowSortDropdown(!showSortDropdown)} className="px-4 mt-0  bg-gray-200 rounded-4xl text-black">
                         Sort by
                     </button>
                     {showSortDropdown && (

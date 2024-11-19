@@ -49,7 +49,7 @@ export default function MyJobs({ userId }) {
     });
 
     return (
-        <div className="flex flex-col self-start p-5 w-full overflow-y-scroll ">
+        <div className="flex flex-col self-start w-full overflow-y-scroll ">
             {/* Controls Section */}
             <h1 className="text-2xl text-white">My Jobs</h1>
             <div className="flex justify-between mb-5">

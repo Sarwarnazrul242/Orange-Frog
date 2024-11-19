@@ -55,7 +55,7 @@ export default function IncidentReport() {
     };
 
     return (
-        <form className="w-full max-w-4xl grid grid-cols-2 gap-8 mb-10" onSubmit={handleFormSubmit}>
+        <form className="w-5/6 max-w-4xl grid grid-cols-2 gap-8 mb-10" onSubmit={handleFormSubmit}>
             <h1 className="text-2xl text-white col-span-2">Correction Report</h1>
             <div className="col-span-2">
                 <label className="block text-white mb-2">Event Name</label>
@@ -108,12 +108,12 @@ export default function IncidentReport() {
 
             <div className="col-span-1">
                 <label className="block text-white mb-2">Upload Files</label>
-                <p className="block text-white mb-2">Select Files Here:</p>
+                {/* <p className="block text-white mb-2">Select Files Here:</p> */}
                 <input
                     type="file"
                     name="incidentFiles"
                     onChange={handleFileChange} // Handle file change
-                    className="w-full p-3 border rounded-md"
+                    className="w-full p-2 border rounded-md text-white"
                     multiple // Allow multiple file uploads
                 />
             </div>
@@ -131,7 +131,7 @@ export default function IncidentReport() {
                 />
             </div>
 
-            <div className="flex justify-center">
+            <div className="flex col-span-2 justify-center">
                 <button
                     className="bg-zinc-950 hover:bg-gray-900 text-white font-bold py-1 px-6 rounded-full text-lg flex items-center justify-center"
                     type="submit"

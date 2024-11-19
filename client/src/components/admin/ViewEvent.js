@@ -24,6 +24,9 @@ export default function ViewEvent() {
     const [filterField, setFilterField] = useState(null);
     const [filterValues, setFilterValues] = useState({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
     const filterDropdownRef = useRef(null);
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [selectedContractor, setSelectedContractor] = useState([]);
+
     
 
     useEffect(() => {
@@ -51,6 +54,11 @@ export default function ViewEvent() {
             console.error('Error fetching events:', error);
             setLoading(false);
         }
+    };
+
+    const handleSelectContractor = (event) => {
+        setSelectedEvent(event);
+        setShowContractorPopup(true);
     };
 
     const fetchContractors = async () => {
@@ -216,6 +224,30 @@ export default function ViewEvent() {
         
         return filtered;
     };
+
+    const saveContractorSelection = async () => {
+        try {
+            if (!selectedContractor) {
+                toast.error('Please select a contractor.');
+                return;
+            }
+
+            const updatedEvent = {
+                assignedContractors: [selectedContractor],
+                eventStatus: 'processing',
+            };
+
+            await axios.put(`http://localhost:8000/events/${selectedEvent._id}`, updatedEvent);
+
+            setShowContractorPopup(false);
+            setSelectedContractor(null);
+            fetchEvents(); // Refresh the events list
+            toast.success('Contractor assigned successfully!');
+        } catch (error) {
+            console.error('Error assigning contractor:', error);
+            toast.error('Failed to assign contractor.');
+        }
+    };
     
     
     
@@ -229,20 +261,20 @@ export default function ViewEvent() {
     }
 
     return (
-        <div className="w-full p-5">
+        <div className="w-full px-5">
             <div className="flex justify-between items-center mb-5">
-                <h2 className="text-2xl font-semibold">Event List</h2>
+                <h2 className="text-2xl mt-0">Event List</h2>
                 <div className="flex items-center gap-2 relative">
                     <button
                         onClick={() => setShowFilterDropdown((prev) => !prev)}
-                        className="px-4 py-2 bg-gray-700 text-white rounded-lg"
+                        className="px-4 py-2 mt-0  bg-gray-500 hover:bg-gray-700 text-white rounded-lg"
                     >
                         Apply Filter
                     </button>
                     <select
                         ref={selectRef}
                         onChange={handleSortChange}
-                        className="px-4 py-2 mx-2 mt-5 bg-gray-700 text-white rounded-lg outline-none"
+                        className="px-4 py-2 mx-2 mt-0 bg-gray-500 hover:bg-gray-700 text-white rounded-lg outline-none"
                     >
                         <option value="">Sort By</option>
                         <option value="name-asc">Event Name A-Z</option>
@@ -342,13 +374,13 @@ export default function ViewEvent() {
                     <div className="flex gap-2">
                         <button
                             onClick={() => setView('grid')}
-                            className={`p-2 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
+                            className={`p-2 mt-0 rounded ${view === 'grid' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
                         >
                             <FaTh className="text-xl" />
                         </button>
                         <button
-                            onClick={() => setView('table')}
-                            className={`p-2 rounded ${view === 'table' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
+                            onClick={() => setView('list')}
+                            className={`p-2 mt-0 rounded ${view === 'list' ? 'bg-gray-300' : 'bg-gray-500'} hover:bg-gray-300`}
                         >
                             <FaTable className="text-xl" />
                         </button>
@@ -365,7 +397,7 @@ export default function ViewEvent() {
                         getFilteredAndSortedEvents().map((event) => (
                             <div
                                 key={event._id}
-                                className="bg-gray-800 p-4 rounded-lg shadow-md text-white"
+                                className={`bg-gray-800 p-4 rounded-lg flex flex-col justify-between shadow-md text-white ${view === 'list' ? 'w-full' : ''}`}
                             >
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-semibold">{event.eventName}</h3>
@@ -390,6 +422,11 @@ export default function ViewEvent() {
                                         )}
                                     </ul>
                                 </p>
+                                <button
+                                    onClick={() => handleSelectContractor(event)}
+                                    className="mt-4 bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded self-end">
+                                    Select Contractor
+                                </button>
                             </div>
                         ))
                     ) : (
@@ -438,8 +475,53 @@ export default function ViewEvent() {
                         )
                     )}
             </div>
-
-
+            {showContractorPopup && (
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
+                    <div className="bg-white w-full max-w-lg p-6 rounded shadow-lg">
+                        <h2 className="text-xl font-bold mb-4 text-black text-center">Select Contractor</h2>
+                        {selectedEvent && selectedEvent.acceptedContractors && selectedEvent.acceptedContractors.length > 0 ? (
+                            <ul>
+                                {selectedEvent.acceptedContractors.map((contractor) => (
+                                    <label key={contractor._id} className="flex items-center mb-2">
+                                        <input
+                                            type="checkbox"
+                                            name="contractor"
+                                            value={contractor._id}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedContractor((prev) => [...prev, contractor._id]);
+                                                } else {
+                                                    setSelectedContractor((prev) => prev.filter((id) => id !== contractor._id));
+                                                }
+                                            }}
+                                            className="mr-2"
+                                        />
+                                        <p className="text-sm truncate" style={{ maxWidth: '200px' }}>
+                                            {contractor.name || 'Unnamed Contractor'}
+                                        </p>
+                                    </label>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">No contractors have expressed interest yet.</p>
+                        )}
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                onClick={() => setShowContractorPopup(false)}
+                                className="bg-gray-300 hover:bg-gray-200 text-black px-4 py-2 rounded mr-2"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveContractorSelection}
+                                className="bg-gray-800 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Delete Confirmation Popup */}
             {showDeletePopup && (

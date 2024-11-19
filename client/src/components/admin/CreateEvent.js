@@ -78,7 +78,7 @@ export default function CreateEvent() {
 
     return (
         <div className="w-full flex overflow-y-auto flex-col items-center">
-            <h1 className="self-start text-white text-3xl font-semibold mb-10">Event Creation:</h1>
+            <h1 className="self-start text-white text-2xl mb-10">Event Creation:</h1>
             <form className="space-y-6 w-[70%]" onSubmit={handleFormSubmit}>
                 <div className="flex flex-wrap -mx-3 mb-6">
                     <div className="w-full px-3">
