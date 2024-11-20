@@ -22,6 +22,7 @@ const createEventRoute = require("./routes/create-event");
 const eventsRoute = require("./routes/events");
 const incidentReportRoute = require("./routes/incident-report");
 const forgotPasswordRoute = require("./routes/forgot-password");
+const viewCorrectionsRoute = require("./routes/view-corrections");
 
 app.use("/users", usersRoute);
 app.use("/update-user", userProfileRoute);
@@ -37,6 +38,7 @@ app.use("/create-event", createEventRoute);
 app.use("/events", eventsRoute);
 app.use("/incident-report", incidentReportRoute);
 app.use("/forgot-password", forgotPasswordRoute);
+app.use("/view-corrections", viewCorrectionsRoute);
 /*END OF NEW STUFF*/
 app.use("/health", (req, res) => {
   res.status(200).send("App is running!");

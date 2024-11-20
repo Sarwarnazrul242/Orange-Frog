@@ -4,6 +4,7 @@ import BackgroundWrapper from '../../BackgroundWrapper';
 import CreateEvent from './CreateEvent';
 import ManageUsers from './ManageUsers';
 import ViewEvent from './ViewEvent';
+import ViewCorrections from './ViewCorrections';
 
 export default function Admin() {
     const [selectedMenu, setSelectedMenu] = useState('Create Event');
@@ -17,6 +18,7 @@ export default function Admin() {
                         <li onClick={() => setSelectedMenu("Create Event")} className={`px-4 py-2 mb-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "Create Event" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>Create Event</li>
                         <li onClick={() => setSelectedMenu("Manage Users")} className={`px-4 py-2 mb-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "Manage Users" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>Manage Users</li>
                         <li onClick={() => setSelectedMenu("View Event")} className={`px-4 py-2 mb-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "View Event" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>View Event</li>
+                        <li onClick={() => setSelectedMenu("View Correction Reports")} className={`px-4 py-2 mb-2 rounded-full text-white whitespace-nowrap cursor-pointer ${selectedMenu === "View Event" ? 'bg-white/10' : ''} hover:bg-white/10 transition duration-300`}>View Correction Reports</li>
                     </ul>
                 </div>
 
@@ -24,6 +26,7 @@ export default function Admin() {
                     {selectedMenu === "Create Event" && <CreateEvent />}
                     {selectedMenu === "Manage Users" && <ManageUsers />}
                     {selectedMenu === "View Event" && <ViewEvent />}
+                    {selectedMenu === "View Corrections" && <ViewCorrections />}
                 </div>
             </div>
         </BackgroundWrapper>
