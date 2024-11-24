@@ -55,7 +55,8 @@ const incidentSchema = new mongoose.Schema({
     incidentStartDate: { type: Date, required: true },
     incidentEndDate: { type: Date, required: true },
     incidentRequest: { type: String },
-    incidentDescription: { type: String, required: true }
+    incidentDescription: { type: String, required: true },
+    incidentFiles: { type: [String], required: false},
 });
 
 const incidentCollection = mongoose.model('incidentCollection', incidentSchema);

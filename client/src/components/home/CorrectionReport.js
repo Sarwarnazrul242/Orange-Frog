@@ -8,6 +8,7 @@ export default function IncidentReport() {
         incidentEndDate: '',
         incidentRequest: '',
         incidentDescription: '',
+        incidentFiles: null,
     });
     const [loading, setLoading] = useState(false);
     const [files, setFiles] = useState(null); // State to handle file input
@@ -41,6 +42,7 @@ export default function IncidentReport() {
                     incidentEndDate: '',
                     incidentRequest: '',
                     incidentDescription: '',
+                    incidentFiles: null,
                 });
                 setFiles(null); // Clear the files after submit
             } else {
@@ -112,6 +114,7 @@ export default function IncidentReport() {
                 <input
                     type="file"
                     name="incidentFiles"
+                    value={formData.incidentFiles}
                     onChange={handleFileChange} // Handle file change
                     className="w-full p-2 border rounded-md text-white"
                     multiple // Allow multiple file uploads

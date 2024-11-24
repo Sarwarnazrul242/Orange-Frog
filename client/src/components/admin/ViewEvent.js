@@ -21,6 +21,7 @@ export default function ViewIncident() {
     const [filterValues, setFilterValues] = useState({ name: '', request: '', startDate: '', endDate: '' });
     const filterDropdownRef = useRef(null);
     const [selectedIncident, setSelectedIncident] = useState(null);
+    const [files, setFiles] = useState(null); 
 
     useEffect(() => {
         fetchIncidents();
@@ -28,8 +29,7 @@ export default function ViewIncident() {
 
     const fetchIncidents = async () => {
         try {
-            // Changes route to events to actual one later
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/view-corrections`);
             setIncidents(response.data);
             setLoading(false);
         } catch (error) {
@@ -49,8 +49,7 @@ export default function ViewIncident() {
 
     const confirmDelete = async () => {
         try {
-            // Changes route to events to actual one later
-            await axios.delete(`${process.env.REACT_APP_BACKEND}/events/${incidentToDelete._id}`);
+            await axios.delete(`${process.env.REACT_APP_BACKEND}/view-corrections/${incidentToDelete._id}`);
             setIncidents(incidents.filter(i => i._id !== incidentToDelete._id));
             setShowDeletePopup(false);
             toast.success('Incident deleted successfully!');
@@ -70,7 +69,7 @@ export default function ViewIncident() {
         setSaving(true);
         try {
             const updatedIncident = { ...incidentToEdit };
-            await axios.put(`${process.env.REACT_APP_BACKEND}/events/${incidentToEdit._id}`, updatedIncident);
+            await axios.put(`${process.env.REACT_APP_BACKEND}/view-corrections/${incidentToEdit._id}`, updatedIncident);
 
             setShowEditPopup(false);
             fetchIncidents();
@@ -86,6 +85,10 @@ export default function ViewIncident() {
     const handleInputChange = (e) => {
         const { name, value } = e.target;
         setIncidentToEdit({ ...incidentToEdit, [name]: value });
+    };
+
+    const handleFileChange = (e) => {
+        setFiles(e.target.files); // Store selected files in state
     };
 
     const handleSortChange = (e) => {
@@ -198,7 +201,7 @@ export default function ViewIncident() {
                                 />
                             </div>
                             <div className="space-y-1 relative">
-                                {['name', 'location', 'startDate', 'endDate', 'contractor'].map((field) => (
+                                {['name', 'location', 'startDate', 'endDate'].map((field) => (
                                     <div key={field} className="relative group">
                                         <button
                                             onMouseEnter={() => handleFilterFieldChange(field)}
@@ -373,7 +376,7 @@ export default function ViewIncident() {
                                     <label className="block text-sm font-bold mb-2">Start Date <span className="text-red-500">*</span></label>
                                     <input
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
-                                        type="datetime-local"
+                                        type="date"
                                         name="incidentStartDate"
                                         value={new Date(incidentToEdit.incidentStartDate).toISOString().slice(0, 16)}
                                         onChange={handleInputChange}
@@ -384,7 +387,7 @@ export default function ViewIncident() {
                                     <label className="block text-sm font-bold mb-2">End Date <span className="text-red-500">*</span></label>
                                     <input
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
-                                        type="datetime-local"
+                                        type="date"
                                         name="incidentEndDate"
                                         value={new Date(incidentToEdit.incidentEndDate).toISOString().slice(0, 16)}
                                         onChange={handleInputChange}
@@ -403,6 +406,18 @@ export default function ViewIncident() {
                                         value={incidentToEdit.incidentRequest}
                                         onChange={handleInputChange}
                                         required
+                                    />
+                                </div>
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-sm font-bold mb-2">Upload Files <span className="text-red-500">*</span></label>
+                                    {/* <p className="block text-white mb-2">Select Files Here:</p> */}
+                                    <input
+                                        className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
+                                        type="file"
+                                        name="incidentFiles"
+                                        value={incidentToEdit.incidentFiles}
+                                        onChange={handleFileChange} // Handle file change
+                                        multiple // Allow multiple file uploads
                                     />
                                 </div>
                             </div>
