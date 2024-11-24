@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo } from 'react-icons/fa';
+import { FaTh, FaTable, FaEdit, FaTrashAlt, FaReadme, FaRedo } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 
@@ -13,6 +13,8 @@ export default function ViewIncident() {
     const [incidentToDelete, setIncidentToDelete] = useState(null);
     const [showEditPopup, setShowEditPopup] = useState(false);
     const [incidentToEdit, setIncidentToEdit] = useState(null);
+    const [showViewPopup, setShowViewPopup] = useState(false);
+    const [incidentToView, setIncidentToView] = useState(null);
     const selectRef = useRef(null);
     const [sortField, setSortField] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
@@ -62,6 +64,11 @@ export default function ViewIncident() {
     const handleEdit = (incident) => {
         setIncidentToEdit(incident);
         setShowEditPopup(true);
+    };
+
+    const handleView = (incident) => {
+        setIncidentToView(incident);
+        setShowViewPopup(true);
     };
 
     const saveEdit = async (e) => {
@@ -287,6 +294,7 @@ export default function ViewIncident() {
                                 <div className="flex justify-between items-center">
                                     <h3 className="text-lg font-semibold">{incident.incidentName}</h3>
                                     <div className="flex space-x-2">
+                                        <FaReadme onClick={() => handleView(incident)} className="text-green-500 cursor-pointer text-xl" />
                                         <FaEdit onClick={() => handleEdit(incident)} className="text-blue-500 cursor-pointer text-xl" />
                                         <FaTrashAlt onClick={() => handleDelete(incident)} className="text-red-500 cursor-pointer text-xl" />
                                     </div>
@@ -319,6 +327,7 @@ export default function ViewIncident() {
                                 <td className="p-4">{incident.incidentDescription}</td>
                                 <td className="p-4">
                                     <div className="flex space-x-2">
+                                        <FaReadme onClick={() => handleView(incident)} className="text-green-500 cursor-pointer text-xl" />
                                         <FaEdit onClick={() => handleEdit(incident)} className="text-blue-500 cursor-pointer text-xl" />
                                         <FaTrashAlt onClick={() => handleDelete(incident)} className="text-red-500 cursor-pointer text-xl" />
                                     </div>
@@ -470,6 +479,59 @@ export default function ViewIncident() {
 
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+            {showViewPopup && (
+                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                    <div className="bg-white p-8 rounded shadow-lg w-full max-w-2xl">
+                        <h1 className="self-start text-2xl font-semibold mb-4">View Incident:</h1>
+                        <div className="space-y-4 w-full">
+                            <div className="flex flex-wrap -mx-3 mb-4">
+                                <div className="w-full px-3">
+                                    <label className="block text-sm font-bold mb-2">Incident Name:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentName}</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap -mx-3 mb-4">
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-sm font-bold mb-2">Start Date:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">
+                                        {new Date(incidentToView?.incidentStartDate).toLocaleDateString()}
+                                    </p>
+                                </div>
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-sm font-bold mb-2">End Date:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">
+                                        {new Date(incidentToView?.incidentEndDate).toLocaleDateString()}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap -mx-3 mb-4">
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-sm font-bold mb-2">Request:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentRequest}</p>
+                                </div>
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-sm font-bold mb-2">Files:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentFiles}</p>
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap -mx-3 mb-4">
+                                <div className="w-full px-3">
+                                    <label className="block text-sm font-bold mb-2">Incident Description:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentDescription}</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                onClick={() => setShowViewPopup(false)}
+                                className="px-4 py-2 bg-gray-300 rounded"
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
