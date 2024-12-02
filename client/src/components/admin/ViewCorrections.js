@@ -5,6 +5,7 @@ import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 
 export default function ViewIncident() {
+    const [events, setEvents] = useState([]);
     const [incidents, setIncidents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
@@ -27,6 +28,16 @@ export default function ViewIncident() {
 
     useEffect(() => {
         fetchIncidents();
+        const fetchEvents = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/incident-report/events');
+                const data = await response.json();
+                setEvents(data);
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        };
+        fetchEvents();
     }, []);
 
     const fetchIncidents = async () => {
@@ -369,15 +380,20 @@ export default function ViewIncident() {
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full px-3">
                                     <label className="block text-sm font-bold mb-2">Incident Name <span className="text-red-500">*</span></label>
-                                    <input
-                                        className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
-                                        type="text"
+                                    <select
                                         name="incidentName"
-                                        placeholder="Enter Incident Name"
                                         value={incidentToEdit.incidentName}
                                         onChange={handleInputChange}
+                                        className="w-full p-3 border rounded-md bg-white text-black"
                                         required
-                                    />
+                                    >
+                                        <option value="" disabled>Select an Event</option>
+                                        {events.map((event, index) => (
+                                            <option key={index} value={event.eventName}>
+                                                {event.eventName}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-4">

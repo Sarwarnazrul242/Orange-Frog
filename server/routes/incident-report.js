@@ -19,11 +19,12 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Route to create a new incident report
 router.post('/', async (req, res) => {
     const { incidentName, incidentStartDate, incidentEndDate, incidentRequest, incidentDescription } = req.body;
 
     try {
-        // Save the event to the database
+        // Save the incident report to the database
         const newIncidentReport = new incidentCollection({
             incidentName,
             incidentStartDate,
@@ -33,11 +34,21 @@ router.post('/', async (req, res) => {
         });
         await newIncidentReport.save();
 
-       
-        res.status(200).json({ message: 'Event created and notifications sent successfully' });
+        res.status(200).json({ message: 'Incident Report created successfully' });
     } catch (error) {
-        console.error('Error acreating event or sending notifications:', error);
-        res.status(500).json({ message: 'Error acreating event or sending notifications' });
+        console.error('Error creating incident report:', error);
+        res.status(500).json({ message: 'Error creating incident report' });
+    }
+});
+
+// Route to fetch event names from eventCollection
+router.get('/events', async (req, res) => {
+    try {
+        const events = await eventCollection.find({}, { eventName: 1, _id: 0 }); // Fetch only eventName
+        res.status(200).json(events);
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        res.status(500).json({ message: 'Error fetching events' });
     }
 });
 

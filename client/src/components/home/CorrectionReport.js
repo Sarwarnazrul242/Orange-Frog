@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 
-export default function IncidentReport() {
+export default function CorrectionReport() {
     const [formData, setFormData] = useState({
         incidentName: '',
         incidentStartDate: '',
@@ -10,15 +10,25 @@ export default function IncidentReport() {
         incidentDescription: '',
         incidentFiles: null,
     });
+    const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(false);
-    const [files, setFiles] = useState(null); // State to handle file input
+    const [files, setFiles] = useState(null);
+
+    useEffect(() => {
+        const fetchEvents = async () => {
+            try {
+                const response = await fetch('http://localhost:8000/incident-report/events');
+                const data = await response.json();
+                setEvents(data);
+            } catch (error) {
+                console.error('Error fetching events:', error);
+            }
+        };
+        fetchEvents();
+    }, []);
 
     const handleInputChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleFileChange = (e) => {
-        setFiles(e.target.files); // Store selected files in state
     };
 
     const handleFormSubmit = async (e) => {
@@ -35,7 +45,7 @@ export default function IncidentReport() {
             const result = await response.json();
 
             if (response.ok) {
-                toast.success('Incident Report created successfully!');
+                toast.success('Correction Report created successfully!');
                 setFormData({
                     incidentName: '',
                     incidentStartDate: '',
@@ -44,9 +54,9 @@ export default function IncidentReport() {
                     incidentDescription: '',
                     incidentFiles: null,
                 });
-                setFiles(null); // Clear the files after submit
+                setFiles(null);
             } else {
-                toast.error(result.message || 'Error creating Incident Report');
+                toast.error(result.message || 'Error creating Correction Report');
             }
         } catch (error) {
             console.error('Error:', error);
@@ -61,17 +71,21 @@ export default function IncidentReport() {
             <h1 className="text-2xl text-white col-span-2">Correction Report</h1>
             <div className="col-span-2">
                 <label className="block text-white mb-2">Event Name</label>
-                <input
-                    type="text"
+                <select
                     name="incidentName"
-                    placeholder="Enter Event Name"
                     value={formData.incidentName}
                     onChange={handleInputChange}
-                    className="w-full  p-3 border rounded-md"
+                    className="w-full p-3 border rounded-md bg-white text-black"
                     required
-                />
+                >
+                    <option value="" disabled>Select an Event</option>
+                    {events.map((event, index) => (
+                        <option key={index} value={event.eventName}>
+                            {event.eventName}
+                        </option>
+                    ))}
+                </select>
             </div>
-
             <div className="col-span-1">
                 <label className="block text-white mb-2">Start Date</label>
                 <input
@@ -110,22 +124,21 @@ export default function IncidentReport() {
 
             <div className="col-span-1">
                 <label className="block text-white mb-2">Upload Files</label>
-                {/* <p className="block text-white mb-2">Select Files Here:</p> */}
                 <input
                     type="file"
                     name="incidentFiles"
                     value={formData.incidentFiles}
-                    onChange={handleFileChange} // Handle file change
+                    onChange={(e) => setFiles(e.target.files)}
                     className="w-full p-2 border rounded-md text-white"
-                    multiple // Allow multiple file uploads
+                    multiple
                 />
             </div>
 
             <div className="col-span-2">
-                <label className="block text-white mb-2">Incident Description</label>
+                <label className="block text-white mb-2">Event Description</label>
                 <textarea
                     name="incidentDescription"
-                    placeholder="Enter Incident Description"
+                    placeholder="Enter Event Description"
                     rows="4"
                     value={formData.incidentDescription}
                     onChange={handleInputChange}

@@ -1,73 +1,113 @@
+// src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { FaTh, FaTable, FaEdit, FaTrashAlt, FaReadme, FaRedo } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
+import Modal from "../Modal"; 
 
-export default function ViewIncident() {
-    const [incidents, setIncidents] = useState([]);
+
+export default function ViewEvent() {
+    const [showViewPopup, setShowViewPopup] = useState(false);
+    const [eventToView, setEventToView] = useState(null);
+    const [events, setEvents] = useState([]);
+    const [contractors, setContractors] = useState([]);
+    const [selectedContractors, setSelectedContractors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [view, setView] = useState('grid');
     const [showDeletePopup, setShowDeletePopup] = useState(false);
-    const [incidentToDelete, setIncidentToDelete] = useState(null);
+    const [eventToDelete, setEventToDelete] = useState(null);
     const [showEditPopup, setShowEditPopup] = useState(false);
-    const [incidentToEdit, setIncidentToEdit] = useState(null);
-    const [showViewPopup, setShowViewPopup] = useState(false);
-    const [incidentToView, setIncidentToView] = useState(null);
+    const [eventToEdit, setEventToEdit] = useState(null);
+    const [showContractorPopup, setShowContractorPopup] = useState(false);
     const selectRef = useRef(null);
     const [sortField, setSortField] = useState(null);
     const [sortDirection, setSortDirection] = useState('asc');
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [filterField, setFilterField] = useState(null);
-    const [filterValues, setFilterValues] = useState({ name: '', request: '', startDate: '', endDate: '' });
+    const [filterValues, setFilterValues] = useState({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
     const filterDropdownRef = useRef(null);
-    const [selectedIncident, setSelectedIncident] = useState(null);
-    const [files, setFiles] = useState(null); 
+    const [selectedEvent, setSelectedEvent] = useState(null);
+    const [selectedContractor, setSelectedContractor] = useState([]);
+
+    
 
     useEffect(() => {
-        fetchIncidents();
+        fetchEvents();
+        fetchContractors();
     }, []);
 
-    const fetchIncidents = async () => {
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
+                setShowFilterDropdown(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const fetchEvents = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/view-corrections`);
-            setIncidents(response.data);
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
+            setEvents(response.data);
             setLoading(false);
         } catch (error) {
-            console.error('Error fetching incidents:', error);
+            console.error('Error fetching events:', error);
             setLoading(false);
         }
     };
 
-    const resetFilters = () => {
-        setFilterValues({ name: '', request: '', startDate: '', endDate: '' });
+    const handleSelectContractor = (event) => {
+        setSelectedEvent(event);
+        setShowContractorPopup(true);
     };
 
-    const handleDelete = (incident) => {
-        setIncidentToDelete(incident);
+    const fetchContractors = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/users`);
+            setContractors(response.data.filter(user => user.status === 'active'));
+        } catch (error) {
+            console.error('Error fetching contractors:', error);
+        }
+    };
+
+    const resetFilters = () => {
+        setFilterValues({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
+    };
+
+    const handleDelete = (event) => {
+        setEventToDelete(event);
         setShowDeletePopup(true);
     };
 
     const confirmDelete = async () => {
         try {
-            await axios.delete(`${process.env.REACT_APP_BACKEND}/view-corrections/${incidentToDelete._id}`);
-            setIncidents(incidents.filter(i => i._id !== incidentToDelete._id));
+            await axios.delete(`${process.env.REACT_APP_BACKEND}/events/${eventToDelete._id}`);
+            setEvents(events.filter(e => e._id !== eventToDelete._id));
             setShowDeletePopup(false);
-            toast.success('Incident deleted successfully!');
+            toast.success('Event deleted successfully!');
         } catch (error) {
-            console.error('Error deleting incident:', error);
-            toast.error('Failed to delete incident');
+            console.error('Error deleting event:', error);
+            toast.error('Failed to delete event');
         }
     };
 
-    const handleEdit = (incident) => {
-        setIncidentToEdit(incident);
+    const handleEdit = (event) => {
+        setEventToEdit(event);
+        setSelectedContractors(
+            event.assignedContractors ? event.assignedContractors.map(contractor => contractor._id) : []
+        );
         setShowEditPopup(true);
     };
 
-    const handleView = (incident) => {
-        setIncidentToView(incident);
+    const handleContractorChange = (selectedOptions) => {
+        setSelectedContractors(selectedOptions.map(option => option.value));
+    };
+
+    const handleView = (event) => {
+        setEventToView(event);
         setShowViewPopup(true);
     };
 
@@ -75,15 +115,27 @@ export default function ViewIncident() {
         e.preventDefault();
         setSaving(true);
         try {
-            const updatedIncident = { ...incidentToEdit };
-            await axios.put(`${process.env.REACT_APP_BACKEND}/view-corrections/${incidentToEdit._id}`, updatedIncident);
+            const originalContractors = eventToEdit.assignedContractors.map(contractor => contractor._id);
+            const newContractors = selectedContractors.filter(id => !originalContractors.includes(id));
+
+            const updatedEvent = { ...eventToEdit, assignedContractors: selectedContractors };
+            await axios.put(`${process.env.REACT_APP_BACKEND}/events/${eventToEdit._id}`, updatedEvent);
+
+            // Send email notifications to new contractors
+            if (newContractors.length > 0) {
+                await axios.post(`${process.env.REACT_APP_BACKEND}/events/send-notifications`, {
+                    eventId: eventToEdit._id,
+                    contractorIds: newContractors
+                });
+            }
 
             setShowEditPopup(false);
-            fetchIncidents();
-            toast.success('Incident updated successfully!');
+            setShowContractorPopup(false);
+            fetchEvents();
+            toast.success('Event updated successfully!');
         } catch (error) {
-            console.error('Error updating incident:', error);
-            toast.error('Failed to update incident');
+            console.error('Error updating event:', error);
+            toast.error('Failed to update event');
         }
 
         setSaving(false);
@@ -91,11 +143,7 @@ export default function ViewIncident() {
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
-        setIncidentToEdit({ ...incidentToEdit, [name]: value });
-    };
-
-    const handleFileChange = (e) => {
-        setFiles(e.target.files); // Store selected files in state
+        setEventToEdit({ ...eventToEdit, [name]: value });
     };
 
     const handleSortChange = (e) => {
@@ -128,48 +176,90 @@ export default function ViewIncident() {
         setFilterValues((prev) => ({ ...prev, [name]: value }));
     };
 
-    const getFilteredAndSortedIncidents = () => {
-        let filtered = incidents.filter(incident => {
-            if (filterValues.name && !incident.incidentName.toLowerCase().includes(filterValues.name.toLowerCase())) {
+    const getFilteredAndSortedEvents = () => {
+        let filtered = events.filter(event => {
+            if (filterValues.name && !event.eventName.toLowerCase().includes(filterValues.name.toLowerCase())) {
                 return false;
             }
-            if (filterValues.request && !incident.incidentRequest.toLowerCase().includes(filterValues.request.toLowerCase())) {
+            
+            if (filterValues.location && !event.eventLocation.toLowerCase().includes(filterValues.location.toLowerCase())) {
                 return false;
             }
-            if (filterValues.startDate && new Date(incident.incidentStartDate) < new Date(filterValues.startDate)) {
+            
+            if (filterValues.startDate && new Date(event.eventLoadIn) < new Date(filterValues.startDate)) {
                 return false;
             }
-            if (filterValues.endDate && new Date(incident.incidentEndDate) > new Date(filterValues.endDate)) {
+            
+            if (filterValues.endDate && new Date(event.eventLoadOut) > new Date(filterValues.endDate)) {
                 return false;
             }
+            
+            if (filterValues.contractor.length > 0 && 
+                !filterValues.contractor.some(contractorId =>
+                    event.assignedContractors.some(contractor => contractor._id === contractorId)
+                )) {
+                return false;
+            }
+            
             return true;
         });
-
-        // Sort the filtered incidents
+    
+        // Sort the filtered events
         if (sortField) {
             filtered.sort((a, b) => {
                 switch (sortField) {
                     case 'name':
                         return sortDirection === 'asc'
-                            ? a.incidentName.localeCompare(b.incidentName)
-                            : b.incidentName.localeCompare(a.incidentName);
-                    case 'startDate':
+                            ? a.eventName.localeCompare(b.eventName)
+                            : b.eventName.localeCompare(a.eventName);
+                    case 'loadIn':
                         return sortDirection === 'asc'
-                            ? new Date(a.incidentStartDate) - new Date(b.incidentStartDate)
-                            : new Date(b.incidentStartDate) - new Date(a.incidentStartDate);
+                            ? new Date(a.eventLoadIn) - new Date(b.eventLoadIn)
+                            : new Date(b.eventLoadIn) - new Date(a.eventLoadIn);
+                    case 'hours':
+                        return sortDirection === 'asc'
+                            ? (a.eventHours || 0) - (b.eventHours || 0)
+                            : (b.eventHours || 0) - (a.eventHours || 0);
                     default:
                         return 0;
                 }
             });
         }
-
+        
         return filtered;
     };
+
+    const saveContractorSelection = async () => {
+        try {
+            if (!selectedContractor) {
+                toast.error('Please select a contractor.');
+                return;
+            }
+
+            const updatedEvent = {
+                assignedContractors: [selectedContractor],
+                eventStatus: 'processing',
+            };
+
+            await axios.put(`${process.env.REACT_APP_BACKEND}/events/${selectedEvent._id}`, updatedEvent);
+
+            setShowContractorPopup(false);
+            setSelectedContractor(null);
+            fetchEvents(); // Refresh the events list
+            toast.success('Contractor assigned successfully!');
+        } catch (error) {
+            console.error('Error assigning contractor:', error);
+            toast.error('Failed to assign contractor.');
+        }
+    };
+    
+    
+    
 
     if (loading) {
         return (
             <div className="h-screen flex justify-center items-center">
-                <p>Loading incidents...</p>
+                <p className="text-white">Loading events...</p>
             </div>
         );
     }
@@ -177,7 +267,7 @@ export default function ViewIncident() {
     return (
         <div className="w-full px-5">
             <div className="flex justify-between items-center mb-5">
-                <h2 className="text-white text-xl md:text-2xl">Incident List</h2>
+                <h2 className="text-white text-xl md:text-2xl">Event List</h2>
                 <div className="flex items-center gap-2 relative">
                     <button
                         onClick={() => setShowFilterDropdown((prev) => !prev)}
@@ -191,10 +281,12 @@ export default function ViewIncident() {
                         className="hidden md:block px-4 py-2 mx-2 mt-0 bg-gray-500 hover:bg-gray-700 text-white rounded-lg outline-none"
                     >
                         <option value="">Sort By</option>
-                        <option value="name-asc">Incident Name A-Z</option>
-                        <option value="name-desc">Incident Name Z-A</option>
-                        <option value="startDate-asc">Start Date Oldest to Newest</option>
-                        <option value="startDate-desc">Start Date Newest to Oldest</option>
+                        <option value="name-asc">Event Name A-Z</option>
+                        <option value="name-desc">Event Name Z-A</option>
+                        <option value="loadIn-asc">Oldest to Newest</option>
+                        <option value="loadIn-desc">Newest to Oldest</option>
+                        <option value="hours-asc">Hours Ascending</option>
+                        <option value="hours-desc">Hours Descending</option>
                     </select>
 
                     {showFilterDropdown && (
@@ -208,7 +300,7 @@ export default function ViewIncident() {
                                 />
                             </div>
                             <div className="space-y-1 relative">
-                                {['name', 'location', 'startDate', 'endDate'].map((field) => (
+                                {['name', 'location', 'startDate', 'endDate', 'contractor'].map((field) => (
                                     <div key={field} className="relative group">
                                         <button
                                             onMouseEnter={() => handleFilterFieldChange(field)}
@@ -230,6 +322,26 @@ export default function ViewIncident() {
                                                         value={filterValues[field]}
                                                         onChange={handleFilterChange}
                                                         className="w-full p-2 bg-gray-600 text-white rounded"
+                                                    />
+                                                ) : field === 'contractor' ? (
+                                                    <MultiSelect
+                                                        options={contractors.map(contractor => ({
+                                                            value: contractor._id,
+                                                            label: contractor.name
+                                                        }))}
+                                                        value={(Array.isArray(filterValues.contractor) ? filterValues.contractor : []).map(id => ({
+                                                            value: id,
+                                                            label: contractors.find(contractor => contractor._id === id)?.name
+                                                        }))}
+                                                        onChange={(selectedOptions) => {
+                                                            const selectedContractorIds = selectedOptions.map(option => option.value);
+                                                            setFilterValues((prev) => ({ ...prev, contractor: selectedContractorIds }));
+                                                        }}
+                                                        isMulti
+                                                        closeMenuOnSelect={false}
+                                                        hideSelectedOptions={false}
+                                                        placeholder="Select Contractors"
+                                                        className="w-full bg-gray-600 text-black rounded"
                                                     />
                                                 ) : (
                                                     <input
@@ -279,57 +391,86 @@ export default function ViewIncident() {
                     </div>
                 </div>
             </div>
-        
-                
+
+
             <div className={view === 'grid' ? 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4' : 'overflow-x-auto'}>
-                {getFilteredAndSortedIncidents().length === 0 ? (
-                    <p className="text-white">No incidents found.</p>
+                {getFilteredAndSortedEvents().length === 0 ? (
+                    <p className="text-white">No events found.</p>
                 ) : (
                     view === 'grid' ? (
-                        getFilteredAndSortedIncidents().map((incident) => (
+                        getFilteredAndSortedEvents().map((event) => (
                             <div
-                                key={incident._id}
+                                key={event._id}
                                 className={`bg-gray-800 p-4 rounded-lg flex flex-col justify-between shadow-md text-white ${view === 'list' ? 'w-full' : ''}`}
                             >
                                 <div className="flex justify-between items-center">
-                                    <h3 className="text-lg font-semibold">{incident.incidentName}</h3>
+                                    <h3 className="text-lg font-semibold">{event.eventName}</h3>
                                     <div className="flex space-x-2">
-                                        <FaReadme onClick={() => handleView(incident)} className="text-green-500 cursor-pointer text-xl" />
-                                        <FaEdit onClick={() => handleEdit(incident)} className="text-blue-500 cursor-pointer text-xl" />
-                                        <FaTrashAlt onClick={() => handleDelete(incident)} className="text-red-500 cursor-pointer text-xl" />
+                                        <FaReadme onClick={() => handleView(event)} className="text-green-500 cursor-pointer text-xl" />
+                                        <FaEdit onClick={() => handleEdit(event)} className="text-blue-500 cursor-pointer text-xl" />
+                                        <FaTrashAlt onClick={() => handleDelete(event)} className="text-red-500 cursor-pointer text-xl" />
                                     </div>
                                 </div>
-                                <p className="text-sm">Request: {incident.incidentRequest}</p>
-                                <p className="text-sm">Start Date: {new Date(incident.incidentStartDate).toLocaleString()}</p>
-                                <p className="text-sm">End Date: {new Date(incident.incidentEndDate).toLocaleString()}</p>
-                                <p className="text-sm">Description: {incident.incidentDescription}</p>
+                                <p className="text-sm">Location: {event.eventLocation}</p>
+                                <p className="text-sm">Load In: {new Date(event.eventLoadIn).toLocaleString()}</p>
+                                <p className="text-sm">Load Out: {new Date(event.eventLoadOut).toLocaleString()}</p>
+                                <p className="text-sm">Hours: {event.eventHours || 'N/A'}</p>
+                                <p className="text-sm">
+                                    Contractors:
+                                    <ul className="list-disc ml-4">
+                                        {event.assignedContractors && event.assignedContractors.length > 0 ? (
+                                            event.assignedContractors.map((contractor) => (
+                                                <li key={contractor._id}>{contractor.name}</li>
+                                            ))
+                                        ) : (
+                                            <li>No one has been selected</li>
+                                        )}
+                                    </ul>
+                                </p>
+                                <button
+                                    onClick={() => handleSelectContractor(event)}
+                                    className="mt-4 bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded self-end">
+                                    Select Contractor
+                                </button>
                             </div>
                         ))
                     ) : (
                 <table className="min-w-full text-white">
                     <thead>
                         <tr className="border-b-4 border-white">
-                            <th className="p-4 text-left">Incident Name</th>
-                            <th className="p-4 text-left">Request</th>
-                            <th className="p-4 text-left">Start Date</th>
-                            <th className="p-4 text-left">End Date</th>
-                            <th className="p-4 text-left">Description</th>
+                            <th className="p-4 text-left">Event Name</th>
+                            <th className="p-4 text-left">Location</th>
+                            <th className="p-4 text-left">Load In</th>
+                            <th className="p-4 text-left">Load Out</th>
+                            <th className="p-4 text-left">Hours</th>
+                            <th className="p-4 text-left">Contractors</th>
                             <th className="p-4 text-left">Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {getFilteredAndSortedIncidents().map((incident) => (
-                            <tr key={incident._id} className="border-t border-white hover:bg-gray-800/50 transition">
-                                <td className="p-4">{incident.incidentName}</td>
-                                <td className="p-4">{incident.incidentRequest}</td>
-                                <td className="p-4">{new Date(incident.incidentStartDate).toLocaleString()}</td>
-                                <td className="p-4">{new Date(incident.incidentEndDate).toLocaleString()}</td>
-                                <td className="p-4">{incident.incidentDescription}</td>
+                        {getFilteredAndSortedEvents().map((event) => (
+                            <tr key={event._id} className="border-t border-white hover:bg-gray-800/50 transition">
+                                <td className="p-4">{event.eventName}</td>
+                                <td className="p-4">{event.eventLocation}</td>
+                                <td className="p-4">{new Date(event.eventLoadIn).toLocaleString()}</td>
+                                <td className="p-4">{new Date(event.eventLoadOut).toLocaleString()}</td>
+                                <td className="p-4">{event.eventHours || 'N/A'}</td>
+                                <td className="p-4">
+                                    <ul className="list-disc ml-4">
+                                        {event.assignedContractors && event.assignedContractors.length > 0 ? (
+                                            event.assignedContractors.map((contractor) => (
+                                                <li key={contractor._id}>{contractor.name}</li>
+                                            ))
+                                        ) : (
+                                            <li>No one has been selected</li>
+                                        )}
+                                    </ul>
+                                </td>
                                 <td className="p-4">
                                     <div className="flex space-x-2">
-                                        <FaReadme onClick={() => handleView(incident)} className="text-green-500 cursor-pointer text-xl" />
-                                        <FaEdit onClick={() => handleEdit(incident)} className="text-blue-500 cursor-pointer text-xl" />
-                                        <FaTrashAlt onClick={() => handleDelete(incident)} className="text-red-500 cursor-pointer text-xl" />
+                                        <FaReadme onClick={() => handleView(event)} className="text-green-500 cursor-pointer text-xl" />
+                                        <FaEdit onClick={() => handleEdit(event)} className="text-blue-500 cursor-pointer text-xl" />
+                                        <FaTrashAlt onClick={() => handleDelete(event)} className="text-red-500 cursor-pointer text-xl" />
                                     </div>
                                 </td>
                             </tr>
@@ -340,14 +481,64 @@ export default function ViewIncident() {
                         )
                     )}
             </div>
+            {showContractorPopup && (
+                <Modal>
+                <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex justify-center items-center z-50">
+                    <div className="bg-white w-full max-w-lg p-6 rounded shadow-lg">
+                        <h2 className="text-xl font-bold mb-4 text-black text-center">Select Contractor</h2>
+                        {selectedEvent && selectedEvent.acceptedContractors && selectedEvent.acceptedContractors.length > 0 ? (
+                            <ul>
+                                {selectedEvent.acceptedContractors.map((contractor) => (
+                                    <label key={contractor._id} className="flex items-center mb-2">
+                                        <input
+                                            type="checkbox"
+                                            name="contractor"
+                                            value={contractor._id}
+                                            onChange={(e) => {
+                                                if (e.target.checked) {
+                                                    setSelectedContractor((prev) => [...prev, contractor._id]);
+                                                } else {
+                                                    setSelectedContractor((prev) => prev.filter((id) => id !== contractor._id));
+                                                }
+                                            }}
+                                            className="mr-2"
+                                        />
+                                        <p className="text-sm truncate" style={{ maxWidth: '200px' }}>
+                                            {contractor.name || 'Unnamed Contractor'}
+                                        </p>
+                                    </label>
+                                ))}
+                            </ul>
+                        ) : (
+                            <p className="text-gray-500">No contractors have expressed interest yet.</p>
+                        )}
+                        <div className="mt-4 flex justify-end">
+                            <button
+                                onClick={() => setShowContractorPopup(false)}
+                                className="bg-gray-300 hover:bg-gray-200 text-black px-4 py-2 rounded mr-2"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={saveContractorSelection}
+                                className="bg-gray-800 hover:bg-gray-600 text-white px-4 py-2 rounded"
+                            >
+                                Save
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                </Modal>
+            )}
 
             {/* Delete Confirmation Popup */}
             {showDeletePopup && (
+                <Modal>
                 <div className="fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
                     <div className="bg-white p-8 rounded-md shadow-lg w-full max-w-md">
-                        <h2 className="text-red-600 text-2xl mb-4">Are you sure you want to delete this Incident?</h2>
+                        <h2 className="text-red-600 text-2xl mb-4">Are you sure you want to delete this Event?</h2>
                         <p className="text-gray-700 mb-6">
-                            This action cannot be undone. Once deleted, this incident's data will be permanently removed from the system.
+                            This action cannot be undone. Once deleted, this event's data will be permanently removed from the system.
                         </p>
                         <div className="flex justify-end gap-4">
                             <button onClick={() => setShowDeletePopup(false)} className="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-white rounded-full">
@@ -359,22 +550,25 @@ export default function ViewIncident() {
                         </div>
                     </div>
                 </div>
+                </Modal>
             )}
-            {/* Edit Incident Popup */}
+
+            {/* Edit Event Popup */}
             {showEditPopup && (
+                <Modal>
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
                     <div className="bg-white p-8 rounded shadow-lg w-full max-w-2xl">
-                        <h1 className="self-start text-2xl font-semibold mb-4">Edit Incident:</h1>
+                        <h1 className="self-start text-2xl font-semibold mb-4">Edit Event:</h1>
                         <form className="space-y-4 w-full" onSubmit={saveEdit}>
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full px-3">
-                                    <label className="block text-sm font-bold mb-2">Incident Name <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-bold mb-2">Event Name <span className="text-red-500">*</span></label>
                                     <input
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
                                         type="text"
-                                        name="incidentName"
-                                        placeholder="Enter Incident Name"
-                                        value={incidentToEdit.incidentName}
+                                        name="eventName"
+                                        placeholder="Enter Event Name"
+                                        value={eventToEdit.eventName}
                                         onChange={handleInputChange}
                                         required
                                     />
@@ -382,23 +576,23 @@ export default function ViewIncident() {
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">Start Date <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-bold mb-2">Load In <span className="text-red-500">*</span></label>
                                     <input
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
-                                        type="date"
-                                        name="incidentStartDate"
-                                        value={new Date(incidentToEdit.incidentStartDate).toISOString().slice(0, 16)}
+                                        type="datetime-local"
+                                        name="eventLoadIn"
+                                        value={new Date(eventToEdit.eventLoadIn).toISOString().slice(0, 16)}
                                         onChange={handleInputChange}
                                         required
                                     />
                                 </div>
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">End Date <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-bold mb-2">Load Out <span className="text-red-500">*</span></label>
                                     <input
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
-                                        type="date"
-                                        name="incidentEndDate"
-                                        value={new Date(incidentToEdit.incidentEndDate).toISOString().slice(0, 16)}
+                                        type="datetime-local"
+                                        name="eventLoadOut"
+                                        value={new Date(eventToEdit.eventLoadOut).toISOString().slice(0, 16)}
                                         onChange={handleInputChange}
                                         required
                                     />
@@ -406,44 +600,85 @@ export default function ViewIncident() {
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">Request <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-bold mb-2">Location <span className="text-red-500">*</span></label>
                                     <input
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
                                         type="text"
-                                        name="incidentRequest"
-                                        placeholder="Enter Request"
-                                        value={incidentToEdit.incidentRequest}
+                                        name="eventLocation"
+                                        placeholder="Enter Event Location"
+                                        value={eventToEdit.eventLocation}
                                         onChange={handleInputChange}
                                         required
                                     />
                                 </div>
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">Upload Files <span className="text-red-500">*</span></label>
-                                    {/* <p className="block text-white mb-2">Select Files Here:</p> */}
+                                    <label className="block text-sm font-bold mb-2">Total Hours</label>
                                     <input
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
-                                        type="file"
-                                        name="incidentFiles"
-                                        value={incidentToEdit.incidentFiles}
-                                        onChange={handleFileChange} // Handle file change
-                                        multiple // Allow multiple file uploads
+                                        type="number"
+                                        name="eventHours"
+                                        placeholder="Enter Total Hours"
+                                        value={eventToEdit.eventHours || ''}
+                                        onChange={handleInputChange}
                                     />
                                 </div>
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full px-3">
-                                    <label className="block text-sm font-bold mb-2">Incident Description <span className="text-red-500">*</span></label>
+                                    <label className="block text-sm font-bold mb-2">Job Description <span className="text-red-500">*</span></label>
                                     <textarea
                                         className="appearance-none border rounded w-full py-2 px-3 text-black leading-tight focus:outline-none"
-                                        name="incidentDescription"
+                                        name="eventDescription"
                                         placeholder="Enter Job Description"
                                         rows="3"
-                                        value={incidentToEdit.incidentDescription}
+                                        value={eventToEdit.eventDescription}
                                         onChange={handleInputChange}
                                         required
                                     />
                                 </div>
                             </div>
+                            <div className="flex flex-wrap -mx-3 mb-4">
+                                <div className="w-full px-3">
+                                    <label className="block text-sm font-bold mb-2">Contractors</label>
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowContractorPopup(true)}
+                                        className="appearance-none border rounded w-max py-2 px-3 text-black bg-gray-500/35 hover:bg-gray-700/35"
+                                    >
+                                        Select Contractors
+                                    </button>
+                                </div>
+                            </div>
+
+                            {showContractorPopup && (
+                                <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
+                                    <div className="bg-white p-8 rounded-lg shadow-lg w-[80%] max-w-md relative">
+                                        <h2 className="text-xl font-semibold text-black mb-6 text-center">Select Contractors</h2>
+                                        <MultiSelect
+                                            options={contractors.map(contractor => ({
+                                                value: contractor._id,
+                                                label: contractor.name
+                                            }))}
+                                            value={selectedContractors.map(id => ({
+                                                value: id,
+                                                label: contractors.find(contractor => contractor._id === id)?.name
+                                            }))}
+                                            onChange={handleContractorChange}
+                                            isMulti
+                                            closeMenuOnSelect={false}
+                                            hideSelectedOptions={false}
+                                        />
+                                        <div className="flex justify-center mt-6">
+                                            <button
+                                                onClick={() => setShowContractorPopup(false)}
+                                                className="px-1 py-1 bg-black text-white rounded-lg text-lg"
+                                            >
+                                                Done
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="flex justify-end space-x-4">
                                 <button onClick={() => setShowEditPopup(false)} className="px-4 py-2 bg-gray-300 rounded">Cancel</button>
@@ -481,46 +716,64 @@ export default function ViewIncident() {
                         </form>
                     </div>
                 </div>
+                </Modal>
             )}
             {showViewPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
                     <div className="bg-white p-8 rounded shadow-lg w-full max-w-2xl">
-                        <h1 className="self-start text-2xl font-semibold mb-4">View Incident:</h1>
+                        <h1 className="self-start text-2xl font-semibold mb-4">View Event:</h1>
                         <div className="space-y-4 w-full">
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full px-3">
-                                    <label className="block text-sm font-bold mb-2">Incident Name:</label>
-                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentName}</p>
+                                    <label className="block text-sm font-bold mb-2">Event Name:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{eventToView?.eventName}</p>
                                 </div>
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">Start Date:</label>
+                                    <label className="block text-sm font-bold mb-2">Load In:</label>
                                     <p className="text-black bg-gray-100 px-3 py-2 rounded">
-                                        {new Date(incidentToView?.incidentStartDate).toLocaleDateString()}
+                                        {new Date(eventToView?.eventLoadIn).toLocaleString()}
                                     </p>
                                 </div>
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">End Date:</label>
+                                    <label className="block text-sm font-bold mb-2">Load Out:</label>
                                     <p className="text-black bg-gray-100 px-3 py-2 rounded">
-                                        {new Date(incidentToView?.incidentEndDate).toLocaleDateString()}
+                                        {new Date(eventToView?.eventLoadOut).toLocaleString()}
                                     </p>
                                 </div>
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">Request:</label>
-                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentRequest}</p>
+                                    <label className="block text-sm font-bold mb-2">Location:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{eventToView?.eventLocation}</p>
                                 </div>
+                                
                                 <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-sm font-bold mb-2">Files:</label>
-                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentFiles}</p>
+                                    <label className="block text-sm font-bold mb-2">Total Hours:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{eventToView?.eventHours}</p>
                                 </div>
                             </div>
+                            
                             <div className="flex flex-wrap -mx-3 mb-4">
                                 <div className="w-full px-3">
-                                    <label className="block text-sm font-bold mb-2">Incident Description:</label>
-                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{incidentToView?.incidentDescription}</p>
+                                    <label className="block text-sm font-bold mb-2">Job Description:</label>
+                                    <p className="text-black bg-gray-100 px-3 py-2 rounded">{eventToView?.eventDescription}</p>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap -mx-3 mb-4">
+                                <div className="w-full px-3">
+                                    <label className="block text-sm font-bold mb-2">Contractors:</label>
+                                    <ul className="list-disc ml-4">
+                                        {eventToView.assignedContractors && eventToView.assignedContractors.length > 0 ? (
+                                            eventToView.assignedContractors.map((contractor) => (
+                                                <li key={contractor._id}>{contractor.name}</li>
+                                            ))
+                                        ) : (
+                                            <li>No one has been selected</li>
+                                        )}
+                                    </ul>
                                 </div>
                             </div>
                         </div>
