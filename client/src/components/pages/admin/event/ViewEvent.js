@@ -1,7 +1,7 @@
 // src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock, FaUsers } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
@@ -20,7 +20,16 @@ export default function ViewEvent() {
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
     const [showEditPopup, setShowEditPopup] = useState(false);
-    const [eventToEdit, setEventToEdit] = useState(null);
+    const [eventToEdit, setEventToEdit] = useState({
+        eventName: '',
+        eventLoadIn: '',
+        eventLoadInHours: '',
+        eventLoadOut: '',
+        eventLoadOutHours: '',
+        eventLocation: '',
+        eventDescription: '',
+        assignedContractors: []
+    });
     const [showContractorPopup, setShowContractorPopup] = useState(false);
     const selectRef = useRef(null);
     const [sortField, setSortField] = useState(null);
@@ -96,12 +105,10 @@ export default function ViewEvent() {
         }
     };
 
+    // Edit Event
+
     const handleEdit = (event) => {
-        setEventToEdit(event);
-        setSelectedContractors(
-            event.assignedContractors ? event.assignedContractors.map(contractor => contractor._id) : []
-        );
-        setShowEditPopup(true);
+        navigate(`/admin/events/edit/${event._id}`);
     };
 
     const handleContractorChange = (selectedOptions) => {
@@ -279,7 +286,7 @@ export default function ViewEvent() {
         return events.map((event) => ({
             title: (
                 <div className="flex justify-between items-center">
-                    <span>{event.eventName}</span>
+                    <span className="text-lg font-semibold">{event.eventName}</span>
                     <div 
                         className="flex space-x-3"
                         onClick={(e) => e.preventDefault()}
@@ -304,22 +311,24 @@ export default function ViewEvent() {
                 </div>
             ),
             description: (
-                <div className="space-y-2">
-                    <p>Location: {event.eventLocation}</p>
-                    <p>Load In: {new Date(event.eventLoadIn).toLocaleString()}</p>
-                    <p>Load Out: {new Date(event.eventLoadOut).toLocaleString()}</p>
-                    <p>Hours: {event.eventHours || 'N/A'}</p>
-                    <div>
-                        Contractors:
-                        <ul className="list-disc ml-4">
-                            {event.assignedContractors && event.assignedContractors.length > 0 ? (
-                                event.assignedContractors.map((contractor) => (
-                                    <li key={contractor._id}>{contractor.name}</li>
-                                ))
-                            ) : (
-                                <li>No one has been selected</li>
-                            )}
-                        </ul>
+                <div className="space-y-4">
+                    <div className="space-y-2">
+                        <p className="text-neutral-400 font-medium">Load In</p>
+                        <div className="pl-2 border-l-2 border-neutral-700">
+                            <p className="text-white">{new Date(event.eventLoadIn).toLocaleString()}</p>
+                            <p className="text-neutral-300">Hours: {event.eventLoadInHours}h</p>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <p className="text-neutral-400 font-medium">Load Out</p>
+                        <div className="pl-2 border-l-2 border-neutral-700">
+                            <p className="text-white">{new Date(event.eventLoadOut).toLocaleString()}</p>
+                            <p className="text-neutral-300">Hours: {event.eventLoadOutHours}h</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center pt-2 border-t border-neutral-700">
+                        <FaUsers className="mr-2 text-neutral-400" />
+                        <span className="text-neutral-300">{event.assignedContractors?.length || 0} Contractors</span>
                     </div>
                 </div>
             ),
@@ -509,61 +518,31 @@ export default function ViewEvent() {
                         </div>
                     ) : (
                         <div className="overflow-x-auto">
-                            <table className="min-w-full bg-neutral-800 rounded-lg overflow-hidden">
+                            <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden">
                                 <thead className="bg-neutral-700">
                                     <tr>
-                                        <th className="p-4 text-left text-white">
-                                            <div className="flex items-center">
-                                                Event Name
-                                                <span onClick={() => handleSortChange({ target: { value: `name-${sortDirection === 'asc' ? 'desc' : 'asc'}` }})} className="ml-2 cursor-pointer">
-                                                    {sortField === 'name' && sortDirection === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
-                                                </span>
-                                            </div>
-                                        </th>
-                                        <th className="p-4 text-left text-white">
-                                            <div className="flex items-center">
-                                                Location
-                                                <span onClick={() => handleSortChange({ target: { value: `location-${sortDirection === 'asc' ? 'desc' : 'asc'}` }})} className="ml-2 cursor-pointer">
-                                                    {sortField === 'location' && sortDirection === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
-                                                </span>
-                                            </div>
-                                        </th>
-                                        <th className="p-4 text-left text-white">
-                                            <div className="flex items-center">
-                                                Load In
-                                                <span onClick={() => handleSortChange({ target: { value: `loadIn-${sortDirection === 'asc' ? 'desc' : 'asc'}` }})} className="ml-2 cursor-pointer">
-                                                    {sortField === 'loadIn' && sortDirection === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
-                                                </span>
-                                            </div>
-                                        </th>
+                                        <th className="p-4 text-left text-white">Event Name</th>
+                                        <th className="p-4 text-left text-white">Load In</th>
+                                        <th className="p-4 text-left text-white">Load In Hours</th>
                                         <th className="p-4 text-left text-white">Load Out</th>
-                                        <th className="p-4 text-left text-white">Hours</th>
+                                        <th className="p-4 text-left text-white">Load Out Hours</th>
                                         <th className="p-4 text-left text-white">Contractors</th>
                                         <th className="p-4 text-left text-white">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {getFilteredAndSortedEvents().map((event) => (
-                                        <tr 
-                                            key={event._id} 
-                                            className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors"
-                                        >
-                                            <td className="p-4 text-white truncate">{event.eventName}</td>
-                                            <td className="p-4 text-white truncate">{event.eventLocation}</td>
-                                            <td className="p-4 text-white">{new Date(event.eventLoadIn).toLocaleString()}</td>
-                                            <td className="p-4 text-white">{new Date(event.eventLoadOut).toLocaleString()}</td>
-                                            <td className="p-4 text-white">{event.eventHours || 'N/A'}</td>
+                                    {events.map((event) => (
+                                        <tr key={event._id} className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors">
                                             <td className="p-4 text-white">
-                                                <ul className="list-disc ml-4">
-                                                    {event.assignedContractors && event.assignedContractors.length > 0 ? (
-                                                        event.assignedContractors.map((contractor) => (
-                                                            <li key={contractor._id}>{contractor.name}</li>
-                                                        ))
-                                                    ) : (
-                                                        <li>No one has been selected</li>
-                                                    )}
-                                                </ul>
+                                                <Link to={`/admin/events/${event._id}`} className="hover:text-blue-400">
+                                                    {event.eventName}
+                                                </Link>
                                             </td>
+                                            <td className="p-4 text-white">{new Date(event.eventLoadIn).toLocaleString()}</td>
+                                            <td className="p-4 text-white">{event.eventLoadInHours}h</td>
+                                            <td className="p-4 text-white">{new Date(event.eventLoadOut).toLocaleString()}</td>
+                                            <td className="p-4 text-white">{event.eventLoadOutHours}h</td>
+                                            <td className="p-4 text-white">{event.assignedContractors?.length || 0}</td>
                                             <td className="p-4">
                                                 <div className="flex space-x-2">
                                                     <FaEdit 
@@ -682,8 +661,8 @@ export default function ViewEvent() {
                                 </p>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
+                            <div className="flex flex-wrap -mx-3 mb-6">
+                                <div className="w-full md:w-1/2 px-3">
                                     <label className="block text-neutral-200 text-lg font-bold mb-2">
                                         Load In <span className="text-red-500">*</span>
                                     </label>
@@ -692,11 +671,29 @@ export default function ViewEvent() {
                                         name="eventLoadIn"
                                         value={eventToEdit.eventLoadIn}
                                         onChange={handleInputChange}
-                                        className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
+                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
                                         required
                                     />
                                 </div>
-                                <div>
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
+                                        Load In Hours <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="eventLoadInHours"
+                                        value={eventToEdit.eventLoadInHours}
+                                        onChange={handleInputChange}
+                                        min="0"
+                                        step="0.5"
+                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="flex flex-wrap -mx-3 mb-6">
+                                <div className="w-full md:w-1/2 px-3">
                                     <label className="block text-neutral-200 text-lg font-bold mb-2">
                                         Load Out <span className="text-red-500">*</span>
                                     </label>
@@ -705,31 +702,28 @@ export default function ViewEvent() {
                                         name="eventLoadOut"
                                         value={eventToEdit.eventLoadOut}
                                         onChange={handleInputChange}
-                                        className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
+                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
+                                        required
+                                    />
+                                </div>
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
+                                        Load Out Hours <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        type="number"
+                                        name="eventLoadOutHours"
+                                        value={eventToEdit.eventLoadOutHours}
+                                        onChange={handleInputChange}
+                                        min="0"
+                                        step="0.5"
+                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
                                         required
                                     />
                                 </div>
                             </div>
 
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                        Total Hours <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="eventHours"
-                                        value={eventToEdit.eventHours}
-                                        onChange={handleInputChange}
-                                        min="1"
-                                        max="168"
-                                        className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
-                                        required
-                                    />
-                                    <p className="text-sm text-neutral-400 mt-1">
-                                        Maximum: 168 hours (1 week)
-                                    </p>
-                                </div>
                                 <div>
                                     <label className="block text-neutral-200 text-lg font-bold mb-2">
                                         Contractors

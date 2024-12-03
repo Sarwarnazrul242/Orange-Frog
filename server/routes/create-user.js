@@ -148,7 +148,7 @@ router.post('/:userId', async (req, res) => {
                         </p>
 
                         <div style="text-align: center; margin-top: 20px;">
-                            <a href="http://localhost:3000/" style="background-color: #ffffff; color: black; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-size: 16px;">
+                            <a href="https://orange-frog.vercel.app/" style="background-color: #ffffff; color: black; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-size: 16px;">
                                 Log In to Your Account
                             </a>
                         </div>

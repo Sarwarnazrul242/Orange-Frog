@@ -4,24 +4,13 @@ import { default as ReactSelect, components } from "react-select";
 
 const MultiSelect = (props) => {
   const [selectInput, setSelectInput] = useState("");
-  const [allSelected, setAllSelected] = useState(false); // Track the "Select All" checkbox state
-
-  // Filter options based on input
-  // const filterOptions = (options, input) =>
-  //   options?.filter(({ label }) =>
-  //     label.toLowerCase().includes(input.toLowerCase())
-  //   );
-
-  // const comparator = (v1, v2) => (v1.value - v2.value);
-
-  // let filteredOptions = filterOptions(props.options, selectInput);
+  const [allSelected, setAllSelected] = useState(false);
 
   // Custom Option component with a checkbox
   const Option = (optionProps) => {
     const { value, label } = optionProps.data;
     const isAllOption = value === "*";
 
-    // Trigger handleSelectAll for "Select All" option when clicked
     const handleOptionClick = (e) => {
       e.stopPropagation();
       if (isAllOption) {
@@ -33,31 +22,27 @@ const MultiSelect = (props) => {
 
     return (
       <components.Option {...optionProps} innerProps={{ ...optionProps.innerProps, onClick: handleOptionClick }}>
-        <input
-          type="checkbox"
-          checked={isAllOption ? allSelected : optionProps.isSelected}
-          readOnly
-          style={{ marginRight: "8px" }}
-        />
-        <label>{label}</label>
+        <div className="flex items-center space-x-3">
+          <input
+            type="checkbox"
+            checked={isAllOption ? allSelected : optionProps.isSelected}
+            readOnly
+            className="h-4 w-4 rounded border-neutral-600 bg-neutral-700 text-orange-500 focus:ring-orange-500 focus:ring-offset-neutral-800"
+          />
+          <label className="text-neutral-200">{label}</label>
+        </div>
       </components.Option>
     );
   };
 
   const Input = (inputProps) => (
-    <>
-      {selectInput.length === 0 ? (
-        <components.Input autoFocus={inputProps.selectProps.menuIsOpen} {...inputProps}>
-          {inputProps.children}
-        </components.Input>
-      ) : (
-        <div style={{ border: "1px dotted gray" }}>
-          <components.Input autoFocus={inputProps.selectProps.menuIsOpen} {...inputProps}>
-            {inputProps.children}
-          </components.Input>
-        </div>
-      )}
-    </>
+    <components.Input 
+      {...inputProps} 
+      className="text-white placeholder-neutral-400"
+      autoFocus={inputProps.selectProps.menuIsOpen}
+    >
+      {inputProps.children}
+    </components.Input>
   );
 
   const onInputChange = (inputValue, { action }) => {
@@ -67,18 +52,15 @@ const MultiSelect = (props) => {
 
   const handleSelectAll = () => {
     if (allSelected) {
-      // Deselect all
       setAllSelected(false);
       props.onChange([]);
     } else {
-      // Select all options
       setAllSelected(true);
       props.onChange(props.options);
     }
   };
 
   const handleChange = (selected) => {
-    // Update "Select All" state based on selection
     if (selected.length === props.options.length) {
       setAllSelected(true);
     } else {
@@ -88,34 +70,84 @@ const MultiSelect = (props) => {
   };
 
   const customStyles = {
-    multiValueLabel: (def) => ({
-      ...def,
-      backgroundColor: "lightgray",
+    control: (base, state) => ({
+      ...base,
+      backgroundColor: '#262626', // neutral-800
+      borderColor: state.isFocused ? '#525252' : '#404040', // neutral-600/neutral-700
+      boxShadow: state.isFocused ? '0 0 0 1px #525252' : 'none',
+      '&:hover': {
+        borderColor: '#525252' // neutral-600
+      }
     }),
-    multiValueRemove: (def) => ({
-      ...def,
-      backgroundColor: "lightgray",
+    menu: (base) => ({
+      ...base,
+      backgroundColor: '#262626', // neutral-800
+      border: '1px solid #404040', // neutral-700
+      boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+      zIndex: 9999
+    }),
+    option: (base, { isSelected, isFocused }) => ({
+      ...base,
+      backgroundColor: isSelected 
+        ? '#404040' // neutral-700
+        : isFocused 
+          ? '#363636' // neutral-750
+          : '#262626', // neutral-800
+      color: '#e5e5e5', // neutral-200
+      '&:active': {
+        backgroundColor: '#404040' // neutral-700
+      }
+    }),
+    multiValue: (base) => ({
+      ...base,
+      backgroundColor: '#404040', // neutral-700
+    }),
+    multiValueLabel: (base) => ({
+      ...base,
+      color: '#e5e5e5', // neutral-200
+    }),
+    multiValueRemove: (base) => ({
+      ...base,
+      color: '#9ca3af', // neutral-400
+      '&:hover': {
+        backgroundColor: '#525252', // neutral-600
+        color: '#e5e5e5' // neutral-200
+      }
+    }),
+    clearIndicator: (base) => ({
+      ...base,
+      color: '#9ca3af', // neutral-400
+      '&:hover': {
+        color: '#e5e5e5' // neutral-200
+      }
+    }),
+    dropdownIndicator: (base) => ({
+      ...base,
+      color: '#9ca3af', // neutral-400
+      '&:hover': {
+        color: '#e5e5e5' // neutral-200
+      }
     }),
     valueContainer: (base) => ({
       ...base,
-      maxHeight: "65px",
-      overflow: "auto",
+      maxHeight: '65px',
+      overflow: 'auto',
+      padding: '2px 6px',
+      color: '#e5e5e5' // neutral-200
     }),
-    option: (styles, { isSelected }) => ({
-      ...styles,
-      display: "flex",
-      alignItems: "center",
-      backgroundColor: isSelected ? "#c3c8c9" : "white",
+    placeholder: (base) => ({
+      ...base,
+      color: '#9ca3af' // neutral-400
     }),
-    menu: (def) => ({ ...def, zIndex: 9999 }),
+    noOptionsMessage: (base) => ({
+      ...base,
+      color: '#9ca3af' // neutral-400
+    }),
+    loadingMessage: (base) => ({
+      ...base,
+      color: '#9ca3af' // neutral-400
+    }),
   };
-
-  useEffect(() => {
-    // Check if all options are selected to automatically mark "Select All"
-    const allSelectedStatus =
-      props.value && props.value.length === props.options.length;
-    setAllSelected(allSelectedStatus);
-  }, [props.value, props.options]);
 
   return (
     <ReactSelect
@@ -134,8 +166,18 @@ const MultiSelect = (props) => {
       menuPlacement={props.menuPlacement ?? "auto"}
       styles={customStyles}
       isMulti
-      closeMenuOnSelect={false} // Keep dropdown open on selection
+      closeMenuOnSelect={false}
       hideSelectedOptions={false}
+      theme={(theme) => ({
+        ...theme,
+        colors: {
+          ...theme.colors,
+          primary: '#F16636', // Orange Frog orange
+          primary75: '#F16636cc',
+          primary50: '#F1663680',
+          primary25: '#F1663640',
+        },
+      })}
     />
   );
 };

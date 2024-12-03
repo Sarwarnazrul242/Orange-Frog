@@ -16,6 +16,7 @@ import Profile from "./components/pages/admin/AdminProfile";
 import ManageEvents from "./components/pages/admin/event/ManageEvents";
 import ManageUsers from "./components/pages/admin/users/ManageUsers";
 import CreateEvent from "./components/pages/admin/event/CreateEvent";
+import EditEvent from "./components/pages/admin/event/EditEvent";
 
 // User Pages
 import UserDashboard from "./components/pages/freelancer/UserDashboard";
@@ -70,6 +71,7 @@ function App() {
             <Route path="manage-events" element={<ManageEvents />} />
             <Route path="events/create" element={<CreateEvent />} />
             <Route path="events/:eventId" element={<EventDetails />} />
+            <Route path="events/edit/:id" element={<EditEvent />} />
           </Route>
 
           {/* Protected User Routes */}

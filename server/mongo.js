@@ -39,9 +39,10 @@ const userCollection = mongoose.model('userCollection', userSchema);
 const eventSchema = new mongoose.Schema({
     eventName: { type: String, required: true },
     eventLoadIn: { type: Date, required: true },
+    eventLoadInHours: { type: Number, required: true },
     eventLoadOut: { type: Date, required: true },
+    eventLoadOutHours: { type: Number, required: true },
     eventLocation: { type: String, required: true },
-    eventHours: { type: Number },
     eventDescription: { type: String },
     assignedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
     eventStatus: { type: String, enum: ['published', 'processing', 'started', 'completed', 'canceled'], default: 'published' },

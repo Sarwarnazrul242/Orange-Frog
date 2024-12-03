@@ -129,21 +129,26 @@ export default function EventDetails() {
                                     <span className="font-medium">Location:</span>
                                     <span className="ml-2">{event.eventLocation}</span>
                                 </p>
-                                <p className="flex items-center">
+                                <div className="flex items-center">
                                     <FaClock className="mr-2 text-green-400" />
-                                    <span className="font-medium">Load In:</span>
-                                    <span className="ml-2">{new Date(event.eventLoadIn).toLocaleString()}</span>
-                                </p>
-                                <p className="flex items-center">
+                                    <div className="flex-1">
+                                        <div className="mb-2">
+                                            <span className="font-medium">Load In:</span>
+                                            <span className="ml-2">{new Date(event.eventLoadIn).toLocaleString()}</span>
+                                            <span className="ml-2 text-green-400">({event.eventLoadInHours}h)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center">
                                     <FaClock className="mr-2 text-yellow-400" />
-                                    <span className="font-medium">Load Out:</span>
-                                    <span className="ml-2">{new Date(event.eventLoadOut).toLocaleString()}</span>
-                                </p>
-                                <p className="flex items-center">
-                                    <FaClock className="mr-2 text-purple-400" />
-                                    <span className="font-medium">Hours:</span>
-                                    <span className="ml-2">{event.eventHours || 'N/A'}</span>
-                                </p>
+                                    <div className="flex-1">
+                                        <div>
+                                            <span className="font-medium">Load Out:</span>
+                                            <span className="ml-2">{new Date(event.eventLoadOut).toLocaleString()}</span>
+                                            <span className="ml-2 text-yellow-400">({event.eventLoadOutHours}h)</span>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </motion.div>

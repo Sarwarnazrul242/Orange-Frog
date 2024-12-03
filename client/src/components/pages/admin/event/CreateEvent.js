@@ -11,10 +11,11 @@ export default function CreateEvent() {
     const [formData, setFormData] = useState({
         eventName: '',
         eventLoadIn: '',
+        eventLoadInHours: '',
         eventLoadOut: '',
+        eventLoadOutHours: '',
         eventLocation: '',
         eventDescription: '',
-        eventHours: '',
         assignedContractors: []
     });
     const [showContractorPopup, setShowContractorPopup] = useState(false);
@@ -29,8 +30,44 @@ export default function CreateEvent() {
             .catch(error => console.error('Error fetching contractors:', error));
     }, []);
 
+    // Get current date-time in ISO format
+    const getCurrentDateTime = () => {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+        return now.toISOString().slice(0, 16);
+    };
+
+    // Calculate minimum load out time based on load in
+    const getMinLoadOutDateTime = () => {
+        if (!formData.eventLoadIn) return getCurrentDateTime();
+        return formData.eventLoadIn;
+    };
+
     const handleInputChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
+        const { name, value } = e.target;
+        
+        // Special handling for load in date changes
+        if (name === 'eventLoadIn') {
+            setFormData(prev => {
+                // If load out is before new load in, reset load out
+                if (prev.eventLoadOut && new Date(prev.eventLoadOut) < new Date(value)) {
+                    return {
+                        ...prev,
+                        [name]: value,
+                        eventLoadOut: value
+                    };
+                }
+                return {
+                    ...prev,
+                    [name]: value
+                };
+            });
+        } else {
+            setFormData(prev => ({
+                ...prev,
+                [name]: value
+            }));
+        }
     };
 
     const handleContractorChange = (selectedOptions) => {
@@ -55,10 +92,11 @@ export default function CreateEvent() {
                 setFormData({
                     eventName: '',
                     eventLoadIn: '',
+                    eventLoadInHours: '',
                     eventLoadOut: '',
+                    eventLoadOutHours: '',
                     eventLocation: '',
                     eventDescription: '',
-                    eventHours: '',
                     assignedContractors: []
                 });
                 setSelectedContractors([]);
@@ -132,9 +170,27 @@ export default function CreateEvent() {
                                         name="eventLoadIn"
                                         value={formData.eventLoadIn}
                                         onChange={handleInputChange}
+                                        min={getCurrentDateTime()}
                                         required
                                     />
                                 </div>
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
+                                        Load In Hours <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
+                                        type="number"
+                                        name="eventLoadInHours"
+                                        value={formData.eventLoadInHours}
+                                        onChange={handleInputChange}
+                                        min="0"
+                                        step="0.5"
+                                        required
+                                    />
+                                </div>
+                            </div>
+                            <div className="flex flex-wrap -mx-3 mb-6">
                                 <div className="w-full md:w-1/2 px-3">
                                     <label className="block text-neutral-200 text-lg font-bold mb-2">
                                         Load Out <span className="text-red-500">*</span>
@@ -145,30 +201,27 @@ export default function CreateEvent() {
                                         name="eventLoadOut"
                                         value={formData.eventLoadOut}
                                         onChange={handleInputChange}
+                                        min={getMinLoadOutDateTime()}
+                                        required
+                                    />
+                                </div>
+                                <div className="w-full md:w-1/2 px-3">
+                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
+                                        Load Out Hours <span className="text-red-500">*</span>
+                                    </label>
+                                    <input
+                                        className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
+                                        type="number"
+                                        name="eventLoadOutHours"
+                                        value={formData.eventLoadOutHours}
+                                        onChange={handleInputChange}
+                                        min="0"
+                                        step="0.5"
                                         required
                                     />
                                 </div>
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-6">
-                                <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                        Total Hours <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
-                                        type="number"
-                                        name="eventHours"
-                                        placeholder="Enter Total Hours"
-                                        value={formData.eventHours}
-                                        onChange={handleInputChange}
-                                        min="1"
-                                        max="168" // Maximum hours in a week
-                                        required
-                                    />
-                                    <p className="text-sm text-neutral-400 mt-1">
-                                        Maximum: 168 hours (1 week)
-                                    </p>
-                                </div>
                                 <div className="w-full md:w-1/2 px-3">
                                     <label className="block text-neutral-200 text-lg font-bold mb-2">
                                         Contractors

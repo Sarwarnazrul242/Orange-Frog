@@ -88,33 +88,35 @@ const CurrentJobs = () => {
         return jobs.map((job) => ({
             title: (
                 <div className="flex justify-between items-center">
-                    <span>{job.eventDescription.length > 35
-                            ? `${job.eventDescription.substring(0, 35)}...`
-                            : job.eventDescription}</span>
+                    <span className="text-lg font-semibold">{job.eventName}</span>
                     {getStatusBadge(job.status)}
                 </div>
             ),
             description: (
-                <div className="flex flex-col space-y-2">
-                    <div className="flex items-center space-x-2">
-                        <span className="text-zinc-400">Location:</span>
-                        <span>{job.eventLocation.length > 25
-                            ? `${job.eventLocation.substring(0, 25)}...`
-                            : job.eventLocation}</span>
+                <div className="flex flex-col space-y-4">
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <p className="text-neutral-400 font-medium">Load In</p>
+                            <div className="pl-2 border-l-2 border-neutral-700">
+                                <p className="text-white">{new Date(job.eventLoadIn).toLocaleString()}</p>
+                                <p className="text-neutral-300">Hours: {job.eventLoadInHours}h</p>
+                            </div>
+                        </div>
+                        <div className="space-y-2">
+                            <p className="text-neutral-400 font-medium">Load Out</p>
+                            <div className="pl-2 border-l-2 border-neutral-700">
+                                <p className="text-white">{new Date(job.eventLoadOut).toLocaleString()}</p>
+                                <p className="text-neutral-300">Hours: {job.eventLoadOutHours}h</p>
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <span className="text-zinc-400">Load In:</span>
-                        <span>{new Date(job.eventLoadIn).toLocaleString()}</span>
+                    <div className="space-y-2">
+                        <p className="text-neutral-400 font-medium">Location</p>
+                        <p className="text-white">{job.eventLocation}</p>
                     </div>
-                    <div className="flex items-center space-x-2">
-                        <span className="text-zinc-400">Load Out:</span>
-                        <span>{new Date(job.eventLoadOut).toLocaleString()}</span>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <span className="text-zinc-400">Description:</span>
-                        <span>{job.eventDescription.length > 35
-                            ? `${job.eventDescription.substring(0, 35)}...`
-                            : job.eventDescription}</span>
+                    <div className="space-y-2">
+                        <p className="text-neutral-400 font-medium">Description</p>
+                        <p className="text-white line-clamp-3">{job.eventDescription}</p>
                     </div>
                 </div>
             ),
