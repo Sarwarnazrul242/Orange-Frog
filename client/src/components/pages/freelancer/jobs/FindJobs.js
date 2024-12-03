@@ -1,26 +1,23 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { FaTh, FaList, FaSortAlphaDown, FaSortAlphaUp, FaArrowUp, FaArrowDown, FaRegSadTear, FaTimes } from 'react-icons/fa';
+import { FaTh, FaList, FaSort, FaRegSadTear, FaTimes, FaFilter } from 'react-icons/fa';
 import { AuthContext } from "../../../../AuthContext";
 import { Link } from "react-router-dom";
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
 import { HoverEffect } from "../../../ui/card-hover-effect";
+import { motion } from "framer-motion";
 
 export default function FindJobs() {
     const { auth } = useContext(AuthContext);
-    const [sortOption, setSortOption] = useState("recent");
-    const [showSortDropdown, setShowSortDropdown] = useState(false);
     const [isGridView, setIsGridView] = useState(true);
     const [jobs, setJobs] = useState([]);
     const [jobStatuses, setJobStatuses] = useState({});
-    const [sortField, setSortField] = useState(null);
-    const [sortDirection, setSortDirection] = useState('asc');
+    const [sortConfig, setSortConfig] = useState({ type: 'recent' });
+    const [showFilters, setShowFilters] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmationType, setConfirmationType] = useState(null);
     const [selectedJobId, setSelectedJobId] = useState(null);
-    const [selectedJob, setSelectedJob] = useState(null);
-
 
     useEffect(() => {
         const fetchAssignedJobs = async () => {
@@ -30,11 +27,19 @@ export default function FindJobs() {
                     `${process.env.REACT_APP_BACKEND}/events/assigned/${auth.email}`
                 );
                 console.log("Jobs response:", response.data);
-                setJobs(response.data);
+                
+                // Filter out past events
+                const currentDate = new Date();
+                const futureJobs = response.data.filter(job => {
+                    const loadInDate = new Date(job.eventLoadIn);
+                    return loadInDate >= currentDate;
+                });
 
-                // Initialize jobStatuses
+                setJobs(futureJobs);
+
+                // Initialize jobStatuses for future jobs only
                 const statuses = {};
-                response.data.forEach((job) => {
+                futureJobs.forEach((job) => {
                     if (job.acceptedContractors.includes(auth.email)) {
                         statuses[job._id] = "Accepted";
                     } else if (job.rejectedContractors.includes(auth.email)) {
@@ -46,6 +51,7 @@ export default function FindJobs() {
                 setJobStatuses(statuses);
             } catch (error) {
                 console.error("Error fetching assigned jobs:", error);
+                toast.error("Failed to fetch available jobs");
             }
         };
 
@@ -54,11 +60,25 @@ export default function FindJobs() {
         }
     }, [auth.email]);
 
-    const sortedJobs = [...jobs].sort((a, b) => {
-        return sortOption === "recent"
-        ? new Date(b.eventLoadIn) - new Date(a.eventLoadIn)
-        : new Date(a.eventLoadIn) - new Date(b.eventLoadIn);
-    });
+    const sortedJobs = React.useMemo(() => {
+        const sortedArray = [...jobs];
+        const currentDate = new Date();
+
+        if (sortConfig.type === 'recent') {
+            // Sort by most recently posted (using _id as a proxy for creation time)
+            return sortedArray.sort((a, b) => {
+                return b._id.localeCompare(a._id);
+            });
+        } else if (sortConfig.type === 'closest') {
+            // Sort by closest upcoming load-in date
+            return sortedArray.sort((a, b) => {
+                const dateA = new Date(a.eventLoadIn);
+                const dateB = new Date(b.eventLoadIn);
+                return dateA - dateB;
+            });
+        }
+        return sortedArray;
+    }, [jobs, sortConfig]);
 
     const handleReject = async (id) => {
         try {
@@ -75,30 +95,6 @@ export default function FindJobs() {
 
     const handleCardClick = (job) => {
         // No need to setSelectedJob as we're not using a Modal
-    };
-
-    const handleSort = (field) => {
-        if (sortField === field) {
-            setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-        } else {
-            setSortField(field);
-            setSortDirection('asc');
-        }
-    };
-
-    const getSortedJobs = () => {
-        if (!sortField) return sortedJobs;
-
-        return [...sortedJobs].sort((a, b) => {
-            const aValue = a[sortField]?.toString().toLowerCase() || '';
-            const bValue = b[sortField]?.toString().toLowerCase() || '';
-
-            if (sortDirection === 'asc') {
-                return aValue.localeCompare(bValue);
-            } else {
-                return bValue.localeCompare(aValue);
-            }
-        });
     };
 
     const handleApply = async (eventId) => {
@@ -270,97 +266,44 @@ export default function FindJobs() {
         </Link>
 
         <h1 className="text-2xl font-bold text-neutral-900 dark:text-white mb-6 text-center">
-            Posted Jobs
+            Available Jobs
         </h1>
 
         {jobs.length > 0 ? (
             <>
-                {/* Controls Section */}
-                <div className="flex justify-end mb-5 space-x-4 relative z-50">
-                    {/* Sort Dropdown */}
-                    <div className="relative">
-                        <button
-                            onClick={() => setShowSortDropdown(!showSortDropdown)}
-                            className="px-4 py-2 bg-neutral-800 text-white rounded-lg border border-neutral-700 hover:bg-neutral-700 transition-colors flex items-center space-x-2"
+                <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <select
+                            value={sortConfig.type}
+                            onChange={(e) => setSortConfig({ type: e.target.value })}
+                            className="px-4 py-2 bg-neutral-800 rounded-lg text-white hover:bg-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
                         >
-                            <span>Sort by: </span>
-                            <span className="font-medium">
-                                {sortOption === "recent" ? "Recent Post" : "Closest Date"}
-                            </span>
-                            <svg
-                                className={`w-4 h-4 transition-transform ${
-                                    showSortDropdown ? "rotate-180" : ""
-                                }`}
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                            >
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M19 9l-7 7-7-7"
-                                />
-                            </svg>
-                        </button>
-                        {showSortDropdown && (
-                            <div className="absolute right-0 mt-2 w-48 bg-neutral-800 shadow-lg rounded-lg border border-neutral-700 overflow-hidden">
-                                <button
-                                    onClick={() => {
-                                        setSortOption("recent");
-                                        setShowSortDropdown(false);
-                                    }}
-                                    className={`w-full text-left px-4 py-2 hover:bg-neutral-700 transition-colors ${
-                                        sortOption === "recent"
-                                            ? "text-orange-500 bg-neutral-700/50"
-                                            : "text-white"
-                                    }`}
-                                >
-                                    Recent Post
-                                </button>
-                                <button
-                                    onClick={() => {
-                                        setSortOption("closest");
-                                        setShowSortDropdown(false);
-                                    }}
-                                    className={`w-full text-left px-4 py-2 hover:bg-neutral-700 transition-colors ${
-                                        sortOption === "closest"
-                                            ? "text-orange-500 bg-neutral-700/50"
-                                            : "text-white"
-                                    }`}
-                                >
-                                    Closest Date
-                                </button>
-                            </div>
-                        )}
+                            <option value="recent">Recent Posts</option>
+                            <option value="closest">Closest Date</option>
+                        </select>
                     </div>
-
-                    {/* View Switch */}
-                    <div className="flex items-center space-x-2">
-                        <button
-                            onClick={() => setIsGridView(true)}
-                            className={`p-2 rounded-lg border transition-colors ${
-                                isGridView
-                                    ? "bg-neutral-700 text-white border-neutral-600"
-                                    : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:bg-neutral-700 hover:text-white"
-                            }`}
-                        >
-                            <FaTh />
-                        </button>
+                    <div className="flex space-x-2">
                         <button
                             onClick={() => setIsGridView(false)}
-                            className={`p-2 rounded-lg border transition-colors ${
-                                !isGridView
-                                    ? "bg-neutral-700 text-white border-neutral-600"
-                                    : "bg-neutral-800 text-neutral-400 border-neutral-700 hover:bg-neutral-700 hover:text-white"
-                            }`}
+                            className={`px-4 py-2 ${
+                                !isGridView ? 'bg-white/20' : 'bg-white/10'
+                            } text-white rounded-l-lg hover:bg-white/30 transition-colors flex items-center gap-2`}
                         >
                             <FaList />
+                            List
+                        </button>
+                        <button
+                            onClick={() => setIsGridView(true)}
+                            className={`px-4 py-2 ${
+                                isGridView ? 'bg-white/20' : 'bg-white/10'
+                            } text-white rounded-r-lg hover:bg-white/30 transition-colors flex items-center gap-2`}
+                        >
+                            <FaTh />
+                            Grid
                         </button>
                     </div>
                 </div>
 
-                {/* Jobs View */}
                 {isGridView ? (
                     <div className="w-full">
                         <HoverEffect
@@ -399,7 +342,7 @@ export default function FindJobs() {
                             </tr>
                         </thead>
                         <tbody>
-                            {getSortedJobs().map((job) => (
+                            {sortedJobs.map((job) => (
                                 <tr
                                     key={job._id}
                                     className="border-t border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
@@ -484,7 +427,7 @@ export default function FindJobs() {
                     No Available Jobs
                 </h2>
                 <p className="text-neutral-600 dark:text-neutral-400">
-                    There aren't any jobs posted at the moment. Please check back later!
+                    There aren't any upcoming jobs available at the moment. Please check back later!
                 </p>
             </div>
         )}

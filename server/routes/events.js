@@ -400,4 +400,15 @@ router.get('/contractor/:email', async (req, res) => {
     }
 });
 
+router.get('/approved-events/:userId', async (req, res) => {
+    try {
+        const userId = req.params.userId;
+        const approvedEvents = await eventCollection.find({ approvedContractors: userId });
+        res.status(200).json(approvedEvents);
+    } catch (error) {
+        console.error('Error fetching approved events:', error);
+        res.status(500).json({ message: 'Error fetching approved events' });
+    }
+});
+
 module.exports = router;

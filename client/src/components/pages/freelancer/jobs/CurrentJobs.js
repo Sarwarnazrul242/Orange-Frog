@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../../../../AuthContext";
 import { toast } from "sonner";
 import { Link } from "react-router-dom";
-import { FaTh, FaList, FaRegSadTear } from 'react-icons/fa';
+import { FaTh, FaList, FaRegSadTear, FaSort, FaSearch, FaFilter } from 'react-icons/fa';
 import { HoverEffect } from "../../../ui/card-hover-effect";
 import { motion } from "framer-motion";
 
@@ -22,8 +22,11 @@ const CurrentJobs = () => {
     const [currentJobs, setCurrentJobs] = useState([]);
     const [isGridView, setIsGridView] = useState(true);
     const [isLoading, setIsLoading] = useState(true);
-    const [selectedJob, setSelectedJob] = useState(null);
-
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('all');
+    const [timeFilter, setTimeFilter] = useState('future');
+    const [showFilters, setShowFilters] = useState(false);
 
     const fetchJobs = async () => {
         try {
@@ -124,8 +127,82 @@ const CurrentJobs = () => {
         }));
     };
 
+    const sortJobs = (jobs, sortConfig) => {
+        if (!sortConfig.key) return jobs;
+
+        return [...jobs].sort((a, b) => {
+            if (sortConfig.key === 'eventName') {
+                return sortConfig.direction === 'ascending' 
+                    ? a.eventName.localeCompare(b.eventName)
+                    : b.eventName.localeCompare(a.eventName);
+            }
+            if (sortConfig.key === 'eventLoadIn' || sortConfig.key === 'eventLoadOut') {
+                const dateA = new Date(a[sortConfig.key]);
+                const dateB = new Date(b[sortConfig.key]);
+                return sortConfig.direction === 'ascending' 
+                    ? dateA - dateB 
+                    : dateB - dateA;
+            }
+            return 0;
+        });
+    };
+
+    const handleSort = (key) => {
+        setSortConfig(prevConfig => ({
+            key,
+            direction: prevConfig.key === key && prevConfig.direction === 'ascending' 
+                ? 'descending' 
+                : 'ascending'
+        }));
+    };
+
+    const filteredAndSortedJobs = React.useMemo(() => {
+        let filtered = currentJobs;
+        const currentDate = new Date();
+
+        // Apply time filter
+        if (timeFilter !== 'all') {
+            filtered = filtered.filter(job => {
+                const loadOutDate = new Date(job.eventLoadOut);
+                if (timeFilter === 'future') {
+                    return loadOutDate >= currentDate;
+                } else if (timeFilter === 'past') {
+                    return loadOutDate < currentDate;
+                }
+                return true;
+            });
+        }
+
+        // Apply search filter
+        if (searchTerm) {
+            filtered = filtered.filter(job => 
+                job.eventName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                job.eventLocation.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+        }
+
+        // Apply status filter
+        if (statusFilter !== 'all') {
+            filtered = filtered.filter(job => job.status === statusFilter);
+        }
+
+        // Apply sorting
+        return sortJobs(filtered, sortConfig);
+    }, [currentJobs, searchTerm, statusFilter, timeFilter, sortConfig]);
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key === key) {
+            return (
+                <FaSort className={`ml-1 inline-block transition-transform duration-200 ${
+                    sortConfig.direction === 'ascending' ? 'rotate-0' : 'rotate-180'
+                }`} />
+            );
+        }
+        return <FaSort className="ml-1 inline-block text-neutral-600" />;
+    };
+
     return (
-        <div className="flex flex-col w-full  min-h-screen h-full p-8 bg-neutral-900">
+        <div className="flex flex-col w-full min-h-screen h-full p-8 bg-neutral-900">
             <Link 
                 to="/user/dashboard"
                 className="mb-8 flex items-center text-neutral-400 hover:text-white transition-colors"
@@ -144,93 +221,205 @@ const CurrentJobs = () => {
                 Return to Dashboard
             </Link>
 
-            <div className="flex justify-between items-center mb-6">
-                <div className="w-24"> {/* Spacer div */}</div>
-                <h1 className="text-3xl font-bold text-white text-center">Current Jobs</h1>
-                <div className="flex space-x-2 items-center w-24"> {/* Fixed width to match left spacer */}
+            <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <div className="relative mt-5">
+                        <input
+                            type="text"
+                            placeholder="Search events..."
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                            className="px-4 py-2 bg-neutral-800 rounded-lg text-white placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <FaSearch className="absolute right-3 top-1/2 transform -translate-y-1/2 text-neutral-400" />
+                    </div>
+                    <button
+                        onClick={() => setShowFilters(!showFilters)}
+                        className="px-4 py-2 bg-neutral-800 rounded-lg text-white hover:bg-neutral-700 transition-colors flex items-center gap-2"
+                    >
+                        <FaFilter />
+                        Filters
+                    </button>
+                </div>
+                <div className="flex space-x-2">
                     <button
                         onClick={() => setIsGridView(false)}
-                        className={`hidden md:flex px-3 py-0 md:px-4 md:py-2 ${
+                        className={`px-4 py-2 ${
                             !isGridView ? 'bg-white/20' : 'bg-white/10'
-                        } text-white rounded-l-full items-center hover:bg-white/30 transition-colors`}
+                        } text-white rounded-l-lg hover:bg-white/30 transition-colors flex items-center gap-2`}
                     >
-                        <FaList className="mr-1 text-base md:text-xl" />
+                        <FaList />
+                        List
                     </button>
                     <button
                         onClick={() => setIsGridView(true)}
-                        className={`hidden md:flex px-3 py-0 md:px-4 md:py-2 ${
+                        className={`px-4 py-2 ${
                             isGridView ? 'bg-white/20' : 'bg-white/10'
-                        } text-white rounded-r-full items-center hover:bg-white/30 transition-colors`}
+                        } text-white rounded-r-lg hover:bg-white/30 transition-colors flex items-center gap-2`}
                     >
-                        <FaTh className="mr-1 text-base md:text-xl" />
+                        <FaTh />
+                        Grid
                     </button>
                 </div>
             </div>
 
+            {showFilters && (
+                <motion.div 
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="mb-6 p-4 bg-neutral-800 rounded-lg"
+                >
+                    <div className="flex flex-wrap gap-4">
+                        <select
+                            value={timeFilter}
+                            onChange={(e) => setTimeFilter(e.target.value)}
+                            className="px-4 py-2 bg-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="future">Future Events</option>
+                            <option value="all">All Events</option>
+                            <option value="past">Past Events</option>
+                        </select>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="px-4 py-2 bg-neutral-700 rounded-lg text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        >
+                            <option value="all">All Statuses</option>
+                            <option value="applied">Applied</option>
+                            <option value="approved">Approved</option>
+                            <option value="denied">Denied</option>
+                        </select>
+                    </div>
+                </motion.div>
+            )}
+
+            <div className="mb-4 text-sm text-neutral-400">
+                Showing {timeFilter === 'future' ? 'upcoming' : timeFilter === 'past' ? 'past' : 'all'} events
+                {statusFilter !== 'all' && ` • ${statusFilter} status`}
+                {searchTerm && ` • Search: "${searchTerm}"`}
+            </div>
+
             {isLoading ? (
                 <LoadingSpinner />
-            ) : currentJobs.length === 0 ? (
+            ) : filteredAndSortedJobs.length === 0 ? (
                 <div className="flex flex-col items-center justify-center flex-1 min-h-[400px] text-center">
                     <FaRegSadTear className="w-16 h-16 text-neutral-400 dark:text-neutral-600 mb-4" />
                     <h2 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                        No Current Jobs
+                        No Events Found
                     </h2>
                     <p className="text-neutral-600 dark:text-neutral-400">
-                        You don't have any active jobs at the moment. Check the Find Jobs page for new opportunities!
+                        {timeFilter === 'future' 
+                            ? "You don't have any upcoming events."
+                            : timeFilter === 'past'
+                            ? "No past events found."
+                            : "No events match your current filters."}
                     </p>
-                    <Link 
-                        to="/user/find-jobs"
-                        className="mt-6 px-6 py-2 bg-blue-500/10 text-blue-400 rounded-full hover:bg-blue-500/20 transition-colors"
-                    >
-                        Find New Jobs
-                    </Link>
+                    {timeFilter !== 'future' && (
+                        <button 
+                            onClick={() => setTimeFilter('future')}
+                            className="mt-4 px-4 py-2 bg-neutral-800 rounded-lg text-white hover:bg-neutral-700 transition-colors"
+                        >
+                            Show Future Events
+                        </button>
+                    )}
                 </div>
             ) : (
                 <>
                     {isGridView ? (
                         <div className="w-full">
                             <HoverEffect 
-                                items={formatJobsForHoverEffect(currentJobs)} 
+                                items={formatJobsForHoverEffect(filteredAndSortedJobs)} 
                                 className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
                             />
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full bg-neutral-800 rounded-lg overflow-hidden">
-                                <thead className="bg-neutral-700">
+                        <div className="overflow-x-auto rounded-lg border border-neutral-800">
+                            <table className="min-w-full divide-y divide-neutral-800">
+                                <thead className="bg-neutral-800/50">
                                     <tr>
-                                        <th className="p-4 text-left text-white">Event Name</th>
-                                        <th className="p-4 text-left text-white">Location</th>
-                                        <th className="p-4 text-left text-white">Load In</th>
-                                        <th className="p-4 text-left text-white">Load Out</th>
-                                        <th className="p-4 text-left text-white">Status</th>
+                                        <th 
+                                            scope="col" 
+                                            className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 cursor-pointer"
+                                            onClick={() => handleSort('eventName')}
+                                        >
+                                            Event Name {getSortIcon('eventName')}
+                                        </th>
+                                        <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-neutral-300">
+                                            Location
+                                        </th>
+                                        <th 
+                                            scope="col" 
+                                            className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 cursor-pointer"
+                                            onClick={() => handleSort('eventLoadIn')}
+                                        >
+                                            Load In {getSortIcon('eventLoadIn')}
+                                        </th>
+                                        <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-neutral-300">
+                                            Load In Hours
+                                        </th>
+                                        <th 
+                                            scope="col" 
+                                            className="px-6 py-4 text-left text-sm font-semibold text-neutral-300 cursor-pointer"
+                                            onClick={() => handleSort('eventLoadOut')}
+                                        >
+                                            Load Out {getSortIcon('eventLoadOut')}
+                                        </th>
+                                        <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-neutral-300">
+                                            Load Out Hours
+                                        </th>
+                                        <th scope="col" className="px-6 py-4 text-left text-sm font-semibold text-neutral-300">
+                                            Status
+                                        </th>
                                     </tr>
                                 </thead>
-                                <tbody>
-                                    {currentJobs.map((job) => (
-                                        <tr key={job._id} className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors">
-                                            <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {job.eventName.length > 25
-                                            ? `${job.eventName.substring(0, 25)}...`
-                                            : job.eventName}
-                                        </td>
-                                        <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                            {job.eventDescription.length > 50
-                                                ? `${job.eventDescription.substring(0, 50)}...`
-                                                : job.eventDescription}
-                                        </td>
-                                        <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                            {job.eventLocation.length > 25
-                                                ? `${job.eventLocation.substring(0, 25)}...`
-                                                : job.eventLocation}
-                                        </td>
-                                        <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                            {new Date(job.eventLoadIn).toLocaleDateString()}
-                                        </td>
-                                        <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                            {new Date(job.eventLoadOut).toLocaleDateString()}
-                                        </td>
-                                            <td className="p-4">{getStatusBadge(job.status)}</td>
+                                <tbody className="divide-y divide-neutral-800 bg-neutral-900">
+                                    {filteredAndSortedJobs.map((job) => (
+                                        <tr 
+                                            key={job._id} 
+                                            className="hover:bg-neutral-800/50 transition-colors"
+                                        >
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                                                {job.eventName.length > 25
+                                                    ? `${job.eventName.substring(0, 25)}...`
+                                                    : job.eventName}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                                                {job.eventLocation.length > 25
+                                                    ? `${job.eventLocation.substring(0, 25)}...`
+                                                    : job.eventLocation}
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                                                <div className="flex flex-col">
+                                                    <span>{new Date(job.eventLoadIn).toLocaleDateString()}</span>
+                                                    <span className="text-neutral-500">
+                                                        {new Date(job.eventLoadIn).toLocaleTimeString([], { 
+                                                            hour: '2-digit', 
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                                                {job.eventLoadInHours}h
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                                                <div className="flex flex-col">
+                                                    <span>{new Date(job.eventLoadOut).toLocaleDateString()}</span>
+                                                    <span className="text-neutral-500">
+                                                        {new Date(job.eventLoadOut).toLocaleTimeString([], { 
+                                                            hour: '2-digit', 
+                                                            minute: '2-digit'
+                                                        })}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
+                                                {job.eventLoadOutHours}h
+                                            </td>
+                                            <td className="px-6 py-4 whitespace-nowrap">
+                                                {getStatusBadge(job.status)}
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>

@@ -268,16 +268,6 @@ export default function ViewEvent() {
         );
     }
 
-    const renderModal = (isOpen, content) => {
-        if (!isOpen) return null;
-        
-        return (
-            <Modal>
-                {content}
-            </Modal>
-        );
-    };
-
     const handleEventClick = (eventId) => {
         navigate(`/admin/events/${eventId}`);
     };
@@ -341,15 +331,6 @@ export default function ViewEvent() {
             }
         }));
     };
-
-    const renderGridView = () => (
-        <div className="max-w-full mx-auto">
-            <HoverEffect 
-                items={formatEventsForHoverEffect(getFilteredAndSortedEvents())} 
-                className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto"
-            />
-        </div>
-    );
 
     return (
         <div className="w-full h-full overflow-auto px-5">
