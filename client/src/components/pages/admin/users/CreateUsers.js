@@ -132,6 +132,9 @@ export default function CreateUsers({ onUserCreated }) {
                                 className="w-full px-4 py-2 rounded-full bg-neutral-900 text-white placeholder:text-white/50 outline-none border border-neutral-700 focus:border-neutral-500"
                                 required
                             />
+                            <p className="text-sm text-neutral-400 mt-1 ml-3">
+                                {formData.name.length}/30 characters
+                            </p>
                         </motion.div>
 
                         <motion.div
@@ -157,6 +160,9 @@ export default function CreateUsers({ onUserCreated }) {
                                 className="w-full px-4 py-2 rounded-full bg-neutral-900 text-white placeholder:text-white/50 outline-none border border-neutral-700 focus:border-neutral-500"
                                 required
                             />
+                            <p className="text-sm text-neutral-400 mt-1 ml-3">
+                                {formData.email.length}/50 characters
+                            </p>
                         </motion.div>
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}

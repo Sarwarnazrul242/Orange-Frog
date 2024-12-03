@@ -34,6 +34,7 @@ const EditPopup = ({ user, onSave, onCancel }) => {
                                     onChange={(e) => user.onChange(e)}
                                     className="w-full p-3 rounded-md bg-neutral-800 text-white border border-neutral-700 focus:border-neutral-500 focus:outline-none"
                                     disabled={!isEmailEditable}
+                                    maxLength={50}
                                     required
                                 />
                                 <FaEdit 
@@ -52,6 +53,8 @@ const EditPopup = ({ user, onSave, onCancel }) => {
                                 className="w-full p-3 bg-neutral-800 rounded-md text-white"
                                 step="0.01"
                                 min="0"
+                                max={999.99}
+                                maxLength={5}
                             />
                         </div>
                         <div className="col-span-2">

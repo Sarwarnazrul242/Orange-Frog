@@ -154,12 +154,12 @@ export default function EditEvent() {
                             name="eventName"
                             value={formData.eventName}
                             onChange={handleInputChange}
-                            maxLength={100}
+                            maxLength={40}
                             className="w-full px-4 py-3 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition-colors"
                             required
                         />
                         <p className="text-sm text-neutral-400 mt-1">
-                            {formData.eventName.length}/100 characters
+                            {formData.eventName.length}/40 characters
                         </p>
                     </div>
 
@@ -189,6 +189,7 @@ export default function EditEvent() {
                                 onChange={handleInputChange}
                                 min="0"
                                 step="0.5"
+                                maxLength={2}
                                 className="w-full px-4 py-3 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition-colors"
                                 required
                             />
@@ -221,6 +222,7 @@ export default function EditEvent() {
                                 onChange={handleInputChange}
                                 min="0"
                                 step="0.5"
+                                maxLength={2}
                                 className="w-full px-4 py-3 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition-colors"
                                 required
                             />
@@ -236,12 +238,12 @@ export default function EditEvent() {
                             name="eventLocation"
                             value={formData.eventLocation}
                             onChange={handleInputChange}
-                            maxLength={200}
+                            maxLength={50}
                             className="w-full px-4 py-3 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition-colors"
                             required
                         />
                         <p className="text-sm text-neutral-400 mt-1">
-                            {formData.eventLocation.length}/200 characters
+                            {formData.eventLocation.length}/50 characters
                         </p>
                     </div>
 
@@ -253,12 +255,12 @@ export default function EditEvent() {
                             name="eventDescription"
                             value={formData.eventDescription}
                             onChange={handleInputChange}
-                            maxLength={1000}
+                            maxLength={200}
                             rows="4"
                             className="w-full px-4 py-3 rounded-lg bg-neutral-700 border border-neutral-600 text-white placeholder-neutral-400 focus:outline-none focus:border-orange-500 transition-colors resize-none"
                         />
                         <p className="text-sm text-neutral-400 mt-1">
-                            {formData.eventDescription.length}/1000 characters
+                            {formData.eventDescription.length}/200 characters
                         </p>
                     </div>
 

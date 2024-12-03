@@ -151,11 +151,11 @@ export default function CreateEvent() {
                                         placeholder="Enter Event Name"
                                         value={formData.eventName}
                                         onChange={handleInputChange}
-                                        maxLength={100}
+                                        maxLength={40}
                                         required
                                     />
                                     <p className="text-sm text-neutral-400 mt-1">
-                                        {formData.eventName.length}/100 characters
+                                        {formData.eventName.length}/40 characters
                                     </p>
                                 </div>
                             </div>
@@ -186,6 +186,7 @@ export default function CreateEvent() {
                                         onChange={handleInputChange}
                                         min="0"
                                         step="0.5"
+                                        maxLength={2}
                                         required
                                     />
                                 </div>
@@ -217,6 +218,7 @@ export default function CreateEvent() {
                                         onChange={handleInputChange}
                                         min="0"
                                         step="0.5"
+                                        maxLength={2}
                                         required
                                     />
                                 </div>
@@ -247,11 +249,11 @@ export default function CreateEvent() {
                                         placeholder="Enter Event Location"
                                         value={formData.eventLocation}
                                         onChange={handleInputChange}
-                                        maxLength={200}
+                                        maxLength={50}
                                         required
                                     />
                                     <p className="text-sm text-neutral-400 mt-1">
-                                        {formData.eventLocation.length}/200 characters
+                                        {formData.eventLocation.length}/50 characters
                                     </p>
                                 </div>
                             </div>
@@ -267,10 +269,10 @@ export default function CreateEvent() {
                                         rows="4"
                                         value={formData.eventDescription}
                                         onChange={handleInputChange}
-                                        maxLength={1000}
+                                        maxLength={200}
                                     />
                                     <p className="text-sm text-neutral-400 mt-1">
-                                        {formData.eventDescription.length}/1000 characters
+                                        {formData.eventDescription.length}/200 characters
                                     </p>
                                 </div>
                             </div>
@@ -314,7 +316,7 @@ export default function CreateEvent() {
                     </div>
                 </div>
             </div>
-            {message && <p className="text-green-500 mt-6 text-lg">{message}</p>}
+            {/* {message && <p className="text-green-500 mt-6 text-lg">{message}</p>} */}
             {showContractorPopup && (
                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
                     <div className="bg-neutral-900 p-8 rounded-lg shadow-lg w-[80%] max-w-md relative border border-neutral-700">
