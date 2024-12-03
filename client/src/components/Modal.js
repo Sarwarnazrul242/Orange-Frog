@@ -11,7 +11,7 @@ const Modal = ({ children }) => {
 
   return createPortal(
     <div className="modal-overlay fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-      {children}
+        {children}
     </div>,
     portalRoot
   );

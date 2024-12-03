@@ -19,6 +19,8 @@ export default function FindJobs() {
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmationType, setConfirmationType] = useState(null);
     const [selectedJobId, setSelectedJobId] = useState(null);
+    const [selectedJob, setSelectedJob] = useState(null);
+
 
     useEffect(() => {
         const fetchAssignedJobs = async () => {
@@ -143,14 +145,22 @@ export default function FindJobs() {
         return jobs.map((job) => ({
             title: (
                 <div>
-                    <span>{job.eventName}</span>
+                    <span>
+                        {job.eventName.length > 25
+                        ? `${job.eventName.substring(0, 25)}...`
+                        : job.eventName}
+                    </span>
                 </div>
             ),
             description: (
                 <div className="flex flex-col space-y-2">
                     <div className="flex items-center space-x-2">
                         <span className="text-zinc-400">Location:</span>
-                        <span>{job.eventLocation}</span>
+                        <span>
+                            {job.eventLocation.length > 25
+                            ? `${job.eventLocation.substring(0, 25)}...`
+                            : job.eventLocation}
+                            </span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <span className="text-zinc-400">Start Date:</span>
@@ -158,7 +168,11 @@ export default function FindJobs() {
                     </div>
                     <div className="flex items-center space-x-2">
                         <span className="text-zinc-400">Description:</span>
-                        <span className="line-clamp-2">{job.eventDescription}</span>
+                        <span className="line-clamp-2">
+                            {job.eventDescription.length > 35
+                            ? `${job.eventDescription.substring(0, 35)}...`
+                            : job.eventDescription}
+                        </span>
                     </div>
                     <div className="flex justify-center mt-4 space-x-3">
                         {jobStatuses[job._id] === "" ? (
@@ -334,13 +348,19 @@ export default function FindJobs() {
                                         }}
                                     >
                                         <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                            {job.eventName}
+                                        {job.eventName.length > 25
+                                            ? `${job.eventName.substring(0, 25)}...`
+                                            : job.eventName}
                                         </td>
                                         <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                            {job.eventDescription}
+                                            {job.eventDescription.length > 50
+                                                ? `${job.eventDescription.substring(0, 50)}...`
+                                                : job.eventDescription}
                                         </td>
                                         <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                            {job.eventLocation}
+                                            {job.eventLocation.length > 25
+                                                ? `${job.eventLocation.substring(0, 25)}...`
+                                                : job.eventLocation}
                                         </td>
                                         <td className="p-4 text-neutral-900 dark:text-white truncate">
                                             {new Date(job.eventLoadIn).toLocaleDateString()}

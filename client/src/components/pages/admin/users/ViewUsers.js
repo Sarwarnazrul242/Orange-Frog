@@ -48,6 +48,7 @@ const EditPopup = ({ user, onSave, onCancel }) => {
                                 type="number"
                                 name="hourlyRate"
                                 defaultValue={user.hourlyRate}
+                                
                                 className="w-full p-3 bg-neutral-800 rounded-md text-white"
                                 step="0.01"
                                 min="0"
@@ -253,8 +254,19 @@ export default function ViewUsers() {
 
     const handleEdit = (user) => {
         setEditingUser(user);
-        setEditFormData({ name: user.name, email: user.email });
+        setEditFormData({
+            name: user.name,
+            email: user.email,
+            hourlyRate: user.hourlyRate || '',
+            address: user.address || '',
+            phone: user.phone || '',
+            dob: user.dob || '',
+            shirtSize: user.shirtSize || '',
+            firstAidCert: user.firstAidCert || '',
+            allergies: user.allergies || [],
+        });
     };
+    
 
     const handleEditInputChange = (e) => {
         const { name, value } = e.target;

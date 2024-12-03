@@ -19,9 +19,10 @@ router.get('/:email', async (req, res) => {
                 firstAidCert: 1,
                 allergies: 1,
                 hourlyRate: 1,
-                _id: 1
+                _id: 1,
             }
         );
+        
         if (user) {
             res.json(user);
         } else {
