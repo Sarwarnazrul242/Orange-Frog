@@ -1,7 +1,7 @@
 // src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock, FaUsers } from 'react-icons/fa';
+import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock, FaUsers, FaSort } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
@@ -41,6 +41,7 @@ export default function ViewEvent() {
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [selectedContractor, setSelectedContractor] = useState([]);
     const [error, setError] = useState(null);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
     
 
@@ -62,17 +63,15 @@ export default function ViewEvent() {
     const fetchEvents = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
-            setEvents(response.data);
+            const sortedEvents = response.data.sort((a, b) => {
+                return new Date(b.createdAt) - new Date(a.createdAt);
+            });
+            setEvents(sortedEvents);
             setLoading(false);
         } catch (error) {
             console.error('Error fetching events:', error);
             setLoading(false);
         }
-    };
-
-    const handleSelectContractor = (event) => {
-        setSelectedEvent(event);
-        setShowContractorPopup(true);
     };
 
     const fetchContractors = async () => {
@@ -152,9 +151,34 @@ export default function ViewEvent() {
 
     const handleSortChange = (e) => {
         const value = e.target.value;
+        if (!value) {
+            setSortConfig({ key: null, direction: 'ascending' });
+            return;
+        }
+
         const [field, direction] = value.split('-');
-        setSortField(field);
-        setSortDirection(direction);
+        
+        // Map dropdown values to sortConfig values
+        let sortKey;
+        switch (field) {
+            case 'name':
+                sortKey = 'eventName';
+                break;
+            case 'loadIn':
+                sortKey = 'eventLoadIn';
+                break;
+            case 'hours':
+                sortKey = 'eventLoadInHours';
+                break;
+            default:
+                sortKey = field;
+        }
+
+        setSortConfig({
+            key: sortKey,
+            direction: direction === 'asc' ? 'ascending' : 'descending'
+        });
+        
         adjustSelectWidth();
     };
 
@@ -209,24 +233,33 @@ export default function ViewEvent() {
         });
     
         // Sort the filtered events
-        if (sortField) {
+        if (sortConfig.key) {
             filtered.sort((a, b) => {
-                switch (sortField) {
-                    case 'name':
-                        return sortDirection === 'asc'
-                            ? a.eventName.localeCompare(b.eventName)
-                            : b.eventName.localeCompare(a.eventName);
-                    case 'loadIn':
-                        return sortDirection === 'asc'
-                            ? new Date(a.eventLoadIn) - new Date(b.eventLoadIn)
-                            : new Date(b.eventLoadIn) - new Date(a.eventLoadIn);
-                    case 'hours':
-                        return sortDirection === 'asc'
-                            ? (a.eventHours || 0) - (b.eventHours || 0)
-                            : (b.eventHours || 0) - (a.eventHours || 0);
-                    default:
-                        return 0;
+                if (sortConfig.key === 'eventName') {
+                    return sortConfig.direction === 'ascending' 
+                        ? a.eventName.localeCompare(b.eventName)
+                        : b.eventName.localeCompare(a.eventName);
                 }
+                if (sortConfig.key === 'eventLoadIn' || sortConfig.key === 'eventLoadOut' || sortConfig.key === 'updatedAt') {
+                    const dateA = new Date(a[sortConfig.key]);
+                    const dateB = new Date(b[sortConfig.key]);
+                    return sortConfig.direction === 'ascending' 
+                        ? dateA - dateB 
+                        : dateB - dateA;
+                }
+                if (sortConfig.key === 'eventLoadInHours' || sortConfig.key === 'eventLoadOutHours') {
+                    return sortConfig.direction === 'ascending'
+                        ? a[sortConfig.key] - b[sortConfig.key]
+                        : b[sortConfig.key] - a[sortConfig.key];
+                }
+                if (sortConfig.key === 'assignedContractors') {
+                    const countA = a.assignedContractors?.length || 0;
+                    const countB = b.assignedContractors?.length || 0;
+                    return sortConfig.direction === 'ascending'
+                        ? countA - countB
+                        : countB - countA;
+                }
+                return 0;
             });
         }
         
@@ -332,6 +365,26 @@ export default function ViewEvent() {
         }));
     };
 
+    const getSortIcon = (key) => {
+        if (sortConfig.key === key) {
+            return (
+                <FaSort className={`ml-1 inline-block transition-transform duration-200 ${
+                    sortConfig.direction === 'ascending' ? 'rotate-0' : 'rotate-180'
+                }`} />
+            );
+        }
+        return <FaSort className="ml-1 inline-block text-neutral-600" />;
+    };
+
+    const handleSort = (key) => {
+        setSortConfig(prevConfig => ({
+            key,
+            direction: prevConfig.key === key && prevConfig.direction === 'ascending' 
+                ? 'descending' 
+                : 'ascending'
+        }));
+    };
+
     return (
         <div className="w-full h-full overflow-auto px-5">
             <div className="flex justify-between items-center mb-5 sticky top-0 bg-neutral-900 py-4 z-50">
@@ -360,12 +413,12 @@ export default function ViewEvent() {
                         className="hidden md:block px-4 py-2 mx-2 mt-0 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors outline-none"
                     >
                         <option value="">Sort By</option>
-                        <option value="name-asc">Event Name A-Z</option>
-                        <option value="name-desc">Event Name Z-A</option>
-                        <option value="loadIn-asc">Oldest to Newest</option>
-                        <option value="loadIn-desc">Newest to Oldest</option>
-                        <option value="hours-asc">Hours Ascending</option>
-                        <option value="hours-desc">Hours Descending</option>
+                        <option value="name-asc">Name (Ascending)</option>
+                        <option value="name-desc">Name (Descending)</option>
+                        <option value="createdAt-asc">Date (Ascending)</option>
+                        <option value="createdAt-desc">Date (Descending)</option>
+                        <option value="assignedContractors-asc">Contractors (Ascending)</option>
+                        <option value="assignedContractors-desc">Contractors (Descending)</option>
                     </select>
 
                     {showFilterDropdown && (
@@ -502,36 +555,83 @@ export default function ViewEvent() {
                             <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden">
                                 <thead className="bg-neutral-700">
                                     <tr>
-                                        <th className="p-4 text-left text-white">Event Name</th>
-                                        <th className="p-4 text-left text-white">Load In</th>
-                                        <th className="p-4 text-left text-white">Load In Hours</th>
-                                        <th className="p-4 text-left text-white">Load Out</th>
-                                        <th className="p-4 text-left text-white">Load Out Hours</th>
-                                        <th className="p-4 text-left text-white">Contractors</th>
+                                        <th 
+                                            className="p-4 text-left text-white cursor-pointer"
+                                            onClick={() => handleSort('eventName')}
+                                        >
+                                            Event Name {getSortIcon('eventName')}
+                                        </th>
+                                        <th 
+                                            className="p-4 text-left text-white cursor-pointer"
+                                            onClick={() => handleSort('eventLoadIn')}
+                                        >
+                                            Load In {getSortIcon('eventLoadIn')}
+                                        </th>
+                                        <th 
+                                            className="p-4 text-left text-white cursor-pointer"
+                                            onClick={() => handleSort('eventLoadInHours')}
+                                        >
+                                            Load In Hours {getSortIcon('eventLoadInHours')}
+                                        </th>
+                                        <th 
+                                            className="p-4 text-left text-white cursor-pointer"
+                                            onClick={() => handleSort('eventLoadOut')}
+                                        >
+                                            Load Out {getSortIcon('eventLoadOut')}
+                                        </th>
+                                        <th 
+                                            className="p-4 text-left text-white cursor-pointer"
+                                            onClick={() => handleSort('eventLoadOutHours')}
+                                        >
+                                            Load Out Hours {getSortIcon('eventLoadOutHours')}
+                                        </th>
+                                        <th 
+                                            className="p-4 text-left text-white cursor-pointer"
+                                            onClick={() => handleSort('assignedContractors')}
+                                        >
+                                            Contractors {getSortIcon('assignedContractors')}
+                                        </th>
+                                        <th 
+                                            className="p-4 text-left text-white cursor-pointer"
+                                            onClick={() => handleSort('updatedAt')}
+                                        >
+                                            Last Modified {getSortIcon('updatedAt')}
+                                        </th>
                                         <th className="p-4 text-left text-white">Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {events.map((event) => (
-                                        <tr key={event._id} className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors">
+                                    {getFilteredAndSortedEvents().map((event) => (
+                                        <tr 
+                                            key={event._id} 
+                                            className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer"
+                                            onClick={() => handleEventClick(event._id)}
+                                        >
                                             <td className="p-4 text-white">
-                                                <Link to={`/admin/events/${event._id}`} className="hover:text-blue-400">
-                                                    {event.eventName}
-                                                </Link>
+                                                {event.eventName}
                                             </td>
                                             <td className="p-4 text-white">{new Date(event.eventLoadIn).toLocaleString()}</td>
                                             <td className="p-4 text-white">{event.eventLoadInHours}h</td>
                                             <td className="p-4 text-white">{new Date(event.eventLoadOut).toLocaleString()}</td>
                                             <td className="p-4 text-white">{event.eventLoadOutHours}h</td>
                                             <td className="p-4 text-white">{event.assignedContractors?.length || 0}</td>
+                                            <td className="p-4 text-white">
+                                                {event.updatedAt ? new Date(event.updatedAt).toLocaleString() : 'Not modified'}
+                                            </td>
                                             <td className="p-4">
                                                 <div className="flex space-x-2">
                                                     <FaEdit 
-                                                        onClick={() => handleEdit(event)} 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent row click
+                                                            handleEdit(event);
+                                                        }} 
                                                         className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
                                                     />
                                                     <FaTrashAlt 
-                                                        onClick={() => handleDelete(event)} 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent row click
+                                                            handleDelete(event);
+                                                        }} 
                                                         className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
                                                     />
                                                 </div>
@@ -544,53 +644,6 @@ export default function ViewEvent() {
                     )
                 )}
             </div>
-            {showContractorPopup && (
-                <Modal>
-                    <div className="bg-neutral-900 w-full max-w-lg p-6 rounded shadow-lg border border-neutral-700">
-                        <h2 className="text-xl font-bold mb-4 text-white text-center">Select Contractor</h2>
-                        {selectedEvent && selectedEvent.acceptedContractors && selectedEvent.acceptedContractors.length > 0 ? (
-                            <ul>
-                                {selectedEvent.acceptedContractors.map((contractor) => (
-                                    <label key={contractor._id} className="flex items-center mb-2">
-                                        <input
-                                            type="checkbox"
-                                            name="contractor"
-                                            value={contractor._id}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    setSelectedContractor((prev) => [...prev, contractor._id]);
-                                                } else {
-                                                    setSelectedContractor((prev) => prev.filter((id) => id !== contractor._id));
-                                                }
-                                            }}
-                                            className="mr-2"
-                                        />
-                                        <p className="text-sm text-white truncate" style={{ maxWidth: '200px' }}>
-                                            {contractor.name || 'Unnamed Contractor'}
-                                        </p>
-                                    </label>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-neutral-400">No contractors have expressed interest yet.</p>
-                        )}
-                        <div className="mt-4 flex justify-end">
-                            <button
-                                onClick={() => setShowContractorPopup(false)}
-                                className="bg-neutral-700 hover:bg-neutral-600 text-white px-4 py-2 rounded mr-2 transition-colors"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={saveContractorSelection}
-                                className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded transition-colors"
-                            >
-                                Save
-                            </button>
-                        </div>
-                    </div>
-                </Modal>
-            )}
 
             {/* Delete Confirmation Popup */}
             {showDeletePopup && (
@@ -614,170 +667,6 @@ export default function ViewEvent() {
                                 Delete
                             </button>
                         </div>
-                    </div>
-                </Modal>
-            )}
-
-            {/* Edit Event Popup */}
-            {showEditPopup && (
-                <Modal>
-                    <div className="bg-neutral-900 p-8 rounded-lg shadow-lg w-[90%] max-w-3xl relative border border-neutral-700">
-                        <h2 className="text-2xl font-semibold text-white mb-6">Edit Event</h2>
-                        <form onSubmit={saveEdit} className="space-y-6">
-                            <div>
-                                <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                    Event Name <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="eventName"
-                                    value={eventToEdit.eventName}
-                                    onChange={handleInputChange}
-                                    maxLength={100}
-                                    className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
-                                    required
-                                />
-                                <p className="text-sm text-neutral-400 mt-1">
-                                    {eventToEdit.eventName.length}/100 characters
-                                </p>
-                            </div>
-
-                            <div className="flex flex-wrap -mx-3 mb-6">
-                                <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                        Load In <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        name="eventLoadIn"
-                                        value={eventToEdit.eventLoadIn}
-                                        onChange={handleInputChange}
-                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
-                                        required
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                        Load In Hours <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="eventLoadInHours"
-                                        value={eventToEdit.eventLoadInHours}
-                                        onChange={handleInputChange}
-                                        min="0"
-                                        step="0.5"
-                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="flex flex-wrap -mx-3 mb-6">
-                                <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                        Load Out <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="datetime-local"
-                                        name="eventLoadOut"
-                                        value={eventToEdit.eventLoadOut}
-                                        onChange={handleInputChange}
-                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
-                                        required
-                                    />
-                                </div>
-                                <div className="w-full md:w-1/2 px-3">
-                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                        Load Out Hours <span className="text-red-500">*</span>
-                                    </label>
-                                    <input
-                                        type="number"
-                                        name="eventLoadOutHours"
-                                        value={eventToEdit.eventLoadOutHours}
-                                        onChange={handleInputChange}
-                                        min="0"
-                                        step="0.5"
-                                        className="w-full p-3 bg-neutral-800 rounded-md text-white"
-                                        required
-                                    />
-                                </div>
-                            </div>
-
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                        Contractors
-                                    </label>
-                                    <MultiSelect
-                                        options={contractors.map(contractor => ({
-                                            value: contractor._id,
-                                            label: contractor.name
-                                        }))}
-                                        value={selectedContractors.map(id => ({
-                                            value: id,
-                                            label: contractors.find(contractor => contractor._id === id)?.name
-                                        }))}
-                                        onChange={handleContractorChange}
-                                        isMulti
-                                        closeMenuOnSelect={false}
-                                        hideSelectedOptions={false}
-                                    />
-                                </div>
-                            </div>
-
-                            <div>
-                                <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                    Location <span className="text-red-500">*</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    name="eventLocation"
-                                    value={eventToEdit.eventLocation}
-                                    onChange={handleInputChange}
-                                    maxLength={200}
-                                    className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
-                                    required
-                                />
-                                <p className="text-sm text-neutral-400 mt-1">
-                                    {eventToEdit.eventLocation.length}/200 characters
-                                </p>
-                            </div>
-
-                            <div>
-                                <label className="block text-neutral-200 text-lg font-bold mb-2">
-                                    Job Description
-                                </label>
-                                <textarea
-                                    name="eventDescription"
-                                    value={eventToEdit.eventDescription}
-                                    onChange={handleInputChange}
-                                    maxLength={1000}
-                                    rows="4"
-                                    className="appearance-none border border-neutral-600 rounded w-full py-3 px-4 bg-neutral-700 text-white text-lg leading-tight focus:outline-none focus:border-neutral-400 focus:ring-1 focus:ring-neutral-400 transition-colors"
-                                />
-                                <p className="text-sm text-neutral-400 mt-1">
-                                    {eventToEdit.eventDescription.length}/1000 characters
-                                </p>
-                            </div>
-
-                            <div className="flex justify-end space-x-4">
-                                <button
-                                    type="button"
-                                    onClick={() => setShowEditPopup(false)}
-                                    className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    type="submit"
-                                    disabled={saving}
-                                    className="px-4 py-2 bg-black text-white rounded-lg transition-colors disabled:opacity-50"
-                                >
-                                    {saving ? 'Saving...' : 'Save Changes'}
-                                </button>
-                            </div>
-                        </form>
                     </div>
                 </Modal>
             )}

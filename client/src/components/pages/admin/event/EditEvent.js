@@ -100,9 +100,26 @@ export default function EditEvent() {
         setSaving(true);
 
         try {
-            await axios.put(`${process.env.REACT_APP_BACKEND}/events/${id}`, formData);
-            toast.success('Event updated successfully');
-            navigate('/admin/events');
+            // Only send the fields that have actually changed
+            const updatedFields = {};
+            const originalEvent = await axios.get(`${process.env.REACT_APP_BACKEND}/events/${id}`);
+            
+            // Compare each field and only include changed ones
+            Object.keys(formData).forEach(key => {
+                if (JSON.stringify(formData[key]) !== JSON.stringify(originalEvent.data[key])) {
+                    updatedFields[key] = formData[key];
+                }
+            });
+
+            // Only make the API call if there are actual changes
+            if (Object.keys(updatedFields).length > 0) {
+                await axios.put(`${process.env.REACT_APP_BACKEND}/events/${id}`, updatedFields);
+                toast.success('Event updated successfully');
+            } else {
+                toast.info('No changes were made');
+            }
+            
+            navigate('/admin/manage-events');
         } catch (error) {
             console.error('Error updating event:', error);
             toast.error('Failed to update event');

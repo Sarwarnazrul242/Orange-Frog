@@ -74,7 +74,9 @@ router.post('/', async (req, res) => {
             eventLoadOutHours,
             eventLocation,
             eventDescription,
-            assignedContractors
+            assignedContractors,
+            createdAt: new Date(),
+            updatedAt: new Date()
         });
 
         await newEvent.save();

@@ -89,12 +89,12 @@ const handleOtpChange = (e, index) => {
                     navigate('/user/dashboard');
                 }
             } else {
-                setErrorMessage(data.message);
+                // setErrorMessage(data.message);
                 toast.error('Invalid credentials, please try again.');
             }
         } catch (error) {
             setLoading(false);
-            setErrorMessage('Server error');
+            // setErrorMessage('Server error');
             toast.error('Server error, please try again.');
         }
     };
@@ -104,7 +104,6 @@ const handleOtpChange = (e, index) => {
         setLoading(true);
 
         try {
-            // const response = await fetch('http://localhost:8000/forgot-password/send-otp', {
             const response = await fetch(`${process.env.REACT_APP_BACKEND}/forgot-password/send-otp`, {
                 method: 'POST',
                 headers: {
@@ -120,7 +119,7 @@ const handleOtpChange = (e, index) => {
                 toast.success('OTP sent to your email!');
                 setView('verifyOtp');
             } else {
-                setErrorMessage(data.message);
+                // setErrorMessage(data.message);
                 toast.error(data.message);
             }
         } catch (error) {
@@ -230,7 +229,7 @@ const handleOtpChange = (e, index) => {
                         </div>
                         <div className="input-box">
                             <span className="icon" onClick={togglePasswordVisibility} style={{ cursor: 'pointer' }}>
-                                <ion-icon name={showPassword ? "eye-off" : "eye"}></ion-icon>
+                                <ion-icon name={showPassword ? "eye" : "eye-off"}></ion-icon>
                             </span>
                             <input 
                                 type={showPassword ? "text" : "password"} 
@@ -262,24 +261,31 @@ const handleOtpChange = (e, index) => {
                                 />
                             </div>
                         </div>
-                        <h2>Forgot Password</h2>
-                        <div className="input-box">
-                            <span className="icon">
-                                <ion-icon name="mail"></ion-icon>
-                            </span>
-                            <input 
-                                type="email" 
-                                value={email} 
-                                onChange={(e) => setEmail(e.target.value)} 
-                                placeholder="Email" 
-                                required 
-                            />
+                        <h2 className="text-white">Forgot Password</h2>
+                        <p className="text-center mb-4 text-white text-lg italic">
+                            We will send you a <strong>one-time password (OTP)</strong> to your email to reset your password.
+                        </p>
+                        <div className="flex justify-center">
+                            <div className="input-box w-full max-w-xs">
+                                <span className="icon">
+                                    <ion-icon name="mail"></ion-icon>
+                                </span>
+                                <input 
+                                    type="email" 
+                                    value={email} 
+                                    onChange={(e) => setEmail(e.target.value)} 
+                                    placeholder="Email" 
+                                    required 
+                                />
+                            </div>
                         </div>
 
-                        <button type="submit" disabled={loading}>
-                            {loading ? 'Sending OTP...' : 'Send OTP'}
-                        </button>
-                        <a className="flex justify-end text-white mt-4 underline" href="#" onClick={() => setView('login')}>Back to Login</a>
+                        <div className="flex justify-center mt-4">
+                            <button type="submit" disabled={loading}>
+                                {loading ? 'Sending Code...' : 'Send Code'}
+                            </button>
+                        </div>
+                        <a className="flex justify-center text-white mt-4 underline" href="#" onClick={() => setView('login')}>Back to Login</a>
                     </form>
                 )}
 
@@ -294,7 +300,13 @@ const handleOtpChange = (e, index) => {
                                 />
                             </div>
                         </div>
-                        <h2>Verify OTP</h2>
+                        <h2 className="text-white">Verify OTP</h2>
+                        <p className="text-center mb-4 text-white text-lg italic">
+                            Please enter the <strong>OTP</strong> sent to your email to verify your identity.
+                        </p>
+                        <p className="text-center mb-4 text-white text-sm">
+                            OTP sent to <strong>{email}</strong>
+                        </p>
                         <div className="otp-container flex space-x-2 justify-center mb-4">
                             {[0, 1, 2, 3, 4, 5].map((_, index) => (
                                 <input 
@@ -309,10 +321,12 @@ const handleOtpChange = (e, index) => {
                                 />
                             ))}
                         </div>
-
+                        <div className="flex justify-center mt-4">
                         <button type="submit" disabled={loading} className="btn-primary">
                             {loading ? 'Verifying...' : 'Verify OTP'}
                         </button>
+                        </div>
+                        <a className="flex justify-center text-white mt-4 underline" href="#" onClick={() => setView('login')}>Back to Login</a>
                     </form>
                 )}
 

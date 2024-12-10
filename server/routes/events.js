@@ -26,7 +26,9 @@ router.get('/', async (req, res) => {
         const events = await eventCollection
             .find({})
             .populate('acceptedContractors', 'name')
-            .populate('assignedContractors', 'name');
+            .populate('assignedContractors', 'name')
+            .select('-__v')  // Exclude version field
+            .lean();  // Convert to plain JavaScript objects
         res.status(200).json(events);
     } catch (error) {
         console.error('Error fetching events:', error);
@@ -66,7 +68,26 @@ router.delete('/:id', async (req, res) => {
 // Route to update an event by ID
 router.put('/:id', async (req, res) => {
     try {
-        const updatedEvent = await eventCollection.findByIdAndUpdate(req.params.id, req.body, { new: true });
+        const { id } = req.params;
+        const updatedData = {
+            ...req.body,
+            updatedAt: new Date()
+        };
+
+        const updatedEvent = await eventCollection.findByIdAndUpdate(
+            id,
+            updatedData,
+            { 
+                new: true,
+                overwrite: false,
+                returnDocument: 'after'
+            }
+        );
+
+        if (!updatedEvent) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+
         res.status(200).json(updatedEvent);
     } catch (error) {
         console.error('Error updating event:', error);

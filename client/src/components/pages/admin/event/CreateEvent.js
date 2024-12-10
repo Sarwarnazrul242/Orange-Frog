@@ -4,10 +4,11 @@ import axios from 'axios';
 import { FaUserPlus } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
 
 export default function CreateEvent() {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({
         eventName: '',
         eventLoadIn: '',
@@ -101,6 +102,7 @@ export default function CreateEvent() {
                 });
                 setSelectedContractors([]);
                 toast.success('Event created successfully!');
+                navigate('/admin/manage-events');
             } else {
                 setMessage(result.message || 'Error creating event');
                 toast.error(result.message || 'Error creating event');
@@ -184,7 +186,7 @@ export default function CreateEvent() {
                                         name="eventLoadInHours"
                                         value={formData.eventLoadInHours}
                                         onChange={handleInputChange}
-                                        min="0"
+                                        min="1"
                                         step="0.5"
                                         maxLength={2}
                                         required
@@ -216,7 +218,7 @@ export default function CreateEvent() {
                                         name="eventLoadOutHours"
                                         value={formData.eventLoadOutHours}
                                         onChange={handleInputChange}
-                                        min="0"
+                                        min="1"
                                         step="0.5"
                                         maxLength={2}
                                         required

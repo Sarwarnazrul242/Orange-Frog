@@ -48,7 +48,9 @@ const eventSchema = new mongoose.Schema({
     eventStatus: { type: String, enum: ['published', 'processing', 'started', 'completed', 'canceled'], default: 'published' },
     acceptedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
     rejectedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
-    approvedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }]
+    approvedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
 });
 
 const eventCollection = mongoose.model('eventCollection', eventSchema);

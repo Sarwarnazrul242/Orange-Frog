@@ -1,18 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaArrowLeft, FaMapMarkerAlt, FaClock, FaInfoCircle } from 'react-icons/fa';
+import { FaArrowLeft, FaMapMarkerAlt, FaClock, FaInfoCircle, FaEdit, FaTrashAlt, FaUsers, FaCheck, FaTimes } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Modal from '../../../Modal';
 
 export default function EventDetails() {
     const { eventId } = useParams();
+    const navigate = useNavigate();
     const [event, setEvent] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showApprovalModal, setShowApprovalModal] = useState(false);
     const [selectedContractor, setSelectedContractor] = useState(null);
+    const [showDeletePopup, setShowDeletePopup] = useState(false);
 
     const fadeIn = {
         initial: { opacity: 0, y: 20 },
@@ -68,6 +70,26 @@ export default function EventDetails() {
         }
     };
 
+    const handleEdit = (event) => {
+        navigate(`/admin/events/edit/${event._id}`);
+    };
+
+    const handleDelete = () => {
+        setShowDeletePopup(true);
+    };
+
+    const confirmDelete = async () => {
+        try {
+            await axios.delete(`${process.env.REACT_APP_BACKEND}/events/${eventId}`);
+            setShowDeletePopup(false);
+            toast.success('Event deleted successfully!');
+            navigate('/admin/manage-events');
+        } catch (error) {
+            console.error('Error deleting event:', error);
+            toast.error('Failed to delete event');
+        }
+    };
+
     if (loading) {
         return <div className="text-white text-center mt-8">Loading...</div>;
     }
@@ -90,6 +112,7 @@ export default function EventDetails() {
                 initial={{ x: -20, opacity: 0 }}
                 animate={{ x: 0, opacity: 1 }}
                 transition={{ duration: 0.4 }}
+                className="flex justify-between items-center"
             >
                 <Link 
                     to="/admin/manage-events"
@@ -98,6 +121,22 @@ export default function EventDetails() {
                     <FaArrowLeft className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
                     Back to Events
                 </Link>
+                <div className="flex space-x-4">
+                    <button
+                        onClick={() => handleEdit(event)}
+                        className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                    >
+                        <FaEdit />
+                        <span>Edit</span>
+                    </button>
+                    <button
+                        onClick={handleDelete}
+                        className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                    >
+                        <FaTrashAlt />
+                        <span>Delete</span>
+                    </button>
+                </div>
             </motion.div>
 
             <motion.div 
@@ -251,31 +290,77 @@ export default function EventDetails() {
 
             {showApprovalModal && (
                 <Modal>
-                    <div className="bg-neutral-800 p-6 rounded-lg max-w-md w-full">
-                        <h3 className="text-xl font-semibold text-white mb-4">
-                            Contractor Approval
-                        </h3>
-                        <p className="text-neutral-300 mb-6">
-                            Do you want to approve or deny {selectedContractor.name} for this event?
-                        </p>
-                        <div className="flex justify-end space-x-4">
-                            <button
-                                onClick={() => handleApproval(false)}
-                                className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
-                            >
-                                Deny
-                            </button>
-                            <button
-                                onClick={() => handleApproval(true)}
-                                className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
-                            >
-                                Approve
-                            </button>
-                            <button
+                    <motion.div 
+                        initial={{ opacity: 0, scale: 0.9 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.9 }}
+                        transition={{ type: "spring", duration: 0.5 }}
+                        className="bg-neutral-900 p-8 rounded-xl max-w-md w-full border border-neutral-800 shadow-2xl"
+                    >
+                        <div className="flex flex-col items-center text-center">
+                            <div className="mb-6 p-3 bg-neutral-800/50 rounded-full">
+                                <FaUsers className="text-3xl text-blue-400" />
+                            </div>
+                            <h3 className="text-2xl font-semibold text-white mb-2">
+                                Contractor Approval
+                            </h3>
+                            <p className="text-neutral-400 mb-8">
+                                Do you want to approve or deny <span className="text-white font-medium">{selectedContractor?.name}</span> for this event?
+                            </p>
+                            
+                            <div className="flex gap-3 w-full">
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => handleApproval(true)}
+                                    className="flex-1 px-6 py-3 bg-green-500 hover:bg-green-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+                                >
+                                    <FaCheck className="text-sm" />
+                                    Approve
+                                </motion.button>
+                                <motion.button
+                                    whileHover={{ scale: 1.02 }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => handleApproval(false)}
+                                    className="flex-1 px-6 py-3 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+                                >
+                                    <FaTimes className="text-sm" />
+                                    Deny
+                                </motion.button>
+                            </div>
+                            
+                            <motion.button
+                                whileHover={{ scale: 1.02 }}
+                                whileTap={{ scale: 0.98 }}
                                 onClick={() => setShowApprovalModal(false)}
-                                className="px-4 py-2 bg-neutral-700 text-white rounded-lg hover:bg-neutral-600 transition-colors"
+                                className="mt-4 px-6 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-lg transition-colors"
                             >
                                 Cancel
+                            </motion.button>
+                        </div>
+                    </motion.div>
+                </Modal>
+            )}
+
+            {showDeletePopup && (
+                <Modal>
+                    <div className="bg-neutral-900 p-8 rounded-md shadow-lg w-full max-w-md border border-neutral-700">
+                        <h2 className="text-red-500 text-2xl mb-4">Are you sure you want to delete this Event?</h2>
+                        <p className="text-neutral-300 mb-6">
+                            This action cannot be undone. Once deleted, this event's data will be permanently removed from the system.
+                        </p>
+                        <div className="flex justify-end gap-4">
+                            <button 
+                                onClick={() => setShowDeletePopup(false)} 
+                                className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors"
+                            >
+                                Cancel
+                            </button>
+                            <button 
+                                onClick={confirmDelete} 
+                                className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-full transition-colors"
+                            >
+                                Delete
                             </button>
                         </div>
                     </div>
