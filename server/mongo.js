@@ -55,20 +55,27 @@ const eventSchema = new mongoose.Schema({
 
 const eventCollection = mongoose.model('eventCollection', eventSchema);
 
-const incidentSchema = new mongoose.Schema({
-    incidentName: { type: String, required: true },
-    incidentStartDate: { type: Date, required: true },
-    incidentEndDate: { type: Date, required: true },
-    incidentRequest: { type: String },
-    incidentDescription: { type: String, required: true }
+
+
+const correctionReportSchema = new mongoose.Schema({
+    reportTitle: { type: String, required: true },
+    eventDate: { type: Date, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
+    requestType: { type: String, required: true },
+    description: { type: String, required: true },
+    requestedCorrection: { type: String, required: true },
+    files: [{ type: String }],
+    status: { type: String, default: 'pending' },
+    submittedAt: { type: Date, default: Date.now }
 });
 
-const incidentCollection = mongoose.model('incidentCollection', incidentSchema);
+const correctionReportCollection = mongoose.model('correctionReportCollection', correctionReportSchema);
 
 const collection = {
     userCollection,
     eventCollection,
-    incidentCollection
+    correctionReportCollection
 };
 
 module.exports = collection;

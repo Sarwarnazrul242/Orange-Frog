@@ -24,6 +24,7 @@ import UserProfile from "./components/pages/freelancer/UserProfile";
 import FindJobs from "./components/pages/freelancer/jobs/FindJobs";
 import CurrentJobs from "./components/pages/freelancer/jobs/CurrentJobs";
 import TimeCard from "./components/pages/freelancer/timecard/TimeCard";
+import CorrectionReport from "./components/pages/freelancer/report/CorrectionReport";
 
 // Set Profile Pages
 import PasswordReset from "./components/pages/setProfile/PasswordReset";
@@ -31,6 +32,7 @@ import CompleteProfile from "./components/pages/setProfile/CompleteProfile";
 
 // Separate component for root route handling
 import RootRedirect from './components/RootRedirect';
+
 
 function App() {
   useEffect(() => {
@@ -95,6 +97,7 @@ function App() {
             <Route path="find-jobs" element={<FindJobs />} />
             <Route path="current-jobs" element={<CurrentJobs />} />
             <Route path="time-card" element={<TimeCard />} />
+            <Route path="correction-report" element={<CorrectionReport />} />
           </Route>
 
           {/* Set Profile Pages */}

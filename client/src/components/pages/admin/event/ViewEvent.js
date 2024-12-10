@@ -394,7 +394,7 @@ export default function ViewEvent() {
                             containerClassName="rounded-full"
                             className="dark:bg-black bg-neutral-900 text-white flex items-center space-x-2"
                         >
-                            <span className="text-lg mr-1">+</span>
+                            <span className="text-lg mr-1">+</span> 
                             <span>Create Event</span>
                         </HoverBorderGradient>
                     </Link>

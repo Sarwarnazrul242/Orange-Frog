@@ -124,6 +124,21 @@ const UserDashboard = () => {
             </p>
           </div>
         </div>
+
+        {/* Correction Report Card */}
+        <div
+          className="relative group cursor-pointer"
+          onClick={() => navigate("/user/correction-report")}
+        >
+          <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-500 to-teal-500 rounded-xl blur opacity-75 group-hover:opacity-100 transition duration-300"></div>
+          <div className="relative bg-neutral-900 dark:bg-neutral-800 text-white rounded-xl p-6 shadow-lg flex flex-col items-center gap-4">
+            <IconUsers className="w-12 h-12 text-teal-400" />
+            <h2 className="text-xl font-semibold">Correction Report</h2>
+            <p className="text-sm text-neutral-400 text-center">
+              View and manage your current job assignments.
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
