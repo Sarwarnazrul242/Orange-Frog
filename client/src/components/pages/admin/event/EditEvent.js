@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
 import MultiSelect from './MultiSelect';
@@ -11,6 +11,7 @@ export default function EditEvent() {
     const [contractors, setContractors] = useState([]);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const location = useLocation();
 
     const [formData, setFormData] = useState({
         eventName: '',
@@ -119,7 +120,7 @@ export default function EditEvent() {
                 toast.info('No changes were made');
             }
             
-            navigate('/admin/manage-events');
+            navigate(location.state?.from);
         } catch (error) {
             console.error('Error updating event:', error);
             toast.error('Failed to update event');
@@ -306,7 +307,7 @@ export default function EditEvent() {
                     <div className="flex justify-center space-x-4 pt-6">
                         <button
                             type="button"
-                            onClick={() => navigate('/admin/manage-events')}
+                            onClick={() => navigate(location.state?.from)}
                             className="px-6 py-2.5 rounded-lg bg-neutral-700 text-white hover:bg-neutral-600 transition-colors"
                         >
                             Cancel

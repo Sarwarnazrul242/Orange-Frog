@@ -71,7 +71,7 @@ export default function EventDetails() {
     };
 
     const handleEdit = (event) => {
-        navigate(`/admin/events/edit/${event._id}`);
+        navigate(`/admin/events/edit/${event._id}`, { state: { from: `/admin/events/${event._id}` } });
     };
 
     const handleDelete = () => {
@@ -121,34 +121,36 @@ export default function EventDetails() {
                     <FaArrowLeft className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
                     Back to Events
                 </Link>
-                <div className="flex space-x-4">
-                    <button
-                        onClick={() => handleEdit(event)}
-                        className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                    >
-                        <FaEdit />
-                        <span>Edit</span>
-                    </button>
-                    <button
-                        onClick={handleDelete}
-                        className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                    >
-                        <FaTrashAlt />
-                        <span>Delete</span>
-                    </button>
-                </div>
             </motion.div>
 
             <motion.div 
                 className="bg-neutral-800 rounded-lg p-8 shadow-2xl backdrop-blur-sm bg-opacity-90"
                 {...fadeIn}
-            >
-                <motion.h1 
-                    className="text-4xl font-bold text-white mb-8 border-b border-neutral-700 pb-4"
-                    {...fadeIn}
-                >
-                    {event.eventName}
-                </motion.h1>
+            >   
+                <div className='mb-8 border-b border-neutral-700 pb-4 flex justify-between items-center'>
+                    <motion.h1 
+                        className="text-4xl font-bold text-white "
+                        {...fadeIn}
+                    >
+                        {event.eventName}
+                    </motion.h1>
+                    <div className="flex space-x-4 -mt-6">
+                        <button
+                            onClick={() => handleEdit(event)}
+                            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                        >
+                            <FaEdit />
+                            <span>Edit</span>
+                        </button>
+                        <button
+                            onClick={handleDelete}
+                            className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
+                        >
+                            <FaTrashAlt />
+                            <span>Delete</span>
+                        </button>
+                    </div>
+                </div>
                 
                 <div className="grid md:grid-cols-2 gap-8">
                     <motion.div 

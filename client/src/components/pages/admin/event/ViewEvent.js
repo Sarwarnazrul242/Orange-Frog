@@ -107,7 +107,7 @@ export default function ViewEvent() {
     // Edit Event
 
     const handleEdit = (event) => {
-        navigate(`/admin/events/edit/${event._id}`);
+        navigate(`/admin/events/edit/${event._id}`, { state: { from: '/admin/manage-events' } });
     };
 
     const handleContractorChange = (selectedOptions) => {

@@ -222,7 +222,7 @@ export default function Profile() {
                     <input
                         type="text"
                         name="hourlyRate"
-                        value={`$${profileData.hourlyRate || '0'}/hr`}
+                        value={`$${profileData.hourlyRate || '0'}/hour`}
                         className="w-full p-3 rounded-lg bg-neutral-100 dark:bg-neutral-900/50 border border-neutral-300 dark:border-neutral-700 text-neutral-500 dark:text-neutral-400 cursor-not-allowed"
                         disabled
                     />
