@@ -19,28 +19,86 @@ const transporter = nodemailer.createTransport({
     }
 });
 
+// Add a new GET route to fetch a specific event
+router.get('/:eventId', async (req, res) => {
+    try {
+        const event = await eventCollection.findById(req.params.eventId);
+        if (!event) {
+            return res.status(404).json({ message: 'Event not found' });
+        }
+        res.status(200).json(event);
+    } catch (error) {
+        console.error('Error fetching event:', error);
+        res.status(500).json({ message: 'Error fetching event details' });
+    }
+});
+
 router.post('/', async (req, res) => {
-    const { eventName, eventLoadIn, eventLoadOut, eventLocation, eventHours, eventDescription, assignedContractors } = req.body;
+    const { 
+        eventName, 
+        eventLoadIn, 
+        eventLoadInHours,
+        eventLoadOut, 
+        eventLoadOutHours,
+        eventLocation, 
+        eventDescription, 
+        assignedContractors 
+    } = req.body;
 
     try {
-        // Save the event to the database
+        // Validate dates
+        const currentDate = new Date();
+        const loadInDate = new Date(eventLoadIn);
+        const loadOutDate = new Date(eventLoadOut);
+
+        // Check if dates are in the past
+        if (loadInDate < currentDate) {
+            return res.status(400).json({ 
+                message: 'Load in date cannot be in the past' 
+            });
+        }
+
+        // Check if load out is before load in
+        if (loadOutDate < loadInDate) {
+            return res.status(400).json({ 
+                message: 'Load out date must be after load in date' 
+            });
+        }
+
+        // Create new event if validation passes
         const newEvent = new eventCollection({
             eventName,
             eventLoadIn,
+            eventLoadInHours,
             eventLoadOut,
+            eventLoadOutHours,
             eventLocation,
-            eventHours,
             eventDescription,
-            assignedContractors 
+            assignedContractors
         });
+
         await newEvent.save();
 
         // Fetch contractor details
         const contractors = await userCollection.find({ _id: { $in: assignedContractors } });
 
+        // Helper function to format date and time in 12-hour format
+        const formatDateTime = (dateString) => {
+            const date = new Date(dateString);
+            return date.toLocaleString('en-US', {
+                weekday: 'long',
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                hour12: true
+            });
+        };
+
         // Send email to each contractor
         for (const contractor of contractors) {
-            const acceptJobUrl = `http://yourfrontendurl.com/accept-job?eventId=${newEvent._id}&contractorId=${contractor._id}`;
+            const acceptJobUrl = `https://orange-frog.vercel.app/user/find-jobs`;
             const mailOptions = {
                 from: process.env.EMAIL_USERNAME,
                 to: contractor.email,
@@ -48,43 +106,64 @@ router.post('/', async (req, res) => {
                 html: `
                     <div style="max-width: 600px; margin: auto; padding: 20px; font-family: Arial, sans-serif; color: #333;">
                         <div style="text-align: center; padding: 20px 0;">
-                            <img src="https://orangefrog.swbdatabases3.com/wp-content/uploads/2024/03/orange-frog-logo.png" alt="Company Logo" style="width: 150px; height: auto;">
+                            <img src="https://orangefrog.swbdatabases3.com/wp-content/uploads/2024/03/orange-frog-logo.png" alt="Orange Frog Logo" style="width: 150px; height: auto;">
                         </div>
                         
                         <div style="background-color: #F16636; padding: 30px; border-radius: 8px;">
-                            <h2 style="color: #ffffff;">Hello, ${contractor.name}</h2>
-                            <p style="font-size: 16px; color: #ffffff;">
-                                We have a new job opportunity for you! Here are the details:
+                            <h2 style="color: #ffffff; margin: 0 0 20px 0;">Hello ${contractor.name}!</h2>
+                            <p style="font-size: 16px; color: #ffffff; margin-bottom: 25px;">
+                                You have a new job opportunity waiting for you.
                             </p>
                             
-                            <div style="background-color: #ffffff; border: 1px solid #ddd; padding: 15px; border-radius: 8px; margin: 20px 0;">
-                                <p style="font-size: 16px; margin: 0;"><strong>Event Name:</strong> ${eventName}</p>
-                                <p style="font-size: 16px; margin: 0;"><strong>Location:</strong> ${eventLocation}</p>
-                                <p style="font-size: 16px; margin: 0;"><strong>Load In:</strong> ${eventLoadIn}</p>
-                                <p style="font-size: 16px; margin: 0;"><strong>Load Out:</strong> ${eventLoadOut}</p>
-                                <p style="font-size: 16px; margin: 0;"><strong>Total Hours:</strong> ${eventHours}</p>
-                                <p style="font-size: 16px; margin: 0;"><strong>Description:</strong> ${eventDescription}</p>
+                            <div style="background-color: #ffffff; border-radius: 8px; padding: 25px; margin-bottom: 25px;">
+                                <h3 style="color: #F16636; margin: 0 0 20px 0; font-size: 20px; text-align: center;">
+                                    ${eventName}
+                                </h3>
+                                
+                                <div style="margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                                    <p style="margin: 0; color: #666; font-size: 14px;">Location</p>
+                                    <p style="margin: 5px 0 0 0; color: #333; font-size: 16px;">${eventLocation}</p>
+                                </div>
+                                
+                                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                                    <div>
+                                        <p style="margin: 0; color: #666; font-size: 14px;">Load In</p>
+                                        <p style="margin: 5px 0 0 0; color: #333; font-size: 16px;">
+                                            ${formatDateTime(eventLoadIn)}
+                                        </p>
+                                        <p style="margin: 5px 0 0 0; color: #F16636; font-size: 14px;">
+                                            Duration: ${eventLoadInHours} hours
+                                        </p>
+                                    </div>
+                                    
+                                    <div>
+                                        <p style="margin: 0; color: #666; font-size: 14px;">Load Out</p>
+                                        <p style="margin: 5px 0 0 0; color: #333; font-size: 16px;">
+                                            ${formatDateTime(eventLoadOut)}
+                                        </p>
+                                        <p style="margin: 5px 0 0 0; color: #F16636; font-size: 14px;">
+                                            Duration: ${eventLoadOutHours} hours
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
 
-                            <p style="font-size: 16px; color: #ffffff;">
-                                If you're interested in this job, please click the button below to accept the opportunity.
-                            </p>
-
-                            <div style="text-align: center; margin-top: 20px;">
-                                <a href="${acceptJobUrl}" style="background-color: #ffffff; color: black; padding: 12px 24px; border-radius: 4px; text-decoration: none; font-size: 16px;">
-                                    Accept Job
+                            <div style="text-align: center;">
+                                <a href="${acceptJobUrl}" 
+                                   style="display: inline-block; background-color: #ffffff; color: #F16636; padding: 12px 30px; 
+                                          border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 16px;
+                                          transition: background-color 0.3s;">
+                                    View Job Details
                                 </a>
                             </div>
                         </div>
                         
-                        <p style="font-size: 14px; color: #777; text-align: center; margin-top: 30px;">
-                            If you have any questions, feel free to <a href="mailto:support@yourcompany.com" style="color: #F16636; text-decoration: none;">contact our support team</a>.
-                        </p>
-                        
-                        <div style="text-align: center; padding: 10px 0; font-size: 12px; color: #aaa;">
-                            © ${new Date().getFullYear()} Orange Frog, Inc. All rights reserved.
+                        <div style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+                            <p>If you have any questions, please contact us at support@orangefrog.com</p>
+                            <p style="margin-top: 10px;">© ${new Date().getFullYear()} Orange Frog Productions. All rights reserved.</p>
                         </div>
-                    </div>`
+                    </div>
+                `
             };
 
             // Await each sendMail call to ensure sequential processing

@@ -7,19 +7,24 @@ const { userCollection } = require('../mongo');
 router.get('/:email', async (req, res) => {
     const { email } = req.params;
     try {
-        const user = await userCollection.findOne({ email });
+        const user = await userCollection.findOne(
+            { email },
+            {
+                name: 1,
+                email: 1,
+                address: 1,
+                phone: 1,
+                dob: 1,
+                shirtSize: 1,
+                firstAidCert: 1,
+                allergies: 1,
+                hourlyRate: 1,
+                _id: 1,
+            }
+        );
+        
         if (user) {
-            const userData = {
-                name: user.name,
-                email: user.email,
-                address: user.address,
-                dob: user.dob,
-                phone: user.phone,
-                shirtSize: user.shirtSize,
-                firstAidCert: user.firstAidCert,
-                allergies: user.allergies
-            };
-            res.status(200).json(userData);
+            res.json(user);
         } else {
             res.status(404).json({ message: 'User not found' });
         }

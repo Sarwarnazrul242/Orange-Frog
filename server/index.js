@@ -22,7 +22,7 @@ const createEventRoute = require("./routes/create-event");
 const eventsRoute = require("./routes/events");
 const incidentReportRoute = require("./routes/incident-report");
 const forgotPasswordRoute = require("./routes/forgot-password");
-const viewCorrectionsRoute = require("./routes/view-corrections");
+const logoutRoute = require("./routes/logout");
 
 app.use("/users", usersRoute);
 app.use("/update-user", userProfileRoute);
@@ -33,12 +33,12 @@ app.use("/reset-password", resetPasswordRoute);
 app.use("/complete-profile", completeProfileRoute);
 app.use("/delete-user/", deleteUserRoute);
 app.use("/user-profile/", userProfileRoute);
-app.use("/update-profile/", updateProfileRoute);
+app.use("/update-profile", updateProfileRoute);
 app.use("/create-event", createEventRoute);
 app.use("/events", eventsRoute);
 app.use("/incident-report", incidentReportRoute);
 app.use("/forgot-password", forgotPasswordRoute);
-app.use("/view-corrections", viewCorrectionsRoute);
+app.use("/logout", logoutRoute);
 /*END OF NEW STUFF*/
 app.use("/health", (req, res) => {
   res.status(200).send("App is running!");

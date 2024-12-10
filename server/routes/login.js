@@ -48,7 +48,7 @@ router.post('/', async (req, res) => {
     } catch (error) {
         return res.status(500).json({ message: 'Server error' });
     }
-});
+}); 
 
 module.exports = router;
 /*END OF NEW STUFF*/

@@ -1,0 +1,169 @@
+.calendar-container {
+    padding: 20px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Override react-calendar default styles */
+.react-calendar {
+    width: 700px !important;
+    background: transparent !important;
+    border: none !important;
+    font-family: inherit !important;
+}
+
+.react-calendar button {
+    color: white !important;
+    padding: 8px !important;
+}
+
+.react-calendar__month-view__days__day {
+    color: #fff !important;
+}
+
+.react-calendar__month-view__days__day--weekend {
+    color: #ff6b6b !important;
+}
+
+.react-calendar__month-view__days__day--neighboringMonth {
+    color: #666 !important;
+}
+
+.react-calendar__navigation button {
+    min-width: 44px;
+    background: none !important;
+    font-size: 16px !important;
+    margin-top: 8px;
+}
+
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+    border-radius: 8px;
+}
+
+.react-calendar__tile {
+    padding: 14px 6px !important;
+    border-radius: 8px;
+    position: relative;
+}
+
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+    background-color: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* Custom class for event dates */
+.event-date {
+    background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%) !important; /* Light blue gradient */
+    color: white !important;
+}
+
+/* Add hover tooltips */
+.event-date::after {
+    content: 'Event';
+    position: absolute;
+    bottom: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.event-date:hover::after {
+    opacity: 1;
+}
+
+/* Override today's date highlight */
+.react-calendar__tile--now {
+    background: rgba(79, 70, 229, 0.2) !important; /* Indigo with transparency */
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+    background: rgba(79, 70, 229, 0.3) !important;
+}
+
+/* Event Details Container */
+.event-details-container {
+    flex: 1;
+    min-width: 300px;
+    max-width: 500px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    padding: 20px;
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    height: fit-content;
+}
+
+.event-card {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    padding: 16px;
+    transition: transform 0.2s;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .calendar-container {
+        width: 100%;
+    }
+
+    .react-calendar {
+        width: 100% !important;
+    }
+
+    .event-details-container {
+        width: 100%;
+        max-width: none;
+    }
+}
+
+/* Selected date styles */
+.react-calendar__tile--active {
+    position: relative !important;
+    z-index: 1 !important;
+    background: rgba(79, 195, 247, 0.2) !important; /* Light blue with transparency */
+}
+
+.react-calendar__tile--active::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border: 2px solid #000000;
+    border-radius: 8px;
+    animation: pulse 2s infinite;
+    z-index: -1;
+}
+
+@keyframes pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgba(79, 195, 247, 0.4);
+    }
+    70% {
+        box-shadow: 0 0 0 6px rgba(79, 195, 247, 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgba(79, 195, 247, 0);
+    }
+}
+
+/* Ensure selected event date maintains its gradient */
+.react-calendar__tile--active.event-date {
+    background: linear-gradient(135deg, #4FC3F7 0%, #29B6F6 100%) !important;
+}

@@ -15,6 +15,8 @@ const userSchema = new mongoose.Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
+    hourlyRate: { type: Number, required: true },
+    status: { type: String, enum: ['pending', 'active', 'inactive'], default: 'pending' },
     address: { type: String, default: '' },
     dob: { type: Date, default: null },
     allergies: { type: [String], default: [] },
@@ -30,7 +32,6 @@ const userSchema = new mongoose.Schema({
         enum: ['', 'Yes', 'No']
     },
     temporaryPassword: { type: Boolean, default: true },
-    status: { type: String, default: 'pending' }
 });
 
 const userCollection = mongoose.model('userCollection', userSchema);
@@ -38,14 +39,16 @@ const userCollection = mongoose.model('userCollection', userSchema);
 const eventSchema = new mongoose.Schema({
     eventName: { type: String, required: true },
     eventLoadIn: { type: Date, required: true },
+    eventLoadInHours: { type: Number, required: true },
     eventLoadOut: { type: Date, required: true },
+    eventLoadOutHours: { type: Number, required: true },
     eventLocation: { type: String, required: true },
-    eventHours: { type: Number },
     eventDescription: { type: String },
     assignedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
     eventStatus: { type: String, enum: ['published', 'processing', 'started', 'completed', 'canceled'], default: 'published' },
     acceptedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
-    rejectedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }]
+    rejectedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }],
+    approvedContractors: [{ type: mongoose.Schema.Types.ObjectId, ref: 'userCollection' }]
 });
 
 const eventCollection = mongoose.model('eventCollection', eventSchema);
@@ -55,8 +58,7 @@ const incidentSchema = new mongoose.Schema({
     incidentStartDate: { type: Date, required: true },
     incidentEndDate: { type: Date, required: true },
     incidentRequest: { type: String },
-    incidentDescription: { type: String, required: true },
-    incidentFiles: { type: [String], required: false},
+    incidentDescription: { type: String, required: true }
 });
 
 const incidentCollection = mongoose.model('incidentCollection', incidentSchema);
