@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import "./index.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "./AuthContext";
@@ -33,6 +33,13 @@ import CompleteProfile from "./components/pages/setProfile/CompleteProfile";
 import RootRedirect from './components/RootRedirect';
 
 function App() {
+  useEffect(() => {
+    document.body.classList.add('dark-mode'); // Force dark mode
+    return () => {
+      document.body.classList.remove('dark-mode'); // Clean up on unmount
+    };
+  }, []);
+
   return (
     <AuthProvider>
       <Router>
