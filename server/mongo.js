@@ -72,10 +72,33 @@ const correctionReportSchema = new mongoose.Schema({
 
 const correctionReportCollection = mongoose.model('correctionReportCollection', correctionReportSchema);
 
+const invoiceSchema = new mongoose.Schema({
+    invoiceNumber: { type: Number, required: true, unique: true },
+    lpoNumber: { type: String, default: '' },
+    user: { type: mongoose.Schema.Types.ObjectId, ref: 'userCollection', required: true },
+    show: { type: String, required: true },
+    venue: { type: String, required: true },
+    dateOfWork: [{ type: Date, required: true }],
+    actualHoursWorked: [{ type: String, required: true }], // e.g., "08:00 - 15:00"
+    notes: [{ type: String, default: '' }],
+    billableHours: [{ type: Number, required: true }],
+    rate: [{ type: Number, required: true }],
+    totals: [{ type: Number, required: true }],
+    subtotal: { type: Number, required: true },
+    taxPercentage: { type: Number, default: 0 },
+    taxAmount: { type: Number, default: 0 },
+    total: { type: Number, required: true },
+    createdAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now },
+  });
+  
+  const invoiceCollection = mongoose.model('invoiceCollection', invoiceSchema);
+
 const collection = {
     userCollection,
     eventCollection,
-    correctionReportCollection
+    correctionReportCollection,
+    invoiceCollection
 };
 
 module.exports = collection;

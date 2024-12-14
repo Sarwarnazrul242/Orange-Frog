@@ -245,7 +245,13 @@ const handleOtpChange = (e, index) => {
                             {loading ? 'Logging in...' : 'Login'}
                         </button>
                         <div className="forgot-password">
-                            <a href="#" className="text-white mt-3 flex justify-center underline" onClick={() => setView('forgotPassword')}>Forgot Password?</a>
+                        <button
+                            type="button"
+                            className="text-white mt-3 flex bg-transparent justify-center underline"
+                            onClick={() => setView('forgotPassword')}
+                            >
+                            Forgot Password?
+                            </button>
                         </div>
                     </form>
                 )}
@@ -285,7 +291,13 @@ const handleOtpChange = (e, index) => {
                                 {loading ? 'Sending Code...' : 'Send Code'}
                             </button>
                         </div>
-                        <a className="flex justify-center text-white mt-4 underline" href="#" onClick={() => setView('login')}>Back to Login</a>
+                        <button
+                            type="button"
+                            className="flex justify-center text-white w-full max-w-none bg-transparent mt-4 underline"
+                            onClick={() => setView('login')}
+                            >
+                            Back to Login
+                            </button>
                     </form>
                 )}
 
@@ -326,7 +338,13 @@ const handleOtpChange = (e, index) => {
                             {loading ? 'Verifying...' : 'Verify OTP'}
                         </button>
                         </div>
-                        <a className="flex justify-center text-white mt-4 underline" href="#" onClick={() => setView('login')}>Back to Login</a>
+                        <button
+                            type="button"
+                            className="flex justify-center bg-none text-black   mt-4 underline"
+                            onClick={() => setView('login')}
+                            >
+                            Back to Login
+                            </button>
                     </form>
                 )}
 

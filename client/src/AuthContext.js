@@ -7,8 +7,10 @@ export const AuthProvider = ({ children }) => {
   const [auth, setAuth] = useState({
     isAuthenticated: false,
     email: null,
-    role: null
+    role: null,
+    userId: null, // Add userId here
   });
+
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,42 +21,38 @@ export const AuthProvider = ({ children }) => {
     const isAuthenticated = Cookies.get('isAuthenticated') === 'true';
     const email = Cookies.get('email');
     const role = Cookies.get('role');
+    const userId = Cookies.get('userId'); // Retrieve userId from cookies
 
-    if (isAuthenticated && email && role) {
-      setAuth({ isAuthenticated, email, role });
+    if (isAuthenticated && email && role && userId) {
+      setAuth({ isAuthenticated, email, role, userId });
     } else {
-      setAuth({ isAuthenticated: false, email: null, role: null });
+      setAuth({ isAuthenticated: false, email: null, role: null, userId: null });
     }
     setLoading(false);
   };
 
-  const login = (email, role) => {
+  const login = (email, role, userId) => {
     const cookieOptions = { 
       secure: true,
       expires: 1,
-      sameSite: 'strict'
+      sameSite: 'strict',
     };
-    
+
     Cookies.set('isAuthenticated', 'true', cookieOptions);
     Cookies.set('email', email, cookieOptions);
     Cookies.set('role', role, cookieOptions);
-    setAuth({ isAuthenticated: true, email, role });
+    Cookies.set('userId', userId, cookieOptions); // Save userId in cookies
+
+    setAuth({ isAuthenticated: true, email, role, userId });
   };
 
   const logout = () => {
-    // Clear all cookies
     Cookies.remove('isAuthenticated');
     Cookies.remove('email');
     Cookies.remove('role');
-    
-    // Reset auth state
-    setAuth({ isAuthenticated: false, email: null, role: null });
-    
-    // You can also make a server request to clear any server-side sessions if needed
-    fetch(`${process.env.REACT_APP_BACKEND}/logout`, {
-      method: 'POST',
-      credentials: 'include'
-    }).catch(error => console.error('Error during logout:', error));
+    Cookies.remove('userId'); // Remove userId from cookies
+
+    setAuth({ isAuthenticated: false, email: null, role: null, userId: null });
   };
 
   return (
@@ -62,4 +60,4 @@ export const AuthProvider = ({ children }) => {
       {!loading && children}
     </AuthContext.Provider>
   );
-}; 
+};

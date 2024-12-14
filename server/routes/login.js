@@ -18,7 +18,7 @@ router.post('/', async (req, res) => {
 
     // Admin login check
     if (email === adminCredentials.email && password === adminCredentials.password) {
-        return res.status(200).json({ message: 'Login successful, Admin', role: 'admin' });
+        return res.status(200).json({ message: 'Login successful, Admin', role: 'admin', });
     }
 
     try {
@@ -29,16 +29,16 @@ router.post('/', async (req, res) => {
             if (isPasswordMatch) {
                 // If the user has reset the password, bypass temporary password checks
                 if (user.temporaryPassword) {
-                    return res.status(200).json({ message: 'Temporary password, must reset', role: 'user', resetRequired: true });
+                    return res.status(200).json({ message: 'Temporary password, must reset', role: 'user', resetRequired: true, userId: user._id, });
                 }
 
                 // If profile is incomplete (status is pending), redirect to complete profile page
                 if (user.status === 'pending') {
-                    return res.status(200).json({ message: 'Profile incomplete, must complete', role: 'user', completeProfile: true });
+                    return res.status(200).json({ message: 'Profile incomplete, must complete', role: 'user', completeProfile: true, userId: user._id, });
                 }
 
                 // Login successful with the new password
-                return res.status(200).json({ message: 'Login successful', role: 'user' });
+                return res.status(200).json({ message: 'Login successful', role: 'user', userId: user._id });
             } else {
                 return res.status(401).json({ message: 'Invalid credentials' });
             }

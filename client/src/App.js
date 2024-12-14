@@ -1,14 +1,10 @@
-import React, { useEffect } from "react";
-import "./index.css";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { useEffect } from "react";
 import { AuthProvider } from "./AuthContext";
-import { useContext } from "react";
-import { AuthContext } from "./AuthContext";
 import PrivateRoute from "./components/PrivateRoute";
 import SidebarDemo from "./components/SidebarDemo";
 import Login from "./components/pages/login/Login";
 import { Toaster } from "sonner";
-import EventDetails from './components/pages/admin/event/EventDetails';
 
 // Admin Pages
 import Dashboard from "./components/pages/admin/adminDashboard";
@@ -17,6 +13,7 @@ import ManageEvents from "./components/pages/admin/event/ManageEvents";
 import ManageUsers from "./components/pages/admin/users/ManageUsers";
 import CreateEvent from "./components/pages/admin/event/CreateEvent";
 import EditEvent from "./components/pages/admin/event/EditEvent";
+import AdminInvoices from "./components/pages/invoice/AdminInvoices";
 
 // User Pages
 import UserDashboard from "./components/pages/freelancer/UserDashboard";
@@ -25,20 +22,20 @@ import FindJobs from "./components/pages/freelancer/jobs/FindJobs";
 import CurrentJobs from "./components/pages/freelancer/jobs/CurrentJobs";
 import TimeCard from "./components/pages/freelancer/timecard/TimeCard";
 import CorrectionReport from "./components/pages/freelancer/report/CorrectionReport";
+import UserInvoices from "./components/pages/invoice/UserInvoices";
+
+// Invoice Page
+import Invoice from "./components/pages/invoice/Invoice";
 
 // Set Profile Pages
 import PasswordReset from "./components/pages/setProfile/PasswordReset";
 import CompleteProfile from "./components/pages/setProfile/CompleteProfile";
 
-// Separate component for root route handling
-import RootRedirect from './components/RootRedirect';
-
-
 function App() {
   useEffect(() => {
-    document.body.classList.add('dark-mode'); // Force dark mode
+    document.body.classList.add("dark-mode"); // Force dark mode
     return () => {
-      document.body.classList.remove('dark-mode'); // Clean up on unmount
+      document.body.classList.remove("dark-mode");
     };
   }, []);
 
@@ -50,22 +47,15 @@ function App() {
           duration={3000}
           toastOptions={{
             className: "sonner-toast",
-            style: {
-              background: "#1f1f1f",
-              color: "#fff",
-              border: "1px solid #333",
-            },
+            style: { background: "#1f1f1f", color: "#fff", border: "1px solid #333" },
           }}
           richColors
         />
         <Routes>
-          {/* Add this as the first route */}
-          <Route path="/" element={<RootRedirect />} />
+          <Route path="/" element={<Navigate to="/login" replace />} />
+          <Route path="/login" element={<Login />} />
 
-          {/* Root route with conditional redirect */}
-          <Route path="/login" element={<Login/>} />
-
-          {/* Protected Admin Routes */}
+          {/* Admin Routes */}
           <Route
             path="/admin/*"
             element={
@@ -79,11 +69,13 @@ function App() {
             <Route path="manage-users" element={<ManageUsers />} />
             <Route path="manage-events" element={<ManageEvents />} />
             <Route path="events/create" element={<CreateEvent />} />
-            <Route path="events/:eventId" element={<EventDetails />} />
+            <Route path="events/:eventId" element={<ManageEvents />} />
             <Route path="events/edit/:id" element={<EditEvent />} />
+            <Route path="invoices" element={<AdminInvoices />} />
+            <Route path="invoices/:id" element={<Invoice />} />
           </Route>
 
-          {/* Protected User Routes */}
+          {/* User Routes */}
           <Route
             path="/user/*"
             element={
@@ -98,9 +90,11 @@ function App() {
             <Route path="current-jobs" element={<CurrentJobs />} />
             <Route path="time-card" element={<TimeCard />} />
             <Route path="correction-report" element={<CorrectionReport />} />
+            <Route path="invoices" element={<UserInvoices />} />
+            <Route path="invoices/:id" element={<Invoice />} />
           </Route>
 
-          {/* Set Profile Pages */}
+          {/* Profile Setup Routes */}
           <Route
             path="/reset-password"
             element={
@@ -118,7 +112,7 @@ function App() {
             }
           />
 
-          {/* Catch all route */}
+          {/* Catch-all Route */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </Router>
