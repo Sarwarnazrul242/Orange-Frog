@@ -3,7 +3,7 @@ import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import { toast } from 'sonner';
 import axios from 'axios';
 import MultiSelect from './MultiSelect';
-import { FaArrowLeft } from 'react-icons/fa';
+// import { FaArrowLeft } from 'react-icons/fa';
 
 export default function EditEvent() {
     const { id } = useParams();

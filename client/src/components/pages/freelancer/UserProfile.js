@@ -16,7 +16,7 @@ export default function Profile() {
         password: '',
         hourlyRate: '',
     });
-    const [message, setMessage] = useState('');
+    // const [message, setMessage] = useState('');
     const [showAllergyPopup, setShowAllergyPopup] = useState(false);
     const [showPasswordPopup, setShowPasswordPopup] = useState(false);
     const [newPassword, setNewPassword] = useState('');

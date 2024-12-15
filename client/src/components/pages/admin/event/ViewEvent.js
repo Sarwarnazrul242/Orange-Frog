@@ -1,7 +1,7 @@
 // src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock, FaUsers, FaSort } from 'react-icons/fa';
+import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo, FaUsers, FaSort } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
@@ -13,34 +13,34 @@ export default function ViewEvent() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [contractors, setContractors] = useState([]);
-    const [selectedContractors, setSelectedContractors] = useState([]);
+    // const [selectedContractors, setSelectedContractors] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [saving, setSaving] = useState(false);
+    // const [setSaving] = useState(false);
     const [view, setView] = useState('grid');
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
-    const [showEditPopup, setShowEditPopup] = useState(false);
-    const [eventToEdit, setEventToEdit] = useState({
-        eventName: '',
-        eventLoadIn: '',
-        eventLoadInHours: '',
-        eventLoadOut: '',
-        eventLoadOutHours: '',
-        eventLocation: '',
-        eventDescription: '',
-        assignedContractors: []
-    });
-    const [showContractorPopup, setShowContractorPopup] = useState(false);
+    // const [setShowEditPopup] = useState(false);
+    // const [eventToEdit, setEventToEdit] = useState({
+    //     eventName: '',
+    //     eventLoadIn: '',
+    //     eventLoadInHours: '',
+    //     eventLoadOut: '',
+    //     eventLoadOutHours: '',
+    //     eventLocation: '',
+    //     eventDescription: '',
+    //     assignedContractors: []
+    // });
+    // const [setShowContractorPopup] = useState(false); 
     const selectRef = useRef(null);
-    const [sortField, setSortField] = useState(null);
-    const [sortDirection, setSortDirection] = useState('asc');
+    // const [sortField, setSortField] = useState(null);
+    // const [sortDirection, setSortDirection] = useState('asc');
     const [showFilterDropdown, setShowFilterDropdown] = useState(false);
     const [filterField, setFilterField] = useState(null);
     const [filterValues, setFilterValues] = useState({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
     const filterDropdownRef = useRef(null);
-    const [selectedEvent, setSelectedEvent] = useState(null);
-    const [selectedContractor, setSelectedContractor] = useState([]);
-    const [error, setError] = useState(null);
+    // const [selectedEvent] = useState(null);
+    // const [selectedContractor, setSelectedContractor] = useState([]);
+    // const [error, setError] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
     
@@ -110,44 +110,44 @@ export default function ViewEvent() {
         navigate(`/admin/events/edit/${event._id}`, { state: { from: '/admin/manage-events' } });
     };
 
-    const handleContractorChange = (selectedOptions) => {
-        setSelectedContractors(selectedOptions.map(option => option.value));
-    };
+    // const handleContractorChange = (selectedOptions) => {
+    //     setSelectedContractors(selectedOptions.map(option => option.value));
+    // };
 
-    const saveEdit = async (e) => {
-        e.preventDefault();
-        setSaving(true);
-        try {
-            const originalContractors = eventToEdit.assignedContractors.map(contractor => contractor._id);
-            const newContractors = selectedContractors.filter(id => !originalContractors.includes(id));
+    // const saveEdit = async (e) => {
+    //     e.preventDefault();
+    //     setSaving(true);
+    //     try {
+    //         const originalContractors = eventToEdit.assignedContractors.map(contractor => contractor._id);
+    //         const newContractors = selectedContractors.filter(id => !originalContractors.includes(id));
 
-            const updatedEvent = { ...eventToEdit, assignedContractors: selectedContractors };
-            await axios.put(`${process.env.REACT_APP_BACKEND}/events/${eventToEdit._id}`, updatedEvent);
+    //         const updatedEvent = { ...eventToEdit, assignedContractors: selectedContractors };
+    //         await axios.put(`${process.env.REACT_APP_BACKEND}/events/${eventToEdit._id}`, updatedEvent);
 
-            // Send email notifications to new contractors
-            if (newContractors.length > 0) {
-                await axios.post(`${process.env.REACT_APP_BACKEND}/events/send-notifications`, {
-                    eventId: eventToEdit._id,
-                    contractorIds: newContractors
-                });
-            }
+    //         // Send email notifications to new contractors
+    //         if (newContractors.length > 0) {
+    //             await axios.post(`${process.env.REACT_APP_BACKEND}/events/send-notifications`, {
+    //                 eventId: eventToEdit._id,
+    //                 contractorIds: newContractors
+    //             });
+    //         }
 
-            setShowEditPopup(false);
-            setShowContractorPopup(false);
-            fetchEvents();
-            toast.success('Event updated successfully!');
-        } catch (error) {
-            console.error('Error updating event:', error);
-            toast.error('Failed to update event');
-        }
+    //         setShowEditPopup(false);
+    //         setShowContractorPopup(false);
+    //         fetchEvents();
+    //         toast.success('Event updated successfully!');
+    //     } catch (error) {
+    //         console.error('Error updating event:', error);
+    //         toast.error('Failed to update event');
+    //     }
 
-        setSaving(false);
-    };
+    //     setSaving(false);
+    // };
 
-    const handleInputChange = (e) => {
-        const { name, value } = e.target;
-        setEventToEdit({ ...eventToEdit, [name]: value });
-    };
+    // const handleInputChange = (e) => {
+    //     const { name, value } = e.target;
+    //     setEventToEdit({ ...eventToEdit, [name]: value });
+    // };
 
     const handleSortChange = (e) => {
         const value = e.target.value;
@@ -266,32 +266,29 @@ export default function ViewEvent() {
         return filtered;
     };
 
-    const saveContractorSelection = async () => {
-        try {
-            if (!selectedContractor) {
-                toast.error('Please select a contractor.');
-                return;
-            }
+    // const saveContractorSelection = async () => {
+    //     try {
+    //         if (!selectedContractor) {
+    //             toast.error('Please select a contractor.');
+    //             return;
+    //         }
 
-            const updatedEvent = {
-                assignedContractors: [selectedContractor],
-                eventStatus: 'processing',
-            };
+    //         const updatedEvent = {
+    //             assignedContractors: [selectedContractor],
+    //             eventStatus: 'processing',
+    //         };
 
-            await axios.put(`${process.env.REACT_APP_BACKEND}/events/${selectedEvent._id}`, updatedEvent);
+    //         await axios.put(`${process.env.REACT_APP_BACKEND}/events/${selectedEvent._id}`, updatedEvent);
 
-            setShowContractorPopup(false);
-            setSelectedContractor(null);
-            fetchEvents(); // Refresh the events list
-            toast.success('Contractor assigned successfully!');
-        } catch (error) {
-            console.error('Error assigning contractor:', error);
-            toast.error('Failed to assign contractor.');
-        }
-    };
-    
-    
-    
+    //         setShowContractorPopup(false);
+    //         setSelectedContractor(null);
+    //         fetchEvents(); // Refresh the events list
+    //         toast.success('Contractor assigned successfully!');
+    //     } catch (error) {
+    //         console.error('Error assigning contractor:', error);
+    //         toast.error('Failed to assign contractor.');
+    //     }
+    // };
 
     if (loading) {
         return (
