@@ -234,12 +234,18 @@ export default function ViewUsers() {
     
 
     const handleResendEmail = async (userId) => {
+        if (!userId) {
+            console.error("User ID is undefined");
+            toast.error("Invalid user ID. Cannot resend email.");
+            return;
+        }
+    
         try {
             await axios.post(`${process.env.REACT_APP_BACKEND}/resend-email/${userId}`);
-            toast.success('Email resent successfully!');
+            toast.success("Email resent successfully!");
         } catch (error) {
             console.error("Error resending email:", error);
-            toast.error('Failed to resend email. Please try again.');
+            toast.error("Failed to resend email. Please try again.");
         }
     };
 

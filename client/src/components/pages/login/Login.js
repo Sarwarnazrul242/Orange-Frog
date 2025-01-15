@@ -1,4 +1,4 @@
-import React, { useState, useContext, useEffect } from "react";
+import React, { useState, useContext } from "react";
 import './loginstyle.css';  
 import logo from '../../../images/orange-frog-logo.png';
 import { useNavigate } from 'react-router-dom'; 
@@ -15,19 +15,14 @@ export default function Login() {
     const [loading, setLoading] = useState(false);
     const [view, setView] = useState('login'); // 'login', 'forgotPassword', 'verifyOtp', 'resetPassword'
     const navigate = useNavigate();
-    const { login, auth } = useContext(AuthContext);
+    const { login } = useContext(AuthContext);
     const [confirmPassword, setConfirmPassword] = useState('');
 
-    useEffect(() => {
-        // If already authenticated, redirect to appropriate dashboard
-        if (auth.isAuthenticated) {
-            if (auth.role === 'admin') {
-                navigate('/admin/dashboard');
-            } else {
-                navigate('/user/dashboard');
-            }
-        }
-    }, [auth, navigate]);
+    // useEffect(() => {
+    //     if (auth.isAuthenticated && !auth.resetRequired && !auth.completeProfile) {
+    //         navigate(auth.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+    //     }
+    // }, [auth, navigate]);
 
     const togglePasswordVisibility = () => {
         setShowPassword(!showPassword);
@@ -58,46 +53,46 @@ const handleOtpChange = (e, index) => {
 
 
 
-    const submit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
+const submit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-        try {
-            const response = await fetch(`${process.env.REACT_APP_BACKEND}/login`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify(form)
-            });
+    try {
+        const response = await fetch(`${process.env.REACT_APP_BACKEND}/login`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(form)
+        });
 
-            const data = await response.json();
-            setLoading(false);
+        const data = await response.json();
+        setLoading(false);
 
-            if (response.status === 200) {
-                login(form.email, data.role);
-                toast.success('Login successful!');
+        if (response.status === 200) {
+            login(form.email, data.role);
+            toast.success('Login successful!');
+            console.log("Login Response:", data);
+            console.log(data.resetRequired);
+            console.log(data.completeProfile);
 
-                if (data.resetRequired) {
-                    navigate('/reset-password');
-                } else if (data.completeProfile) {
-                    navigate('/complete-profile');
 
-                } else if (data.role === 'admin') {
-                    navigate('/admin/dashboard');
-                } else {
-                    navigate('/user/dashboard');
-                }
+            if (data.resetRequired) {
+                navigate('/reset-password');
+                // navigate('/complete-profile');
+            } else if (data.completeProfile) {
+                navigate('/complete-profile');
             } else {
-                // setErrorMessage(data.message);
-                toast.error('Invalid credentials, please try again.');
+                navigate(data.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
             }
-        } catch (error) {
-            setLoading(false);
-            // setErrorMessage('Server error');
-            toast.error('Server error, please try again.');
+        } else {
+            toast.error('Invalid credentials, please try again.');
         }
-    };
+    } catch (error) {
+        setLoading(false);
+        toast.error('Server error, please try again.');
+    }
+};
 
     const handleForgotPassword = async (e) => {
         e.preventDefault();
