@@ -35,6 +35,18 @@ export default function EventDetails() {
     };
 
     useEffect(() => {
+        const fetchEventDetails = async () => {
+            try {
+                const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events/${eventId}`);
+                setEvent(response.data);
+                setLoading(false);
+            } catch (error) {
+                console.error('Error fetching event details:', error);
+                setError(error.response?.data?.message || 'Error fetching event details');
+                setLoading(false);
+            }
+        };
+    
         fetchEventDetails();
     }, [eventId]);
 
