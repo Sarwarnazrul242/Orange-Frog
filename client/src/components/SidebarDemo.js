@@ -6,8 +6,8 @@ import {
   IconBrandTabler,
   IconUserBolt,
   IconHome,
-  IconCalendarEvent,
-  IconUsers,
+  // IconCalendarEvent,
+  // IconUsers,
 } from "@tabler/icons-react";
 import { useNavigate, useLocation, Outlet } from "react-router-dom";
 import { cn } from "../lib/utils";
@@ -130,7 +130,10 @@ export default function SidebarDemo({ role }) {
 
 export const Logo = () => {
   return (
-    <a className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20">
+    <a
+      href="/"
+      className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20"
+    >
       <img
         src={require("../images/orange-frog-logo.png")}
         alt="Orange Frog Logo"
@@ -145,7 +148,10 @@ export const Logo = () => {
 
 export const LogoIcon = () => {
   return (
-    <a className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20">
+    <a
+      href="/"
+      className="font-normal flex space-x-2 items-center text-sm text-white py-1 relative z-20"
+    >
       <img
         src={require("../images/orange-frog-logo.png")}
         alt="Orange Frog Logo"

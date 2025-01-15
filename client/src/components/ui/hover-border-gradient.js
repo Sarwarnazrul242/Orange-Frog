@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { cn } from "../../lib/utils"; // Adjust the import path for the `cn` utility
 
@@ -14,14 +14,18 @@ export function HoverBorderGradient({
   const [hovered, setHovered] = useState(false);
   const [direction, setDirection] = useState("TOP");
 
-  const rotateDirection = (currentDirection) => {
-    const directions = ["TOP", "LEFT", "BOTTOM", "RIGHT"];
-    const currentIndex = directions.indexOf(currentDirection);
-    const nextIndex = clockwise
-      ? (currentIndex - 1 + directions.length) % directions.length
-      : (currentIndex + 1) % directions.length;
-    return directions[nextIndex];
-  };
+  // Wrap rotateDirection in useCallback
+  const rotateDirection = useCallback(
+    (currentDirection) => {
+      const directions = ["TOP", "LEFT", "BOTTOM", "RIGHT"];
+      const currentIndex = directions.indexOf(currentDirection);
+      const nextIndex = clockwise
+        ? (currentIndex - 1 + directions.length) % directions.length
+        : (currentIndex + 1) % directions.length;
+      return directions[nextIndex];
+    },
+    [clockwise] // Dependency: depends on the clockwise prop
+  );
 
   const movingMap = {
     TOP: "radial-gradient(20.7% 50% at 50% 0%, hsl(0, 0%, 100%) 0%, rgba(255, 255, 255, 0) 100%)",
@@ -42,7 +46,7 @@ export function HoverBorderGradient({
       }, duration * 1000);
       return () => clearInterval(interval);
     }
-  }, [hovered, duration, rotateDirection]);
+  }, [hovered, duration, rotateDirection]); // Add rotateDirection as a dependency
 
   const Tag = tag; // Use the specified tag dynamically
 

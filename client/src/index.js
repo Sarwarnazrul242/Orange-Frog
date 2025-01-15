@@ -19,6 +19,6 @@ root.render(
 // or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
 reportWebVitals();
 
-const toggleDarkMode = () => {
-  document.documentElement.classList.toggle("dark");
-};
+// const toggleDarkMode = () => {
+//   document.documentElement.classList.toggle("dark");
+// };

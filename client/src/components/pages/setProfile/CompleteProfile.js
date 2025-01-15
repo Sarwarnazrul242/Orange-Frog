@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
-import { FaMapMarkerAlt, FaCalendarAlt, FaPhone, FaRuler, FaVenusMars, FaUtensils } from 'react-icons/fa';
+import { FaMapMarkerAlt, FaCalendarAlt, FaPhone } from 'react-icons/fa';
 import { toast } from 'sonner';
 import '../login/loginstyle.css';
 

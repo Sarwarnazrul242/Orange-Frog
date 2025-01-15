@@ -1,15 +1,16 @@
 // src/components/admin/ManageUsers.js
 import React, { useState, useEffect, useRef } from 'react';
-import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown, FaPlus } from 'react-icons/fa';
+import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown } from 'react-icons/fa';
 import autoAnimate from '@formkit/auto-animate';
-import { motion, AnimatePresence } from 'framer-motion';
+// import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
 import { toast } from 'sonner';
 import Modal from "../../../Modal"; 
-import { Link } from 'react-router-dom';
-import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
+// import { Link } from 'react-router-dom';
+// import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
 import { HoverEffect } from "../../../ui/card-hover-effect";
 import CreateUsers from './CreateUsers';
+import { useNavigate } from 'react-router-dom';
 
 const EditPopup = ({ user, onSave, onCancel }) => {
     const [isEmailEditable, setIsEmailEditable] = useState(false);
@@ -40,6 +41,7 @@ const EditPopup = ({ user, onSave, onCancel }) => {
                                 <FaEdit 
                                     onClick={() => setIsEmailEditable(!isEmailEditable)}
                                     className="absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-blue-500 hover:text-blue-400"
+                                    title='Edit User'
                                 />
                             </div>
                         </div>
@@ -132,15 +134,18 @@ const UserRow = ({ name, email, status, hourlyRate, onEdit, onDelete, onResendEm
                 <FaRedo 
                     onClick={onResendEmail} 
                     className="text-lg md:text-xl text-white cursor-pointer hover:text-blue-400 transition-colors" 
+                    title='Resend Invite Email'
                 />
             )}
             <FaEdit 
                 onClick={onEdit} 
                 className="text-lg md:text-xl text-blue-500 cursor-pointer hover:text-blue-400 transition-colors" 
+                title='Edit User'
             />
             <FaTrashAlt 
                 onClick={onDelete} 
                 className="text-lg md:text-xl text-red-500 cursor-pointer hover:text-red-400 transition-colors" 
+                title='Delete User'
             />
         </div>
     </article>
@@ -178,8 +183,9 @@ const ConfirmationPopup = ({ user, onConfirm, onCancel }) => (
 
 export default function ViewUsers() {
     const [users, setUsers] = useState([]);
-    const [showForm, setShowForm] = useState(false);
-    const [isLoading, setIsLoading] = useState(false);
+    const navigate = useNavigate();
+    // const [showForm, setShowForm] = useState(false);
+    // const [isLoading, setIsLoading] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [editFormData, setEditFormData] = useState({ name: "", email: "" });
@@ -300,6 +306,10 @@ export default function ViewUsers() {
         );
     }
 
+    const handleUserClick = (userId) => {
+        navigate(`/admin/users/${userId}`);
+    };
+
     const handleSort = (field) => {
         if (sortField === field) {
             setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -351,6 +361,7 @@ export default function ViewUsers() {
                                 handleEdit(user);
                             }} 
                             className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                            title='Edit User'
                         />
                         <FaTrashAlt 
                             onClick={(e) => {
@@ -358,6 +369,7 @@ export default function ViewUsers() {
                                 handleDelete(user._id);
                             }} 
                             className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
+                            title='Delete User'
                         />
                     </div>
                 </div>
@@ -393,7 +405,13 @@ export default function ViewUsers() {
                     )}
                 </div>
             ),
-            link: '#'
+            link: `/admin/users/${user._id}`,
+            _id: user._id,
+            onClick: (e) => {
+                if (!e.defaultPrevented) {
+                    handleUserClick(user._id);
+                }
+            }
         }));
     };
 
@@ -419,7 +437,7 @@ export default function ViewUsers() {
                                 onClick={() => setShowSearchBox(!showSearchBox)}
                                 className="cursor-pointer text-white/60 hover:text-white transition-colors flex items-center px-2"
                             >
-                                <FaSearch className="text-lg" />
+                                <FaSearch className="text-lg" title='Search for a user'/>
                             </span>
                             <div className="relative flex items-center">
                                 <input
@@ -439,22 +457,26 @@ export default function ViewUsers() {
                         </div>
 
                         <div className="flex space-x-2 items-center">
-                            <button
-                                onClick={() => setIsGridView(false)}
-                                className={`hidden md:flex px-3 py-0 md:px-4 md:py-2 ${
-                                    !isGridView ? 'bg-white/20' : 'bg-white/10'
-                                } text-white rounded-l-full items-center hover:bg-white/30 transition-colors`}
-                            >
-                                <FaList className="mr-1 text-base md:text-xl" />
-                            </button>
-                            <button
-                                onClick={() => setIsGridView(true)}
-                                className={`hidden md:flex px-3 py-0 md:px-4 md:py-2 ${
-                                    isGridView ? 'bg-white/20' : 'bg-white/10'
-                                } text-white rounded-r-full items-center hover:bg-white/30 transition-colors`}
-                            >
-                                <FaTh className="mr-1 text-base md:text-xl" />
-                            </button>
+                        <button
+                            onClick={() => setIsGridView(true)}
+                            className={`p-2 mt-0 rounded transition-colors ${
+                                isGridView 
+                                    ? 'bg-neutral-700 text-white' 
+                                    : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                            }`}
+                        >
+                            <FaTh className="text-xl" />
+                        </button>
+                        <button
+                            onClick={() => setIsGridView(false)}
+                            className={`p-2 mt-0 rounded transition-colors ${
+                                !isGridView 
+                                    ? 'bg-neutral-700 text-white' 
+                                    : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                            }`}
+                        >
+                            <FaList className="text-xl" />
+                        </button>
                         </div>
                     </div>
 

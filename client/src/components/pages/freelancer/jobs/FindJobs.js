@@ -1,12 +1,12 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { FaTh, FaList, FaSort, FaRegSadTear, FaTimes, FaFilter } from 'react-icons/fa';
+import { FaTh, FaList, FaRegSadTear} from 'react-icons/fa';
 import { AuthContext } from "../../../../AuthContext";
 import { Link } from "react-router-dom";
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
 import { HoverEffect } from "../../../ui/card-hover-effect";
-import { motion } from "framer-motion";
+// import { motion } from "framer-motion";
 
 export default function FindJobs() {
     const { auth } = useContext(AuthContext);
@@ -14,7 +14,7 @@ export default function FindJobs() {
     const [jobs, setJobs] = useState([]);
     const [jobStatuses, setJobStatuses] = useState({});
     const [sortConfig, setSortConfig] = useState({ type: 'recent' });
-    const [showFilters, setShowFilters] = useState(false);
+    // const [showFilters, setShowFilters] = useState(false);
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmationType, setConfirmationType] = useState(null);
     const [selectedJobId, setSelectedJobId] = useState(null);
@@ -62,7 +62,7 @@ export default function FindJobs() {
 
     const sortedJobs = React.useMemo(() => {
         const sortedArray = [...jobs];
-        const currentDate = new Date();
+        // const currentDate = new Date();
 
         if (sortConfig.type === 'recent') {
             // Sort by most recently posted (using _id as a proxy for creation time)
@@ -93,9 +93,9 @@ export default function FindJobs() {
         }
     };
 
-    const handleCardClick = (job) => {
-        // No need to setSelectedJob as we're not using a Modal
-    };
+    // const handleCardClick = (job) => {
+    //     // No need to setSelectedJob as we're not using a Modal
+    // };
 
     const handleApply = async (eventId) => {
         try {

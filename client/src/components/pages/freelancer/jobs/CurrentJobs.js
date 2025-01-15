@@ -28,45 +28,82 @@ const CurrentJobs = () => {
     const [timeFilter, setTimeFilter] = useState('future');
     const [showFilters, setShowFilters] = useState(false);
 
-    const fetchJobs = async () => {
-        try {
-            setIsLoading(true);
-            const response = await fetch(`${process.env.REACT_APP_BACKEND}/events/contractor/${auth.email}`);
-            if (response.ok) {
-                const data = await response.json();
+    // const fetchJobs = async () => {
+    //     try {
+    //         setIsLoading(true);
+    //         const response = await fetch(`${process.env.REACT_APP_BACKEND}/events/contractor/${auth.email}`);
+    //         if (response.ok) {
+    //             const data = await response.json();
                 
-                // Filter jobs based on status and dates
-                const currentDate = new Date();
-                const filteredJobs = data.filter(job => {
-                    const loadInDate = new Date(job.eventLoadIn);
-                    const deniedDate = job.deniedAt ? new Date(job.deniedAt) : null;
+    //             // Filter jobs based on status and dates
+    //             const currentDate = new Date();
+    //             const filteredJobs = data.filter(job => {
+    //                 const loadInDate = new Date(job.eventLoadIn);
+    //                 const deniedDate = job.deniedAt ? new Date(job.deniedAt) : null;
 
-                    if (job.status === 'approved') {
-                        return true;
-                    }
-                    else if (job.status === 'applied') {
-                        return currentDate < loadInDate;
-                    }
-                    else if (job.status === 'denied' && deniedDate) {
-                        const hoursSinceDenied = (currentDate - deniedDate) / (1000 * 60 * 60);
-                        return hoursSinceDenied < 24;
-                    }
-                    return false;
-                });
+    //                 if (job.status === 'approved') {
+    //                     return true;
+    //                 }
+    //                 else if (job.status === 'applied') {
+    //                     return currentDate < loadInDate;
+    //                 }
+    //                 else if (job.status === 'denied' && deniedDate) {
+    //                     const hoursSinceDenied = (currentDate - deniedDate) / (1000 * 60 * 60);
+    //                     return hoursSinceDenied < 24;
+    //                 }
+    //                 return false;
+    //             });
 
-                setCurrentJobs(filteredJobs);
-            }
-        } catch (error) {
-            console.error("Error fetching jobs:", error);
-            toast.error("Error fetching jobs");
-        } finally {
-            setIsLoading(false);
-        }
-    };
+    //             setCurrentJobs(filteredJobs);
+    //         }
+    //     } catch (error) {
+    //         console.error("Error fetching jobs:", error);
+    //         toast.error("Error fetching jobs");
+    //     } finally {
+    //         setIsLoading(false);
+    //     }
+    // };
 
     useEffect(() => {
         if (auth.email) {
+            const fetchJobs = async () => {
+                try {
+                    setIsLoading(true);
+                    const response = await fetch(`${process.env.REACT_APP_BACKEND}/events/contractor/${auth.email}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        
+                        // Filter jobs based on status and dates
+                        const currentDate = new Date();
+                        const filteredJobs = data.filter(job => {
+                            const loadInDate = new Date(job.eventLoadIn);
+                            const deniedDate = job.deniedAt ? new Date(job.deniedAt) : null;
+    
+                            if (job.status === 'approved') {
+                                return true;
+                            }
+                            else if (job.status === 'applied') {
+                                return currentDate < loadInDate;
+                            }
+                            else if (job.status === 'denied' && deniedDate) {
+                                const hoursSinceDenied = (currentDate - deniedDate) / (1000 * 60 * 60);
+                                return hoursSinceDenied < 24;
+                            }
+                            return false;
+                        });
+    
+                        setCurrentJobs(filteredJobs);
+                    }
+                } catch (error) {
+                    console.error("Error fetching jobs:", error);
+                    toast.error("Error fetching jobs");
+                } finally {
+                    setIsLoading(false);
+                }
+            };
+    
             fetchJobs();
+    
             // Refresh every minute to handle expired jobs
             const interval = setInterval(fetchJobs, 60000);
             return () => clearInterval(interval);

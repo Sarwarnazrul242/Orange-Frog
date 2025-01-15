@@ -1,9 +1,9 @@
-import React, { useState, useContext } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Cookies from 'js-cookie';
 import '../login/loginstyle.css'; 
 import { toast } from 'sonner';
-import { AuthContext } from '../../../AuthContext';
+// import { AuthContext } from '../../../AuthContext';
 
 export default function PasswordReset() {
     const [tempPassword, setTempPassword] = useState(''); 

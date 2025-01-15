@@ -29,5 +29,19 @@ router.get('/email/:email', async (req, res) => {
     }
 });
 
+// Route to get a single user by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const user = await userCollection.findById(req.params.id);
+        if (!user) {
+            return res.status(404).json({ message: 'User not found' });
+        }
+        res.status(200).json(user); // Return the user object
+    } catch (error) {
+        console.error('Error fetching user by ID:', error);
+        res.status(500).json({ message: 'Server error' });
+    }
+});
+
 module.exports = router;
 /*END OF NEW STUFF*/

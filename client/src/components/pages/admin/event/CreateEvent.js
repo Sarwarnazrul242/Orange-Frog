@@ -22,7 +22,7 @@ export default function CreateEvent() {
     const [showContractorPopup, setShowContractorPopup] = useState(false);
     const [contractors, setContractors] = useState([]);
     const [selectedContractors, setSelectedContractors] = useState([]);
-    const [message, setMessage] = useState('');
+    const [setMessage] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
@@ -52,6 +52,7 @@ export default function CreateEvent() {
             setFormData(prev => {
                 // If load out is before new load in, reset load out
                 if (prev.eventLoadOut && new Date(prev.eventLoadOut) < new Date(value)) {
+                    toast.error('Load in cannot be after load out time, load in time has been reset.');
                     return {
                         ...prev,
                         [name]: value,
@@ -78,6 +79,19 @@ export default function CreateEvent() {
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
+
+        if (formData.eventLoadIn === formData.eventLoadOut) {
+            toast.error('Load In and Load Out times cannot be the same.');
+            setLoading(false);
+            return;
+        }
+
+        if (new Date(formData.eventLoadIn) > new Date(formData.eventLoadOut)) {
+            toast.error('Load In time cannot be after Load Out time.');
+            setLoading(false);
+            return;
+        }
+        
         const updatedFormData = { ...formData, assignedContractors: selectedContractors };
         
         try {

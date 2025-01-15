@@ -1,11 +1,11 @@
 import React, { useEffect, useState, useRef } from "react";
-import { useParams, useLocation, Link } from "react-router-dom";
+import { useParams, Link } from "react-router-dom"; //useLocation
 import html2pdf from "html2pdf.js";
 import { FaDownload } from "react-icons/fa";
 
 const Invoice = () => {
   const { id } = useParams(); // Extract invoice ID from URL params
-  const location = useLocation(); // Extract navigation state (e.g., origin: "admin" or "user")
+  // const location = useLocation(); // Extract navigation state (e.g., origin: "admin" or "user")
   const [invoice, setInvoice] = useState(null); // Invoice state
   const invoiceRef = useRef(null); // Reference for PDF generation
 
@@ -24,7 +24,7 @@ const Invoice = () => {
         }
 
         const data = await response.json();
-        console.log("Fetched invoice data:", data); // Debugging line
+        // console.log("Fetched invoice data:", data); // Debugging line
         setInvoice(data);
       } catch (error) {
         console.error("Error fetching invoice:", error);
@@ -83,6 +83,7 @@ const Invoice = () => {
             {/* User and Bill To Section */}
             <div className="flex justify-between mb-6 text-white">
               <div>
+                <p className="font-bold">Return address:</p>
                 <p className="font-bold">{invoice.user.name}</p>
                 <p>{invoice.user.address || "N/A"}</p>
                 <p>Phone: {invoice.user.phone || "N/A"}</p>

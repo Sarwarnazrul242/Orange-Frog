@@ -1,7 +1,7 @@
 // src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaTh, FaTable, FaEdit, FaTrashAlt, FaRedo, FaUsers, FaSort } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
+import { FaList, FaEdit, FaTrashAlt, FaRedo, FaUsers, FaSort, FaTh } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
@@ -526,7 +526,7 @@ export default function ViewEvent() {
                                     : 'bg-neutral-800 text-white hover:bg-neutral-700'
                             }`}
                         >
-                            <FaTable className="text-xl" />
+                            <FaList className="text-xl" />
                         </button>
                     </div>
                 </div>
@@ -550,53 +550,76 @@ export default function ViewEvent() {
                     ) : (
                         <div className="overflow-x-auto">
                             <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden">
-                                <thead className="bg-neutral-700">
-                                    <tr>
-                                        <th 
-                                            className="p-4 text-left text-white cursor-pointer"
-                                            onClick={() => handleSort('eventName')}
-                                        >
-                                            Event Name {getSortIcon('eventName')}
-                                        </th>
-                                        <th 
-                                            className="p-4 text-left text-white cursor-pointer"
-                                            onClick={() => handleSort('eventLoadIn')}
-                                        >
-                                            Load In {getSortIcon('eventLoadIn')}
-                                        </th>
-                                        <th 
-                                            className="p-4 text-left text-white cursor-pointer"
-                                            onClick={() => handleSort('eventLoadInHours')}
-                                        >
-                                            Load In Hours {getSortIcon('eventLoadInHours')}
-                                        </th>
-                                        <th 
-                                            className="p-4 text-left text-white cursor-pointer"
-                                            onClick={() => handleSort('eventLoadOut')}
-                                        >
-                                            Load Out {getSortIcon('eventLoadOut')}
-                                        </th>
-                                        <th 
-                                            className="p-4 text-left text-white cursor-pointer"
-                                            onClick={() => handleSort('eventLoadOutHours')}
-                                        >
-                                            Load Out Hours {getSortIcon('eventLoadOutHours')}
-                                        </th>
-                                        <th 
-                                            className="p-4 text-left text-white cursor-pointer"
-                                            onClick={() => handleSort('assignedContractors')}
-                                        >
-                                            Contractors {getSortIcon('assignedContractors')}
-                                        </th>
-                                        <th 
-                                            className="p-4 text-left text-white cursor-pointer"
-                                            onClick={() => handleSort('updatedAt')}
-                                        >
-                                            Last Modified {getSortIcon('updatedAt')}
-                                        </th>
-                                        <th className="p-4 text-left text-white">Actions</th>
-                                    </tr>
-                                </thead>
+                            <thead className="bg-neutral-700">
+                                <tr>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventName')}
+                                    >
+                                        <div className="flex items-center">
+                                            Event Name
+                                            <span className="ml-2">{getSortIcon('eventName')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadIn')}
+                                    >
+                                        <div className="flex items-center">
+                                            Load In
+                                            <span className="ml-2">{getSortIcon('eventLoadIn')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadInHours')}
+                                    >
+                                        <div className="flex items-center">
+                                            Load In Hours
+                                            <span className="ml-2">{getSortIcon('eventLoadInHours')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadOut')}
+                                    >
+                                        <div className="flex items-center">
+                                            Load Out
+                                            <span className="ml-2">{getSortIcon('eventLoadOut')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadOutHours')}
+                                    >
+                                        <div className="flex items-center">
+                                            Load Out Hours
+                                            <span className="ml-2">{getSortIcon('eventLoadOutHours')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('assignedContractors')}
+                                    >
+                                        <div className="flex items-center">
+                                            Contractors
+                                            <span className="ml-2">{getSortIcon('assignedContractors')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('updatedAt')}
+                                    >
+                                        <div className="flex items-center">
+                                            Last Modified
+                                            <span className="ml-2">{getSortIcon('updatedAt')}</span>
+                                        </div>
+                                    </th>
+                                    <th className="p-4 text-left text-white whitespace-nowrap">
+                                        Actions
+                                    </th>
+                                </tr>
+                            </thead>
                                 <tbody>
                                     {getFilteredAndSortedEvents().map((event) => (
                                         <tr 
@@ -616,13 +639,14 @@ export default function ViewEvent() {
                                                 {event.updatedAt ? new Date(event.updatedAt).toLocaleString() : 'Not modified'}
                                             </td>
                                             <td className="p-4">
-                                                <div className="flex space-x-2">
+                                                <div className="flex space-x-4">
                                                     <FaEdit 
                                                         onClick={(e) => {
                                                             e.stopPropagation(); // Prevent row click
                                                             handleEdit(event);
                                                         }} 
                                                         className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                                                        title="Edit User" 
                                                     />
                                                     <FaTrashAlt 
                                                         onClick={(e) => {
@@ -630,6 +654,7 @@ export default function ViewEvent() {
                                                             handleDelete(event);
                                                         }} 
                                                         className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
+                                                        title="Delete Event" 
                                                     />
                                                 </div>
                                             </td>
