@@ -117,6 +117,7 @@ router.post('/:userId', async (req, res) => {
         const user = await userCollection.findById(userId);
         if (!user) return res.status(404).json({ message: 'User not found' });
 
+        
         // Update user's password
         user.password = hashedPassword;
         await user.save();
