@@ -1,6 +1,6 @@
 // src/components/admin/ManageUsers.js
 import React, { useState, useEffect, useRef } from 'react';
-import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown } from 'react-icons/fa';
+import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown, FaEnvelope} from 'react-icons/fa';
 import autoAnimate from '@formkit/auto-animate';
 // import { motion, AnimatePresence } from 'framer-motion';
 import axios from 'axios';
@@ -131,10 +131,10 @@ const UserRow = ({ name, email, status, hourlyRate, onEdit, onDelete, onResendEm
         </div>
         <div className="col-span-1 py-2 px-2 md:py-4 md:px-4 flex items-center justify-end gap-4">
             {status === 'Pending' && (
-                <FaRedo 
+                <FaEnvelope 
                     onClick={onResendEmail} 
                     className="text-lg md:text-xl text-white cursor-pointer hover:text-blue-400 transition-colors" 
-                    title='Resend Invite Email'
+                    title='Resend Email'
                 />
             )}
             <FaEdit 
@@ -355,6 +355,18 @@ export default function ViewUsers() {
                 <div className="flex justify-between items-center">
                     <span>{user.name}</span>
                     <div className="flex space-x-3">
+                        {user.temporaryPassword && ( // Show envelope icon for Pending users
+                            <FaEnvelope
+                                onClick={(e) => {
+                                    e.preventDefault(); // Prevent row click
+                                    handleResendEmail(user._id);
+                                }}
+                                className="text-white-500 cursor-pointer text-xl hover:text-white-600 transition-colors"
+                                title="Resend Email"
+                            />
+                        )}
+                            
+                       
                         <FaEdit 
                             onClick={(e) => {
                                 e.preventDefault();
@@ -378,7 +390,7 @@ export default function ViewUsers() {
                 <div className="flex flex-col space-y-2">
                     <div className="flex items-center space-x-2">
                         <span className="text-zinc-400">Email:</span>
-                        <span>{user.email}</span>
+                        <span className="truncate max-w-[250px]">{user.email}</span>
                     </div>
                     <div className="flex items-center space-x-2">
                         <span className="text-zinc-400">Hourly Rate:</span>
@@ -390,19 +402,7 @@ export default function ViewUsers() {
                             {user.temporaryPassword ? 'Pending' : 'Active'}
                         </span>
                     </div>
-                    {user.temporaryPassword && (
-                        <div className="flex justify-center mt-4">
-                            <button
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    handleResendEmail(user._id);
-                                }}
-                                className="px-3 py-1 bg-white/10 hover:bg-white/20 text-white rounded-full transition-colors"
-                            >
-                                Resend Email
-                            </button>
-                        </div>
-                    )}
+                    
                 </div>
             ),
             link: `/admin/users/${user._id}`,
@@ -497,13 +497,13 @@ export default function ViewUsers() {
                                     <div className="col-span-1 px-4 text-white font-bold flex items-center">
                                         Name
                                         <span onClick={() => handleSort('name')} className="ml-2 cursor-pointer text-white">
-                                            {sortField === 'name' && sortDirection === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
+                                            {sortField === 'name' && sortDirection === 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
                                         </span>
                                     </div>
                                     <div className="col-span-1 px-4 text-white font-bold flex items-center">
                                         Email
                                         <span onClick={() => handleSort('email')} className="ml-2 cursor-pointer text-white">
-                                            {sortField === 'email' && sortDirection === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
+                                            {sortField === 'email' && sortDirection === 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
                                         </span>
                                     </div>
                                     <div className="col-span-1 px-4 text-white font-bold flex items-center">
@@ -515,7 +515,7 @@ export default function ViewUsers() {
                                     <div className="col-span-1 px-4 text-white font-bold flex items-center">
                                         Hourly Rate
                                         <span onClick={() => handleSort('hourlyRate')} className="ml-2 cursor-pointer text-white">
-                                            {sortField === 'hourlyRate' && sortDirection === 'asc' ? <FaSortAlphaUp /> : <FaSortAlphaDown />}
+                                            {sortField === 'hourlyRate' && sortDirection === 'asc' ? <FaArrowDown /> : <FaArrowUp />}
                                         </span>
                                     </div>
                                     <div className="col-span-1 px-4 text-white font-bold text-right">

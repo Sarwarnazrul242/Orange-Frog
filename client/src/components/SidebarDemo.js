@@ -94,28 +94,46 @@ export default function SidebarDemo({ role }) {
     )}>
         {/* Sidebar Component */}
         <Sidebar open={open} setOpen={setOpen}>
-            <SidebarBody className="justify-between gap-10">
-                <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
-                    {open ? <Logo /> : <LogoIcon />}
-                    <div className="mt-8 flex flex-col gap-2">
-                        {links.map((link) => (
-                            <div
-                                key={link.key}
-                                onClick={() => handleNavigation(link.path, link.key)}
-                                className={cn(
-                                    "flex items-center gap-2 px-4 py-2 cursor-pointer rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700",
-                                    location.pathname === link.path && "bg-neutral-100 dark:bg-neutral-700"
-                                )}
-                            >
-                                {link.icon}
-                                <span className="text-neutral-700 dark:text-neutral-200">
-                                    {link.label}
-                                </span>
-                            </div>
-                        ))}
+            
+
+<SidebarBody className="flex flex-col justify-between h-full gap-10">
+    {/* Sidebar Content */}
+    <div className="flex flex-col flex-1 overflow-y-auto overflow-x-hidden">
+        {open ? <Logo /> : <LogoIcon />}
+        <div className="mt-8 flex flex-col gap-2">
+            {links
+                .filter((link) => link.key !== "logout") // Exclude logout from the top links
+                .map((link) => (
+                    <div
+                        key={link.key}
+                        onClick={() => handleNavigation(link.path, link.key)}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 cursor-pointer rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-700",
+                            location.pathname === link.path && "bg-neutral-100 dark:bg-neutral-700"
+                        )}
+                    >
+                        {link.icon}
+                        <span className="text-neutral-700 dark:text-neutral-200">
+                            {link.label}
+                        </span>
                     </div>
-                </div>
-            </SidebarBody>
+                ))}
+        </div>
+    </div>
+
+    <div className="p-4">
+        <button
+            onClick={() => handleNavigation("/", "logout")}
+            className={cn(
+                "flex items-center gap-2 px-4 py-2 rounded-lg bg-red-500 text-white hover:bg-red-600 transition-colors",
+                open ? "justify-start" : "justify-center" // Center icon when collapsed
+            )}
+        >
+            <IconArrowLeft className="h-5 w-5 flex-shrink-0" />
+            {open && <span>Logout</span>} {/* Conditionally render text */}
+        </button>
+    </div>
+</SidebarBody>
         </Sidebar>
 
         {/* Main Content Area */}
