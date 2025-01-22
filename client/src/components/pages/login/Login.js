@@ -70,7 +70,7 @@ const submit = async (e) => {
         setLoading(false);
 
         if (response.status === 200) {
-            login(form.email, data.role);
+            login(form.email, data.role, data.userId);
             toast.success('Login successful!');
             console.log("Login Response:", data);
             console.log(data.resetRequired);

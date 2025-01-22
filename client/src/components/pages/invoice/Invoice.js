@@ -15,6 +15,7 @@ const Invoice = () => {
         console.error("Invoice ID is undefined");
         return;
       }
+      
 
       try {
         const response = await fetch(`${process.env.REACT_APP_BACKEND}/invoices/${id}`);

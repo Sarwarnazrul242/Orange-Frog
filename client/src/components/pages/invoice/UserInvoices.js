@@ -18,6 +18,7 @@ const UserInvoices = () => {
           console.error("User ID is missing in auth context");
           return;
         }
+        console.log("User ID:", auth.userId);
 
         const response = await fetch(`${process.env.REACT_APP_BACKEND}/invoices/user/${auth.userId}`);
         if (!response.ok) {

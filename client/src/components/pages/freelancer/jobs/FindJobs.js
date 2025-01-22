@@ -282,24 +282,27 @@ export default function FindJobs() {
                             <option value="closest">Closest Date</option>
                         </select>
                     </div>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={() => setIsGridView(false)}
-                            className={`px-4 py-2 ${
-                                !isGridView ? 'bg-white/20' : 'bg-white/10'
-                            } text-white rounded-l-lg hover:bg-white/30 transition-colors flex items-center gap-2`}
-                        >
-                            <FaList />
-                            List
-                        </button>
+                    <div className="hidden md:flex gap-2">
                         <button
                             onClick={() => setIsGridView(true)}
-                            className={`px-4 py-2 ${
-                                isGridView ? 'bg-white/20' : 'bg-white/10'
-                            } text-white rounded-r-lg hover:bg-white/30 transition-colors flex items-center gap-2`}
+                            className={`p-2 mt-0 rounded transition-colors ${
+                                isGridView ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                            } flex items-center gap-2`}
+                            title="Grid View"
                         >
-                            <FaTh />
-                            Grid
+                            <FaTh className="text-xl" />
+                            
+                            
+                        </button>
+                        <button
+                            onClick={() => setIsGridView(false)}
+                            className={`p-2 mt-0 rounded transition-colors ${
+                                !isGridView ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                            } flex items-center gap-2`}
+                            title="List View"
+                        >
+                            <FaList className="text-xl" />
+                            
                         </button>
                     </div>
                 </div>
