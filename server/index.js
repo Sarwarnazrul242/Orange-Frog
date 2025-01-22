@@ -25,6 +25,7 @@ const forgotPasswordRoute = require("./routes/forgot-password");
 const logoutRoute = require("./routes/logout");
 const correctionReportRouter = require('./routes/correction-report');
 const invoicesRoute = require('./routes/invoices');
+const viewCorrectionsRoute = require("./routes/view-corrections");
 
 app.use("/users", usersRoute);
 app.use("/update-user", userProfileRoute);
@@ -43,6 +44,7 @@ app.use("/forgot-password", forgotPasswordRoute);
 app.use("/logout", logoutRoute);
 app.use('/correction-report', correctionReportRouter);
 app.use('/invoices', invoicesRoute);
+app.use("/corrections", viewCorrectionsRoute);
 
 app.use("/health", (req, res) => {
   res.status(200).send("App is running!");

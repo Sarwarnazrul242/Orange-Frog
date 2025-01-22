@@ -37,7 +37,7 @@ router.post('/', async (req, res) => {
         res.status(200).json({ message: 'Event created and notifications sent successfully' });
     } catch (error) {
         console.error('Error acreating event or sending notifications:', error);
-        res.status(500).json({ message: 'Error acreating event or sending notifications' });
+        res.status(500).json({ message: 'Error a creating event or sending notifications' });
     }
 });
 

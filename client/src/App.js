@@ -16,6 +16,9 @@ import EditEvent from "./components/pages/admin/event/EditEvent";
 import AdminInvoices from "./components/pages/invoice/AdminInvoices";
 import EventDetails from "./components/pages/admin/event/EventDetails";
 
+import ManageCorrections from "./components/pages/admin/corrections/ManageCorrections";
+import CorrectionDetails from "./components/pages/admin/corrections/CorrectionDetails";
+
 // User Pages
 import UserDashboard from "./components/pages/freelancer/UserDashboard";
 import UserProfile from "./components/pages/freelancer/UserProfile";
@@ -72,6 +75,8 @@ function App() {
             <Route path="events/create" element={<CreateEvent />} />
             <Route path="events/:eventId" element={<EventDetails />} />
             <Route path="events/edit/:id" element={<EditEvent />} />
+            <Route path="manage-corrections" element={<ManageCorrections />} />
+            <Route path="corrections/:correctionId" element={<correctionDetails />} />
             <Route path="invoices" element={<AdminInvoices />} />
             <Route path="invoices/:id" element={<Invoice />} />
           </Route>

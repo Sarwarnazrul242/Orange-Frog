@@ -45,7 +45,8 @@ const CorrectionReport = () => {
         formDataToSend.append('files', file);
       });
     }
-    
+    console.log("aaaaaaaaaaaaa");
+    console.log('Submitting form data:', [...formDataToSend.entries()]);
     try {
       await axios.post(`${process.env.REACT_APP_BACKEND}/correction-report`, formDataToSend, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -62,6 +63,7 @@ const CorrectionReport = () => {
       });
       setFiles(null);
     } catch (error) {
+      console.log(error);
       toast.error('Failed to submit correction report');
     } finally {
       setLoading(false);
