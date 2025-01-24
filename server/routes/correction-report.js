@@ -4,18 +4,40 @@ const router = express.Router();
 const { correctionReportCollection } = require('../mongo');
 
 router.post('/', async (req, res) => {
-  try {
-    const newReport = new correctionReportCollection({
-      ...req.body,
-      status: 'pending',
-      submittedAt: new Date()
-    });
+  const {
+      reportTitle,
+      eventDate,
+      startDate,
+      endDate,
+      requestType,
+      description,
+      requestedCorrection
+  } = req.body;
 
-    await newReport.save();
-    res.status(201).json({ message: 'Correction report submitted successfully' });
+  if (!reportTitle || !eventDate || !startDate || !endDate || !requestType || !description || !requestedCorrection) {
+    console.log(reportTitle, eventDate, startDate, endDate, requestType, description, requestedCorrection);
+      return res.status(400).json({ message: 'All fields are required.' });
+  }
+
+  try {
+      const newReport = new correctionReportCollection({
+          reportTitle,
+          eventDate,
+          startDate,
+          endDate,
+          requestType,
+          description,
+          requestedCorrection,
+          files: req.files ? req.files.map(file => file.path) : [],
+          status: 'pending',
+          submittedAt: new Date()
+      });
+
+      await newReport.save();
+      res.status(201).json({ message: 'Correction report submitted successfully' });
   } catch (error) {
-    console.error('Error submitting correction report:', error);
-    res.status(500).json({ message: 'Error submitting correction report' });
+      console.error('Error submitting correction report:', error);
+      res.status(500).json({ message: 'Error submitting correction report' });
   }
 });
 

@@ -70,6 +70,8 @@ const correctionReportSchema = new mongoose.Schema({
     submittedAt: { type: Date, default: Date.now }
 });
 
+
+
 const correctionReportCollection = mongoose.model('correctionReportCollection', correctionReportSchema);
 
 const invoiceSchema = new mongoose.Schema({

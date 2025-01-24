@@ -1,4 +1,3 @@
-// client/src/components/pages/freelancer/correctionReport/CorrectionReport.js
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -34,41 +33,64 @@ const CorrectionReport = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    
+
+    // Validate required fields
+    if (!formData.reportTitle || !formData.eventDate || !formData.startDate || !formData.endDate || 
+        !formData.requestType || !formData.description || !formData.requestedCorrection) {
+        toast.error("Please fill in all required fields.");
+        setLoading(false);
+        return;
+    }
+
+    // Ensure correct data formatting
+    const formattedData = {
+      ...formData,
+      eventDate: new Date(formData.eventDate).toISOString(),
+      startDate: new Date(formData.startDate).toISOString(),
+      endDate: new Date(formData.endDate).toISOString(),
+    };
+
     const formDataToSend = new FormData();
-    Object.keys(formData).forEach(key => {
-      formDataToSend.append(key, formData[key]);
+    Object.keys(formattedData).forEach(key => {
+        formDataToSend.append(key, formattedData[key]);
     });
-    
-    if (files) {
-      Array.from(files).forEach(file => {
-        formDataToSend.append('files', file);
-      });
+
+    // Handle file uploads
+    if (files && files.length > 0) {
+        Array.from(files).forEach(file => {
+            formDataToSend.append('files', file);
+        });
     }
-    console.log("aaaaaaaaaaaaa");
-    console.log('Submitting form data:', [...formDataToSend.entries()]);
+
+    // Debugging: Log the form data
+    for (let pair of formDataToSend.entries()) {
+        console.log(pair[0], pair[1]);
+    }
+
     try {
-      await axios.post(`${process.env.REACT_APP_BACKEND}/correction-report`, formDataToSend, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      toast.success('Correction report submitted successfully');
-      setFormData({
-        reportTitle: '',
-        eventDate: '',
-        startDate: '',
-        endDate: '',
-        requestType: '',
-        description: '',
-        requestedCorrection: '',
-      });
-      setFiles(null);
+      await axios.post(
+        `${process.env.REACT_APP_BACKEND}/correction-report`,
+        formattedData,
+        { headers: { 'Content-Type': 'application/json' } }
+      );
+        toast.success('Correction report submitted successfully');
+        setFormData({
+          reportTitle: '',
+          eventDate: '',
+          startDate: '',
+          endDate: '',
+          requestType: '',
+          description: '',
+          requestedCorrection: '',
+        });
+        setFiles(null);
     } catch (error) {
-      console.log(error);
-      toast.error('Failed to submit correction report');
+        console.error("Error submitting correction report:", error);
+        toast.error('Failed to submit correction report');
     } finally {
-      setLoading(false);
+        setLoading(false);
     }
-  };
+ };
 
   const handleChange = (e) => {
     setFormData({
@@ -199,26 +221,13 @@ const CorrectionReport = () => {
           </div>
 
           <div className="col-span-2 flex justify-center">
-            <HoverBorderGradient
-              containerClassName="rounded-full"
-              className="flex items-center space-x-2 h-12 px-6"
-            >
+            <HoverBorderGradient className="rounded-full flex items-center space-x-2 h-12 px-6">
               <button
                 type="submit"
                 disabled={loading}
                 className="text-white hover:text-orange-500 transition-colors disabled:text-neutral-500 bg-transparent mb-4"
               >
-                {loading ? (
-                  <>
-                    <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
-                    </svg>
-                    Submitting...
-                  </>
-                ) : (
-                  'Submit Report'
-                )}
+                {loading ? 'Submitting...' : 'Submit Report'}
               </button>
             </HoverBorderGradient>
           </div>

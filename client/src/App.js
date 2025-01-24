@@ -76,7 +76,7 @@ function App() {
             <Route path="events/:eventId" element={<EventDetails />} />
             <Route path="events/edit/:id" element={<EditEvent />} />
             <Route path="manage-corrections" element={<ManageCorrections />} />
-            <Route path="corrections/:correctionId" element={<correctionDetails />} />
+            <Route path="corrections/:correctionId" element={<CorrectionDetails />} />
             <Route path="invoices" element={<AdminInvoices />} />
             <Route path="invoices/:id" element={<Invoice />} />
           </Route>

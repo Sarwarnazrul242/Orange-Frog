@@ -36,15 +36,23 @@ const Invoice = () => {
   }, [id]);
 
   const handleDownload = () => {
-    const element = invoiceRef.current;
-    const options = {
-      margin: 0.5,
+    const element = invoiceRef.current.cloneNode(true);
+  
+    // Apply styles for PDF only
+    element.style.backgroundColor = "#ffffff";
+    element.style.color = "#000000";
+    element.querySelectorAll("*").forEach((node) => {
+      node.style.color = "#000000";
+      node.style.backgroundColor = "#ffffff";
+    });
+  
+    html2pdf().set({
+      margin: [10, 10, 10, 10],
       filename: `invoice_${id}.pdf`,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
+      image: { type: "jpeg", quality: 1 },
+      html2canvas: { scale: 2, backgroundColor: "#ffffff" },
       jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
-    };
-    html2pdf().set(options).from(element).save();
+    }).from(element).save();
   };
 
   return (
@@ -80,7 +88,15 @@ const Invoice = () => {
         <h1 className="text-3xl font-bold text-white mb-8">Invoice Details</h1>
 
         {invoice ? (
-          <div ref={invoiceRef} className="max-w-4xl mx-auto bg-neutral-800 p-6 rounded-lg shadow">
+          <div 
+            ref={invoiceRef}
+            className="max-w-4xl mx-auto p-6 rounded-lg shadow bg-neutral-800 text-white"
+            style={{
+              width: "100%",
+              minHeight: "100vh",
+              padding: "20px"
+          }}
+          >
             {/* User and Bill To Section */}
             <div className="flex justify-between mb-6 text-white">
               <div>
