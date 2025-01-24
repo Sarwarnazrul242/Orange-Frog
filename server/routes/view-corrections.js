@@ -25,8 +25,6 @@ router.get('/', async (req, res) => {
     try {
         const events = await correctionReportCollection
             .find({})
-            .populate('acceptedContractors', 'name')
-            .populate('assignedContractors', 'name')
             .select('-__v')  // Exclude version field
             .lean();  // Convert to plain JavaScript objects
         res.status(200).json(events);

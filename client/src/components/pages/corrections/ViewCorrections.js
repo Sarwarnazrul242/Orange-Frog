@@ -218,10 +218,10 @@ export default function ViewCorrections() {
             description: (
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <p className="text-neutral-400 font-medium">Event Date</p>
-                        <div className="pl-2 border-l-2 border-neutral-700">
-                            <p className="text-white">{new Date(correction.eventDate).toLocaleString()}</p>
-                        </div>
+                    <div className="space-y-2">
+                        <span className="text-neutral-400 font-medium">Event Date:</span>
+                        <span className="ml-2 text-white">{new Date(correction.eventDate).toLocaleString()}</span>
+                    </div>
                     </div>
                     <div className="space-y-2">
                         <p className="text-neutral-400 font-medium">Start Date</p>

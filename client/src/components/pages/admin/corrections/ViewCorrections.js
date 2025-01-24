@@ -218,22 +218,12 @@ export default function ViewCorrections() {
             description: (
                 <div className="space-y-4">
                     <div className="space-y-2">
-                        <p className="text-neutral-400 font-medium">Event Date</p>
-                        <div className="pl-2 border-l-2 border-neutral-700">
-                            <p className="text-white">{new Date(correction.eventDate).toLocaleString()}</p>
-                        </div>
+                        <span className="text-neutral-400 font-medium">Event Date:</span>
+                        <span className="ml-2 text-white">{new Date(correction.eventDate).toLocaleString()}</span>
                     </div>
                     <div className="space-y-2">
-                        <p className="text-neutral-400 font-medium">Start Date</p>
-                        <div className="pl-2 border-l-2 border-neutral-700">
-                            <p className="text-white">{new Date(correction.startDate).toLocaleString()}</p>
-                        </div>
-                    </div>
-                    <div className="space-y-0">
-                        <p className="text-neutral-400 font-medium">End Date</p>
-                        <div className="pl-2 border-l-2 border-neutral-700">
-                            <p className="text-white">{new Date(correction.endDate).toLocaleString()}</p>
-                        </div>
+                        <span className="text-neutral-400 font-medium">Start Date:</span>
+                        <span className="ml-2 text-white">{new Date(correction.startDate).toLocaleString()}</span>
                     </div>
                 </div>
             ),
