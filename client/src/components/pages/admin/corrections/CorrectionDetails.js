@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import { FaArrowLeft, FaMapMarkerAlt, FaClock, FaInfoCircle, FaTrashAlt} from 'react-icons/fa';
+import { FaArrowLeft, FaMapMarkerAlt, FaClock, FaInfoCircle, FaEdit, FaTrashAlt, FaUsers, FaCheck, FaTimes } from 'react-icons/fa';
 import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 import Modal from '../../../Modal';
@@ -10,6 +10,8 @@ export default function CorrectionDetails() {
     const { correctionId } = useParams();
     const navigate = useNavigate();
     const [correction, setCorrection] = useState(null);
+    const [event, setEvent] = useState(null);
+    const [user, setUser] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [showDeletePopup, setShowDeletePopup] = useState(false);
@@ -20,33 +22,27 @@ export default function CorrectionDetails() {
         transition: { duration: 0.6 }
     };
 
-    // const fetchCorrectionDetails = async () => {
-    //     try {
-    //         const response = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections/${correctionId}`);
-    //         setCorrection(response.data);
-    //         setLoading(false);
-    //     } catch (error) {
-    //         console.error('Error fetching correction details:', error);
-    //         setError(error.response?.data?.message || 'Error fetching corrections details');
-    //         setLoading(false);
-    //     }
-    // };
+    const fetchCorrectionDetails = async () => {
+        try {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections/${correctionId}`);
+            setCorrection(response.data.correction);
+            setUser(response.data.userName);
+            setEvent(response.data.event);
+            setLoading(false);
+        } catch (error) {
+            console.error('Error fetching correction details:', error);
+            setError(error.response?.data?.message || 'Error fetching correction details');
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchCorrectionDetails = async () => {
-            try {
-                const response = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections/${correctionId}`);
-                setCorrection(response.data);
-                setLoading(false);
-            } catch (error) {
-                console.error('Error fetching correction details:', error);
-                setError(error.response?.data?.message || 'Error fetching corrections details');
-                setLoading(false);
-            }
-        };
-    
         fetchCorrectionDetails();
     }, [correctionId]);
+
+    const handleEdit = (correction) => {
+        navigate(`/admin/corrections/edit/${correction._id}`, { state: { from: `/admin/corrections/${correction._id}` } });
+    };
 
     const handleDelete = () => {
         setShowDeletePopup(true);
@@ -106,9 +102,16 @@ export default function CorrectionDetails() {
                         className="text-4xl font-bold text-white "
                         {...fadeIn}
                     >
-                        {correction.reportTitle}
+                        {event.eventName}
                     </motion.h1>
                     <div className="flex space-x-4 -mt-6">
+                        <button
+                            onClick={() => handleEdit(correction)}
+                            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
+                        >
+                            <FaEdit />
+                            <span>Edit</span>
+                        </button>
                         <button
                             onClick={handleDelete}
                             className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
@@ -129,20 +132,21 @@ export default function CorrectionDetails() {
                         <div className="bg-neutral-700 bg-opacity-40 rounded-lg p-6">
                             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
                                 <FaInfoCircle className="mr-2 text-blue-400" />
-                                Correction Details
+                                Event Details
                             </h2>
                             <div className="space-y-3 text-neutral-300">
                                 <p className="flex items-center">
                                     <FaMapMarkerAlt className="mr-2 text-red-400" />
-                                    <span className="font-medium">Event Date:</span>
-                                    <span className="ml-2">{new Date(correction.eventDate).toLocaleString()}</span>
+                                    <span className="font-medium">Location:</span>
+                                    <span className="ml-2">{event.eventLocation}</span>
                                 </p>
                                 <div className="flex items-center">
                                     <FaClock className="mr-2 text-green-400" />
                                     <div className="flex-1">
                                         <div className="mb-2">
-                                            <span className="font-medium">Event Start Date:</span>
-                                            <span className="ml-2">{new Date(correction.startDate).toLocaleString()}</span>
+                                            <span className="font-medium">Load In:</span>
+                                            <span className="ml-2">{new Date(event.eventLoadIn).toLocaleString()}</span>
+                                            <span className="ml-2 text-green-400">({event.eventLoadInHours}h)</span>
                                         </div>
                                     </div>
                                 </div>
@@ -150,17 +154,9 @@ export default function CorrectionDetails() {
                                     <FaClock className="mr-2 text-yellow-400" />
                                     <div className="flex-1">
                                         <div>
-                                        <span className="font-medium">Event End Date:</span>
-                                        <span className="ml-2">{new Date(correction.endDate).toLocaleString()}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex items-center">
-                                    <FaClock className="mr-2 text-blue-400" />
-                                    <div className="flex-1">
-                                        <div>
-                                        <span className="font-medium">Request Type:</span>
-                                        <span className="ml-2">{correction.requestType}</span>
+                                            <span className="font-medium">Load Out:</span>
+                                            <span className="ml-2">{new Date(event.eventLoadOut).toLocaleString()}</span>
+                                            <span className="ml-2 text-yellow-400">({event.eventLoadOutHours}h)</span>
                                         </div>
                                     </div>
                                 </div>
@@ -177,15 +173,56 @@ export default function CorrectionDetails() {
                         <div className="bg-neutral-700 bg-opacity-40 rounded-lg p-6">
                             <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
                                 <FaInfoCircle className="mr-2 text-blue-400" />
-                                Description
+                                Correction Details
                             </h2>
-                            <p className="text-neutral-300 leading-relaxed">
-                                {correction.description || 'No description provided'}
-                            </p>
+                            <div className="space-y-3 text-neutral-300">
+                                <p className="flex items-center">
+                                    <span className="font-medium">Created by:</span>
+                                    <span className="ml-2">{user}</span>
+                                </p>
+                                <p className="flex items-center">
+                                    <span className="font-medium">Created:</span>
+                                    <span className="ml-2">{new Date(correction.submittedAt).toLocaleString()}</span>
+                                </p>
+                            </div>
                         </div>
                     </motion.div>
                 </div>
             </motion.div>
+
+            <div className="mt-8">
+                <h2 className="text-xl font-semibold text-white mb-4"></h2>
+                <div className="bg-neutral-800 rounded-lg p-6">
+                    <div className="bg-neutral-700 bg-opacity-40 rounded-lg p-6">
+                        <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                            <FaInfoCircle className="mr-2 text-blue-400" />
+                            Description
+                        </h2>
+                        <div className="space-y-3 text-neutral-300">
+                            <p className="flex items-center">
+                                <span className="ml-2">{correction.description}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="mt-8">
+                <h2 className="text-xl font-semibold text-white mb-4"></h2>
+                <div className="bg-neutral-800 rounded-lg p-6">
+                    <div className="bg-neutral-700 bg-opacity-40 rounded-lg p-6">
+                        <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
+                            <FaInfoCircle className="mr-2 text-blue-400" />
+                            Requested Correction
+                        </h2>
+                        <div className="space-y-3 text-neutral-300">
+                            <p className="flex items-center">
+                                <span className="ml-2">{correction.requestedCorrection}</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
 
             {showDeletePopup && (
                 <Modal>

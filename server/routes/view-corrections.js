@@ -4,6 +4,7 @@ const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const router = express.Router();
 const { eventCollection, userCollection, correctionReportCollection } = require('../mongo');
+const { default: UserDashboard } = require('../../client/src/components/pages/freelancer/UserDashboard');
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
@@ -20,14 +21,24 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Route to get all events
+// Route to get all corrections
 router.get('/', async (req, res) => {
     try {
-        const events = await correctionReportCollection
+        const corrections = await correctionReportCollection
             .find({})
             .select('-__v')  // Exclude version field
             .lean();  // Convert to plain JavaScript objects
-        res.status(200).json(events);
+        
+        const users = await userCollection.find({}).select('-__v').lean();
+        const events = await eventCollection.find({}).select('-__v').lean();
+            
+        console.log("Corrections fetched from DB:", corrections);
+        
+        res.status(200).json({
+            corrections,
+            users,
+            events
+        });        
     } catch (error) {
         console.error('Error fetching events:', error);
         res.status(500).json({ message: 'Error fetching events' });
@@ -37,29 +48,65 @@ router.get('/', async (req, res) => {
 // Route to get a single event
 router.get('/:id', async (req, res) => {
     try {
-        const event = await correctionReportCollection.findById(req.params.id)
-            .populate('assignedContractors', 'name email')
-            .populate('acceptedContractors', 'name email')
-            .populate('approvedContractors', 'name email')
-            .populate('rejectedContractors', 'name email');
-        if (!event) {
-            return res.status(404).json({ message: 'Event not found' });
+        const correction = await correctionReportCollection.findById(req.params.id)
+
+        const user = await userCollection.findById(correction.userID);
+
+        const event = await eventCollection.findById(correction.eventID);
+            
+        if (!correction) {
+            return res.status(404).json({ message: 'Correction not found' });
         }
-        res.status(200).json(event);
+        
+        res.status(200).json({
+            correction,
+            userName: user.name,
+            event
+        });
     } catch (error) {
-        console.error('Error fetching event:', error);
-        res.status(500).json({ message: 'Error fetching event details' });
+        console.error('Error fetching correction:', error);
+        res.status(500).json({ message: 'Error fetching correction details' });
     }
 });
 
-// Route to delete an event by ID
+// Route to update an correction by ID
+router.put('/:id', async (req, res) => {
+    try {
+        const { id } = req.params;
+        const updatedData = {
+            ...req.body,
+            updatedAt: new Date()
+        };
+
+        const updatedEvent = await correctionReportCollection.findByIdAndUpdate(
+            id,
+            updatedData,
+            { 
+                new: true,
+                overwrite: false,
+                returnDocument: 'after'
+            }
+        );
+
+        if (!updatedEvent) {
+            return res.status(404).json({ message: 'Correction not found' });
+        }
+
+        res.status(200).json(updatedEvent);
+    } catch (error) {
+        console.error('Error updating correction:', error);
+        res.status(500).json({ message: 'Error updating correction' });
+    }
+});
+
+// Route to delete an correction by ID
 router.delete('/:id', async (req, res) => {
     try {
         await correctionReportCollection.findByIdAndDelete(req.params.id);
-        res.status(200).json({ message: 'Event deleted successfully' });
+        res.status(200).json({ message: 'Correction deleted successfully' });
     } catch (error) {
-        console.error('Error deleting report:', error);
-        res.status(500).json({ message: 'Error deleting report' });
+        console.error('Error deleting correction:', error);
+        res.status(500).json({ message: 'Error deleting correction' });
     }
 });
 

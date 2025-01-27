@@ -58,10 +58,8 @@ const eventCollection = mongoose.model('eventCollection', eventSchema);
 
 
 const correctionReportSchema = new mongoose.Schema({
-    reportTitle: { type: String, required: true },
-    eventDate: { type: Date, required: true },
-    startDate: { type: Date, required: true },
-    endDate: { type: Date, required: true },
+    eventID: { type: String, required: true },
+    userID: { type: String, required: true },
     requestType: { type: String, required: true },
     description: { type: String, required: true },
     requestedCorrection: { type: String, required: true },

@@ -12,6 +12,8 @@ import { useNavigate } from 'react-router-dom';
 export default function ViewCorrections() {
     const navigate = useNavigate();
     const [corrections, setCorrections] = useState([]);
+    const [events, setEvents] = useState(null);
+    const [users, setUsers] = useState(null);
     const [contractors, setContractors] = useState([]);
     // const [selectedContractors, setSelectedContractors] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,7 +49,6 @@ export default function ViewCorrections() {
 
     useEffect(() => {
         fetchCorrections();
-        fetchContractors();
     }, []);
 
     useEffect(() => {
@@ -67,19 +68,13 @@ export default function ViewCorrections() {
                 return new Date(b.createdAt) - new Date(a.createdAt);
             });
             setCorrections(sortedCorrections);
+            setUsers(response.data.users);
+            setEvents(response.data.events);
+
             setLoading(false);
         } catch (error) {
             console.error('Error fetching corrections:', error);
             setLoading(false);
-        }
-    };
-
-    const fetchContractors = async () => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/users`);
-            setContractors(response.data.filter(user => user.status === 'active'));
-        } catch (error) {
-            console.error('Error fetching contractors:', error);
         }
     };
 
@@ -192,14 +187,14 @@ export default function ViewCorrections() {
     }
 
     const handleEventClick = (correctionId) => {
-        navigate(`/admin/corrections/${correctionId}`);
+        navigate(`/users/corrections/${correctionId}`);
     };
 
     const formatEventsForHoverEffect = (corrections) => {
         return corrections.map((correction) => ({
             title: (
                 <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold">{correction.reportTitle}</span>
+                    <span className="text-lg font-semibold">{events.correction.eventID}</span>
                     <div 
                         className="flex space-x-3"
                         onClick={(e) => e.preventDefault()}

@@ -18,6 +18,7 @@ import EventDetails from "./components/pages/admin/event/EventDetails";
 
 import ManageCorrections from "./components/pages/admin/corrections/ManageCorrections";
 import CorrectionDetails from "./components/pages/admin/corrections/CorrectionDetails";
+import EditCorrection from "./components/pages/admin/corrections/EditCorrection";
 
 // User Pages
 import UserDashboard from "./components/pages/freelancer/UserDashboard";
@@ -27,6 +28,7 @@ import CurrentJobs from "./components/pages/freelancer/jobs/CurrentJobs";
 import TimeCard from "./components/pages/freelancer/timecard/TimeCard";
 import CorrectionReport from "./components/pages/freelancer/report/CorrectionReport";
 import UserInvoices from "./components/pages/invoice/UserInvoices";
+import ViewCorrections from "./components/pages/freelancer/report/ViewCorrections";
 
 // Invoice Page
 import Invoice from "./components/pages/invoice/Invoice";
@@ -77,6 +79,7 @@ function App() {
             <Route path="events/edit/:id" element={<EditEvent />} />
             <Route path="manage-corrections" element={<ManageCorrections />} />
             <Route path="corrections/:correctionId" element={<CorrectionDetails />} />
+            <Route path="corrections/edit/:id" element={<EditCorrection />} />
             <Route path="invoices" element={<AdminInvoices />} />
             <Route path="invoices/:id" element={<Invoice />} />
           </Route>
@@ -96,6 +99,7 @@ function App() {
             <Route path="current-jobs" element={<CurrentJobs />} />
             <Route path="time-card" element={<TimeCard />} />
             <Route path="correction-report" element={<CorrectionReport />} />
+            <Route path="corrections" element={<ViewCorrections />} />
             <Route path="invoices" element={<UserInvoices />} />
             <Route path="invoices/:id" element={<Invoice />} />
           </Route>

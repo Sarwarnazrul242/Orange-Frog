@@ -1,43 +1,36 @@
-// server/routes/correction-report.js
 const express = require('express');
 const router = express.Router();
-const { correctionReportCollection } = require('../mongo');
+const { correctionReportCollection, eventCollection } = require('../mongo');
 
 router.post('/', async (req, res) => {
-  const {
-      reportTitle,
-      eventDate,
-      startDate,
-      endDate,
-      requestType,
-      description,
-      requestedCorrection
-  } = req.body;
+  const { eventID, userID, requestType, description, requestedCorrection } = req.body;
 
-  if (!reportTitle || !eventDate || !startDate || !endDate || !requestType || !description || !requestedCorrection) {
-    console.log(reportTitle, eventDate, startDate, endDate, requestType, description, requestedCorrection);
-      return res.status(400).json({ message: 'All fields are required.' });
+  if (!eventID || !userID || !requestType || !description || !requestedCorrection) {
+    return res.status(400).json({ message: 'All fields are required.' });
   }
 
   try {
-      const newReport = new correctionReportCollection({
-          reportTitle,
-          eventDate,
-          startDate,
-          endDate,
-          requestType,
-          description,
-          requestedCorrection,
-          files: req.files ? req.files.map(file => file.path) : [],
-          status: 'pending',
-          submittedAt: new Date()
-      });
+    const event = await eventCollection.findById(eventID);
+    if (!event) {
+      return res.status(404).json({ message: 'Event not found.' });
+    }
 
-      await newReport.save();
-      res.status(201).json({ message: 'Correction report submitted successfully' });
+    const newReport = new correctionReportCollection({
+      eventID,
+      userID,
+      requestType,
+      description,
+      requestedCorrection,
+      files: req.files ? req.files.map((file) => file.path) : [],
+      status: 'pending',
+      submittedAt: new Date(),
+    });
+
+    await newReport.save();
+    res.status(201).json({ message: 'Correction report submitted successfully' });
   } catch (error) {
-      console.error('Error submitting correction report:', error);
-      res.status(500).json({ message: 'Error submitting correction report' });
+    console.error('Error submitting correction report:', error);
+    res.status(500).json({ message: 'Error submitting correction report.' });
   }
 });
 
