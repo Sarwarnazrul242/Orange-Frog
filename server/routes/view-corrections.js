@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const nodemailer = require('nodemailer');
 const router = express.Router();
 const { eventCollection, userCollection, correctionReportCollection } = require('../mongo');
-const { default: UserDashboard } = require('../../client/src/components/pages/freelancer/UserDashboard');
+// const UserDashboard = require('../../client/src/components/pages/freelancer/UserDashboard').default;
 
 // Nodemailer transporter setup
 const transporter = nodemailer.createTransport({
