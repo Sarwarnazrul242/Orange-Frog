@@ -1,8 +1,8 @@
 // src/components/admin/ViewEvent.js
+
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaList, FaEdit, FaTrashAlt, FaRedo, FaUsers, FaSort, FaTh } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
-import MultiSelect from './MultiSelect';
+import { FaList, FaEdit, FaTrashAlt, FaUsers, FaSort, FaTh } from 'react-icons/fa';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
 import { HoverEffect } from "../../../ui/card-hover-effect";
@@ -12,58 +12,31 @@ import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
 export default function ViewEvent() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
-    const [contractors, setContractors] = useState([]);
-    // const [selectedContractors, setSelectedContractors] = useState([]);
     const [loading, setLoading] = useState(true);
-    // const [setSaving] = useState(false);
+
+    // View toggle
     const [view, setView] = useState('grid');
+
+    // Delete confirmation
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [eventToDelete, setEventToDelete] = useState(null);
-    // const [setShowEditPopup] = useState(false);
-    // const [eventToEdit, setEventToEdit] = useState({
-    //     eventName: '',
-    //     eventLoadIn: '',
-    //     eventLoadInHours: '',
-    //     eventLoadOut: '',
-    //     eventLoadOutHours: '',
-    //     eventLocation: '',
-    //     eventDescription: '',
-    //     assignedContractors: []
-    // });
-    // const [setShowContractorPopup] = useState(false); 
+
+    // Sort config
     const selectRef = useRef(null);
-    // const [sortField, setSortField] = useState(null);
-    // const [sortDirection, setSortDirection] = useState('asc');
-    const [showFilterDropdown, setShowFilterDropdown] = useState(false);
-    const [filterField, setFilterField] = useState(null);
-    const [filterValues, setFilterValues] = useState({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
-    const filterDropdownRef = useRef(null);
-    // const [selectedEvent] = useState(null);
-    // const [selectedContractor, setSelectedContractor] = useState([]);
-    // const [error, setError] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
 
-    
+    // Single filter: name only
+    const [nameFilter, setNameFilter] = useState('');
 
     useEffect(() => {
         fetchEvents();
-        fetchContractors();
-    }, []);
-
-    useEffect(() => {
-        const handleClickOutside = (event) => {
-            if (filterDropdownRef.current && !filterDropdownRef.current.contains(event.target)) {
-                setShowFilterDropdown(false);
-            }
-        };
-        document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, []);
 
     const fetchEvents = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
             const sortedEvents = response.data.sort((a, b) => {
+                // Sort by creation date descending initially
                 return new Date(b.createdAt) - new Date(a.createdAt);
             });
             setEvents(sortedEvents);
@@ -74,19 +47,7 @@ export default function ViewEvent() {
         }
     };
 
-    const fetchContractors = async () => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/users`);
-            setContractors(response.data.filter(user => user.status === 'active'));
-        } catch (error) {
-            console.error('Error fetching contractors:', error);
-        }
-    };
-
-    const resetFilters = () => {
-        setFilterValues({ name: '', location: '', startDate: '', endDate: '', contractor: [] });
-    };
-
+    // Delete
     const handleDelete = (event) => {
         setEventToDelete(event);
         setShowDeletePopup(true);
@@ -104,71 +65,31 @@ export default function ViewEvent() {
         }
     };
 
-    // Edit Event
-
+    // Edit
     const handleEdit = (event) => {
         navigate(`/admin/events/edit/${event._id}`, { state: { from: '/admin/manage-events' } });
     };
 
-    // const handleContractorChange = (selectedOptions) => {
-    //     setSelectedContractors(selectedOptions.map(option => option.value));
-    // };
-
-    // const saveEdit = async (e) => {
-    //     e.preventDefault();
-    //     setSaving(true);
-    //     try {
-    //         const originalContractors = eventToEdit.assignedContractors.map(contractor => contractor._id);
-    //         const newContractors = selectedContractors.filter(id => !originalContractors.includes(id));
-
-    //         const updatedEvent = { ...eventToEdit, assignedContractors: selectedContractors };
-    //         await axios.put(`${process.env.REACT_APP_BACKEND}/events/${eventToEdit._id}`, updatedEvent);
-
-    //         // Send email notifications to new contractors
-    //         if (newContractors.length > 0) {
-    //             await axios.post(`${process.env.REACT_APP_BACKEND}/events/send-notifications`, {
-    //                 eventId: eventToEdit._id,
-    //                 contractorIds: newContractors
-    //             });
-    //         }
-
-    //         setShowEditPopup(false);
-    //         setShowContractorPopup(false);
-    //         fetchEvents();
-    //         toast.success('Event updated successfully!');
-    //     } catch (error) {
-    //         console.error('Error updating event:', error);
-    //         toast.error('Failed to update event');
-    //     }
-
-    //     setSaving(false);
-    // };
-
-    // const handleInputChange = (e) => {
-    //     const { name, value } = e.target;
-    //     setEventToEdit({ ...eventToEdit, [name]: value });
-    // };
-
+    // Sorting dropdown
     const handleSortChange = (e) => {
         const value = e.target.value;
         if (!value) {
             setSortConfig({ key: null, direction: 'ascending' });
             return;
         }
-
         const [field, direction] = value.split('-');
-        
-        // Map dropdown values to sortConfig values
+
+        // Map dropdown values to sortConfig keys
         let sortKey;
         switch (field) {
             case 'name':
                 sortKey = 'eventName';
                 break;
-            case 'loadIn':
-                sortKey = 'eventLoadIn';
+            case 'createdAt':
+                sortKey = 'createdAt';
                 break;
-            case 'hours':
-                sortKey = 'eventLoadInHours';
+            case 'assignedContractors':
+                sortKey = 'assignedContractors';
                 break;
             default:
                 sortKey = field;
@@ -195,44 +116,17 @@ export default function ViewEvent() {
         adjustSelectWidth(); // Set initial width
     }, []);
 
-    const handleFilterFieldChange = (field) => {
-        setFilterField(field);
-    };
-
-    const handleFilterChange = (e) => {
-        const { name, value } = e.target;
-        setFilterValues((prev) => ({ ...prev, [name]: value }));
-    };
-
+    // Filtering only by name
     const getFilteredAndSortedEvents = () => {
+        // Filter by name
         let filtered = events.filter(event => {
-            if (filterValues.name && !event.eventName.toLowerCase().includes(filterValues.name.toLowerCase())) {
+            if (nameFilter && !event.eventName.toLowerCase().includes(nameFilter.toLowerCase())) {
                 return false;
             }
-            
-            if (filterValues.location && !event.eventLocation.toLowerCase().includes(filterValues.location.toLowerCase())) {
-                return false;
-            }
-            
-            if (filterValues.startDate && new Date(event.eventLoadIn) < new Date(filterValues.startDate)) {
-                return false;
-            }
-            
-            if (filterValues.endDate && new Date(event.eventLoadOut) > new Date(filterValues.endDate)) {
-                return false;
-            }
-            
-            if (filterValues.contractor.length > 0 && 
-                !filterValues.contractor.some(contractorId =>
-                    event.assignedContractors.some(contractor => contractor._id === contractorId)
-                )) {
-                return false;
-            }
-            
             return true;
         });
-    
-        // Sort the filtered events
+
+        // Then sort the filtered list
         if (sortConfig.key) {
             filtered.sort((a, b) => {
                 if (sortConfig.key === 'eventName') {
@@ -240,14 +134,20 @@ export default function ViewEvent() {
                         ? a.eventName.localeCompare(b.eventName)
                         : b.eventName.localeCompare(a.eventName);
                 }
-                if (sortConfig.key === 'eventLoadIn' || sortConfig.key === 'eventLoadOut' || sortConfig.key === 'updatedAt') {
+                if (
+                    sortConfig.key === 'eventLoadIn' || 
+                    sortConfig.key === 'eventLoadOut' || 
+                    sortConfig.key === 'updatedAt' || 
+                    sortConfig.key === 'createdAt'
+                ) {
                     const dateA = new Date(a[sortConfig.key]);
                     const dateB = new Date(b[sortConfig.key]);
-                    return sortConfig.direction === 'ascending' 
-                        ? dateA - dateB 
-                        : dateB - dateA;
+                    return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
                 }
-                if (sortConfig.key === 'eventLoadInHours' || sortConfig.key === 'eventLoadOutHours') {
+                if (
+                    sortConfig.key === 'eventLoadInHours' || 
+                    sortConfig.key === 'eventLoadOutHours'
+                ) {
                     return sortConfig.direction === 'ascending'
                         ? a[sortConfig.key] - b[sortConfig.key]
                         : b[sortConfig.key] - a[sortConfig.key];
@@ -255,40 +155,14 @@ export default function ViewEvent() {
                 if (sortConfig.key === 'assignedContractors') {
                     const countA = a.assignedContractors?.length || 0;
                     const countB = b.assignedContractors?.length || 0;
-                    return sortConfig.direction === 'ascending'
-                        ? countA - countB
-                        : countB - countA;
+                    return sortConfig.direction === 'ascending' ? countA - countB : countB - countA;
                 }
                 return 0;
             });
         }
-        
+
         return filtered;
     };
-
-    // const saveContractorSelection = async () => {
-    //     try {
-    //         if (!selectedContractor) {
-    //             toast.error('Please select a contractor.');
-    //             return;
-    //         }
-
-    //         const updatedEvent = {
-    //             assignedContractors: [selectedContractor],
-    //             eventStatus: 'processing',
-    //         };
-
-    //         await axios.put(`${process.env.REACT_APP_BACKEND}/events/${selectedEvent._id}`, updatedEvent);
-
-    //         setShowContractorPopup(false);
-    //         setSelectedContractor(null);
-    //         fetchEvents(); // Refresh the events list
-    //         toast.success('Contractor assigned successfully!');
-    //     } catch (error) {
-    //         console.error('Error assigning contractor:', error);
-    //         toast.error('Failed to assign contractor.');
-    //     }
-    // };
 
     if (loading) {
         return (
@@ -348,7 +222,9 @@ export default function ViewEvent() {
                     </div>
                     <div className="flex items-center pt-2 border-t border-neutral-700">
                         <FaUsers className="mr-2 text-neutral-400" />
-                        <span className="text-neutral-300">{event.assignedContractors?.length || 0} Contractors</span>
+                        <span className="text-neutral-300">
+                            {event.assignedContractors?.length || 0} Contractors
+                        </span>
                     </div>
                 </div>
             ),
@@ -365,9 +241,11 @@ export default function ViewEvent() {
     const getSortIcon = (key) => {
         if (sortConfig.key === key) {
             return (
-                <FaSort className={`ml-1 inline-block transition-transform duration-200 ${
-                    sortConfig.direction === 'ascending' ? 'rotate-0' : 'rotate-180'
-                }`} />
+                <FaSort
+                    className={`ml-1 inline-block transition-transform duration-200 ${
+                        sortConfig.direction === 'ascending' ? 'rotate-0' : 'rotate-180'
+                    }`}
+                />
             );
         }
         return <FaSort className="ml-1 inline-block text-neutral-600" />;
@@ -376,8 +254,8 @@ export default function ViewEvent() {
     const handleSort = (key) => {
         setSortConfig(prevConfig => ({
             key,
-            direction: prevConfig.key === key && prevConfig.direction === 'ascending' 
-                ? 'descending' 
+            direction: prevConfig.key === key && prevConfig.direction === 'ascending'
+                ? 'descending'
                 : 'ascending'
         }));
     };
@@ -385,7 +263,10 @@ export default function ViewEvent() {
     return (
         <div className="w-full h-full overflow-auto px-5">
             <div className="flex justify-between items-center mb-5 sticky top-0 bg-neutral-900 py-4 z-50">
-                <div className="flex items-center gap-4">
+                
+                {/* Left section: Filter & Sort */}
+                <div className="flex items-center gap-3 mt-2">
+                    {/* Right section: Create Event button */}
                     <Link to="/admin/events/create">
                         <HoverBorderGradient
                             containerClassName="rounded-full"
@@ -395,122 +276,42 @@ export default function ViewEvent() {
                             <span>Create Event</span>
                         </HoverBorderGradient>
                     </Link>
-                </div>
-                
-                <div className="flex items-center gap-2 relative">
-                    <button
-                        onClick={() => setShowFilterDropdown((prev) => !prev)}
-                        className="hidden md:block px-4 py-2 mt-0 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors"
-                    >
-                        Apply Filter
-                    </button>
-                    <select
-                        ref={selectRef}
-                        onChange={handleSortChange}
-                        className="hidden md:block px-4 py-2 mx-2 mt-0 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors outline-none"
-                    >
-                        <option value="">Sort By</option>
-                        <option value="name-asc">Name (Ascending)</option>
-                        <option value="name-desc">Name (Descending)</option>
-                        <option value="createdAt-asc">Date (Ascending)</option>
-                        <option value="createdAt-desc">Date (Descending)</option>
-                        <option value="assignedContractors-asc">Contractors (Ascending)</option>
-                        <option value="assignedContractors-desc">Contractors (Descending)</option>
-                    </select>
+                    
+                    <div className='flex items-center gap-3 mt-5'>
+                        {/* Name filter input */}
+                        <input
+                            type="text"
+                            placeholder="Filter by Name"
+                            value={nameFilter}
+                            onChange={(e) => setNameFilter(e.target.value)}
+                            className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors outline-none"
+                            style={{ minWidth: "150px" }}
+                        />
 
-                    {showFilterDropdown && (
-                        <div 
-                            ref={filterDropdownRef} 
-                            className="absolute top-full mt-2 left-0 bg-neutral-900 text-white rounded-lg shadow-lg w-52 z-[100] border border-neutral-800"
+                        {/* Sort dropdown */}
+                        <select
+                            ref={selectRef}
+                            onChange={handleSortChange}
+                            className="px-4 py-2 bg-neutral-600 hover:bg-neutral-600 text-white rounded transition-colors outline-none"
                         >
-                            <div className="flex justify-between items-center px-4 py-3 border-b border-neutral-800">
-                                <p className="font-semibold">Select a filter:</p>
-                                <FaRedo
-                                    className="cursor-pointer hover:text-neutral-400 transition-colors"
-                                    onClick={resetFilters}
-                                    title="Reset all filters"
-                                />
-                            </div>
-                            <div className="space-y-1 relative">
-                                {['name', 'location', 'startDate', 'endDate', 'contractor'].map((field) => (
-                                    <div key={field} className="relative group">
-                                        <button
-                                            onMouseEnter={() => handleFilterFieldChange(field)}
-                                            className="flex items-center justify-between text-left w-full px-4 py-2 text-white hover:bg-neutral-800 transition-colors"
-                                            style={{ backgroundColor: 'transparent' }}
-                                        >
-                                            {field.charAt(0).toUpperCase() + field.slice(1)}
-                                        </button>
+                            <option value="">Sort By</option>
+                            <option value="name-asc">Name (Ascending)</option>
+                            <option value="name-desc">Name (Descending)</option>
+                            <option value="createdAt-asc">Date (Ascending)</option>
+                            <option value="createdAt-desc">Date (Descending)</option>
+                            <option value="assignedContractors-asc">Contractors (Ascending)</option>
+                            <option value="assignedContractors-desc">Contractors (Descending)</option>
+                        </select>
+                    </div>
+                    
+                </div>
 
-                                        {filterField === field && (
-                                            <div className="absolute right-full top-0 bg-neutral-900 text-white rounded-lg shadow-lg p-4 w-72 z-20 mr-4 border border-neutral-800">
-                                                <h3 className="font-semibold mb-2">
-                                                    Filter by {field.charAt(0).toUpperCase() + field.slice(1)}
-                                                </h3>
-                                                {field === 'startDate' || field === 'endDate' ? (
-                                                    <input
-                                                        type="date"
-                                                        name={field}
-                                                        value={filterValues[field]}
-                                                        onChange={handleFilterChange}
-                                                        className="w-full p-2 bg-neutral-800 text-white rounded border border-neutral-700 focus:outline-none"
-                                                    />
-                                                ) : field === 'contractor' ? (
-                                                    <MultiSelect
-                                                        options={contractors.map(contractor => ({
-                                                            value: contractor._id,
-                                                            label: contractor.name
-                                                        }))}
-                                                        value={(Array.isArray(filterValues.contractor) ? filterValues.contractor : []).map(id => ({
-                                                            value: id,
-                                                            label: contractors.find(contractor => contractor._id === id)?.name
-                                                        }))}
-                                                        onChange={(selectedOptions) => {
-                                                            const selectedContractorIds = selectedOptions.map(option => option.value);
-                                                            setFilterValues((prev) => ({ ...prev, contractor: selectedContractorIds }));
-                                                        }}
-                                                        isMulti
-                                                        closeMenuOnSelect={false}
-                                                        hideSelectedOptions={false}
-                                                        placeholder="Select Contractors"
-                                                        className="w-full"
-                                                    />
-                                                ) : (
-                                                    <input
-                                                        type="text"
-                                                        name={field}
-                                                        placeholder={`Enter ${field}`}
-                                                        value={filterValues[field]}
-                                                        onChange={handleFilterChange}
-                                                        className="w-full p-2 bg-neutral-800 text-white rounded border border-neutral-700 focus:outline-none"
-                                                    />
-                                                )}
-                                                <div className="flex justify-between mt-3">
-                                                    <button
-                                                        onClick={() => setFilterValues({ ...filterValues, [field]: '' })}
-                                                        className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded transition-colors"
-                                                    >
-                                                        Reset
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setFilterField(null)}
-                                                        className="bg-neutral-800 hover:bg-neutral-700 text-white ml-6 px-4 py-2 rounded transition-colors"
-                                                    >
-                                                        Apply
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-
-                    <div className="hidden md:flex gap-2">
+                
+                {/* View toggles (hidden on smaller screens if desired) */}
+                <div className="hidden md:flex gap-2">
                         <button
                             onClick={() => setView('grid')}
-                            className={`p-2 mt-0 rounded transition-colors ${
+                            className={`p-2 rounded transition-colors ${
                                 view === 'grid' 
                                     ? 'bg-neutral-700 text-white' 
                                     : 'bg-neutral-800 text-white hover:bg-neutral-700'
@@ -520,7 +321,7 @@ export default function ViewEvent() {
                         </button>
                         <button
                             onClick={() => setView('list')}
-                            className={`p-2 mt-0 rounded transition-colors ${
+                            className={`p-2 rounded transition-colors ${
                                 view === 'list' 
                                     ? 'bg-neutral-700 text-white' 
                                     : 'bg-neutral-800 text-white hover:bg-neutral-700'
@@ -529,7 +330,6 @@ export default function ViewEvent() {
                             <FaList className="text-xl" />
                         </button>
                     </div>
-                </div>
             </div>
 
             <div className="relative z-0 pb-8">
@@ -537,19 +337,18 @@ export default function ViewEvent() {
                     <div className="flex flex-col items-center justify-center h-[50vh] text-neutral-400">
                         <span className="text-6xl mb-4">😢</span>
                         <p className="text-xl">No events found</p>
-                        <p className="text-sm mt-2">Try adjusting your filters or create a new event</p>
+                        <p className="text-sm mt-2">Try adjusting your filter or create a new event</p>
+                    </div>
+                ) : view === 'grid' ? (
+                    <div className="max-w-full mx-auto">
+                        <HoverEffect 
+                            items={formatEventsForHoverEffect(getFilteredAndSortedEvents())} 
+                            className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto"
+                        />
                     </div>
                 ) : (
-                    view === 'grid' ? (
-                        <div className="max-w-full mx-auto">
-                            <HoverEffect 
-                                items={formatEventsForHoverEffect(getFilteredAndSortedEvents())} 
-                                className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto"
-                            />
-                        </div>
-                    ) : (
-                        <div className="overflow-x-auto">
-                            <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden">
+                    <div className="overflow-x-auto">
+                        <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden">
                             <thead className="bg-neutral-700">
                                 <tr>
                                     <th 
@@ -620,50 +419,61 @@ export default function ViewEvent() {
                                     </th>
                                 </tr>
                             </thead>
-                                <tbody>
-                                    {getFilteredAndSortedEvents().map((event) => (
-                                        <tr 
-                                            key={event._id} 
-                                            className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer"
-                                            onClick={() => handleEventClick(event._id)}
-                                        >
-                                            <td className="p-4 text-white">
-                                                {event.eventName}
-                                            </td>
-                                            <td className="p-4 text-white">{new Date(event.eventLoadIn).toLocaleString()}</td>
-                                            <td className="p-4 text-white">{event.eventLoadInHours}h</td>
-                                            <td className="p-4 text-white">{new Date(event.eventLoadOut).toLocaleString()}</td>
-                                            <td className="p-4 text-white">{event.eventLoadOutHours}h</td>
-                                            <td className="p-4 text-white">{event.assignedContractors?.length || 0}</td>
-                                            <td className="p-4 text-white">
-                                                {event.updatedAt ? new Date(event.updatedAt).toLocaleString() : 'Not modified'}
-                                            </td>
-                                            <td className="p-4">
-                                                <div className="flex space-x-4">
-                                                    <FaEdit 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent row click
-                                                            handleEdit(event);
-                                                        }} 
-                                                        className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
-                                                        title="Edit User" 
-                                                    />
-                                                    <FaTrashAlt 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent row click
-                                                            handleDelete(event);
-                                                        }} 
-                                                        className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
-                                                        title="Delete Event" 
-                                                    />
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        </div>
-                    )
+                            <tbody>
+                                {getFilteredAndSortedEvents().map((event) => (
+                                    <tr 
+                                        key={event._id} 
+                                        className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer"
+                                        onClick={() => handleEventClick(event._id)}
+                                    >
+                                        <td className="p-4 text-white">
+                                            {event.eventName}
+                                        </td>
+                                        <td className="p-4 text-white">
+                                            {new Date(event.eventLoadIn).toLocaleString()}
+                                        </td>
+                                        <td className="p-4 text-white">
+                                            {event.eventLoadInHours}h
+                                        </td>
+                                        <td className="p-4 text-white">
+                                            {new Date(event.eventLoadOut).toLocaleString()}
+                                        </td>
+                                        <td className="p-4 text-white">
+                                            {event.eventLoadOutHours}h
+                                        </td>
+                                        <td className="p-4 text-white">
+                                            {event.assignedContractors?.length || 0}
+                                        </td>
+                                        <td className="p-4 text-white">
+                                            {event.updatedAt
+                                                ? new Date(event.updatedAt).toLocaleString()
+                                                : 'Not modified'}
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="flex space-x-4">
+                                                <FaEdit 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Prevent row click
+                                                        handleEdit(event);
+                                                    }} 
+                                                    className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                                                    title="Edit Event" 
+                                                />
+                                                <FaTrashAlt 
+                                                    onClick={(e) => {
+                                                        e.stopPropagation(); // Prevent row click
+                                                        handleDelete(event);
+                                                    }} 
+                                                    className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
+                                                    title="Delete Event" 
+                                                />
+                                            </div>
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
                 )}
             </div>
 
@@ -671,9 +481,12 @@ export default function ViewEvent() {
             {showDeletePopup && (
                 <Modal>
                     <div className="bg-neutral-900 p-8 rounded-md shadow-lg w-full max-w-md border border-neutral-700">
-                        <h2 className="text-red-500 text-2xl mb-4">Are you sure you want to delete this Event?</h2>
+                        <h2 className="text-red-500 text-2xl mb-4">
+                            Are you sure you want to delete this Event?
+                        </h2>
                         <p className="text-neutral-300 mb-6">
-                            This action cannot be undone. Once deleted, this event's data will be permanently removed from the system.
+                            This action cannot be undone. Once deleted, this event's data will be
+                            permanently removed from the system.
                         </p>
                         <div className="flex justify-end gap-4">
                             <button 
