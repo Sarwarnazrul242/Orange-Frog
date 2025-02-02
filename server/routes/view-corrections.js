@@ -24,6 +24,7 @@ const transporter = nodemailer.createTransport({
 // Route to get all corrections
 router.get('/', async (req, res) => {
     try {
+        console.log("aaaaaaaaaaaaaaaaaaaa")
         const corrections = await correctionReportCollection
             .find({})
             .select('-__v')  // Exclude version field
@@ -46,7 +47,7 @@ router.get('/', async (req, res) => {
 });
 
 // Route to get a single event
-router.get('/:id', async (req, res) => {
+router.get('/:id([0-9a-fA-F]{24})', async (req, res) => {
     try {
         const correction = await correctionReportCollection.findById(req.params.id)
 
@@ -69,38 +70,8 @@ router.get('/:id', async (req, res) => {
     }
 });
 
-// Route to update an correction by ID
-router.put('/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
-        const updatedData = {
-            ...req.body,
-            updatedAt: new Date()
-        };
-
-        const updatedEvent = await correctionReportCollection.findByIdAndUpdate(
-            id,
-            updatedData,
-            { 
-                new: true,
-                overwrite: false,
-                returnDocument: 'after'
-            }
-        );
-
-        if (!updatedEvent) {
-            return res.status(404).json({ message: 'Correction not found' });
-        }
-
-        res.status(200).json(updatedEvent);
-    } catch (error) {
-        console.error('Error updating correction:', error);
-        res.status(500).json({ message: 'Error updating correction' });
-    }
-});
-
 // Route to delete an correction by ID
-router.delete('/:id', async (req, res) => {
+router.delete('/:id([0-9a-fA-F]{24})', async (req, res) => {
     try {
         await correctionReportCollection.findByIdAndDelete(req.params.id);
         res.status(200).json({ message: 'Correction deleted successfully' });
@@ -109,5 +80,33 @@ router.delete('/:id', async (req, res) => {
         res.status(500).json({ message: 'Error deleting correction' });
     }
 });
+
+// Route to get all corrections of that user
+router.get('/:email', async (req, res) => {
+    try {
+        
+        const contractor = await userCollection.findOne({ email: req.params.email });
+        if (!contractor) {
+            return res.status(404).json({ message: 'Contractor not found' });
+        }
+
+        const corrections = await correctionReportCollection.find({
+            userID: contractor._id,
+        });
+        
+        const events = await eventCollection.find({}).select('-__v').lean();
+            
+        console.log("Corrections fetched from DB:", corrections);
+        
+        res.status(200).json({
+            corrections,
+            events
+        });        
+    } catch (error) {
+        console.error('Error fetching events:', error);
+        res.status(500).json({ message: 'Error fetching events' });
+    }
+});
+
 
 module.exports = router;

@@ -41,7 +41,7 @@ export default function CorrectionDetails() {
     }, [correctionId]);
 
     const handleEdit = (correction) => {
-        navigate(`/admin/corrections/edit/${correction._id}`, { state: { from: `/admin/corrections/${correction._id}` } });
+        navigate(`/user/corrections/edit/${correction._id}`, { state: { from: `/user/corrections/${correction._id}` } });
     };
 
     const handleDelete = () => {
@@ -53,7 +53,7 @@ export default function CorrectionDetails() {
             await axios.delete(`${process.env.REACT_APP_BACKEND}/corrections/${correctionId}`);
             setShowDeletePopup(false);
             toast.success('Correction deleted successfully!');
-            navigate('/admin/manage-corrections');
+            navigate('/user/manage-corrections');
         } catch (error) {
             console.error('Error deleting correction:', error);
             toast.error('Failed to delete correction');
@@ -85,7 +85,7 @@ export default function CorrectionDetails() {
                 className="flex justify-between items-center"
             >
                 <Link 
-                    to="/admin/manage-corrections"
+                    to="/user/manage-corrections"
                     className="mb-8 flex items-center text-neutral-400 hover:text-white transition-colors group"
                 >
                     <FaArrowLeft className="mr-2 transform group-hover:-translate-x-1 transition-transform" />
@@ -177,12 +177,16 @@ export default function CorrectionDetails() {
                             </h2>
                             <div className="space-y-3 text-neutral-300">
                                 <p className="flex items-center">
-                                    <span className="font-medium">Created by:</span>
-                                    <span className="ml-2">{user}</span>
+                                    <span className="font-medium">Correction Type:</span>
+                                    <span className="ml-2">{correction.requestType}</span>
                                 </p>
                                 <p className="flex items-center">
                                     <span className="font-medium">Created:</span>
                                     <span className="ml-2">{new Date(correction.submittedAt).toLocaleString()}</span>
+                                </p>
+                                <p className="flex items-center">
+                                    <span className="font-medium">Last Updated:</span>
+                                    <span className="ml-2">{new Date(correction.updatedAt).toLocaleString()}</span>
                                 </p>
                             </div>
                         </div>

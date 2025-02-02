@@ -181,8 +181,16 @@ export default function CorrectionDetails() {
                                     <span className="ml-2">{user}</span>
                                 </p>
                                 <p className="flex items-center">
+                                    <span className="font-medium">Correction Type:</span>
+                                    <span className="ml-2">{correction.requestType}</span>
+                                </p>
+                                <p className="flex items-center">
                                     <span className="font-medium">Created:</span>
                                     <span className="ml-2">{new Date(correction.submittedAt).toLocaleString()}</span>
+                                </p>
+                                <p className="flex items-center">
+                                    <span className="font-medium">Last Updated:</span>
+                                    <span className="ml-2">{new Date(correction.updatedAt).toLocaleString()}</span>
                                 </p>
                             </div>
                         </div>

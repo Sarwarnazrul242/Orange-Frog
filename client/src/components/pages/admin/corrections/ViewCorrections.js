@@ -64,13 +64,17 @@ export default function ViewCorrections() {
     const fetchCorrections = async () => {
         try {
             const response = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections`);
-            const sortedCorrections = response.data.sort((a, b) => {
+            console.log(response.data); // Debug: Check what is actually returned
+    
+            // Ensure we're sorting the corrections array inside the response object
+            const sortedCorrections = response.data.corrections.sort((a, b) => {
                 return new Date(b.createdAt) - new Date(a.createdAt);
             });
+    
             setCorrections(sortedCorrections);
             setUsers(response.data.users);
             setEvents(response.data.events);
-
+    
             setLoading(false);
         } catch (error) {
             console.error('Error fetching corrections:', error);
@@ -191,46 +195,63 @@ export default function ViewCorrections() {
     };
 
     const formatEventsForHoverEffect = (corrections) => {
-        return corrections.map((correction) => ({
-            title: (
-                <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold">{events.correction.eventID}</span>
-                    <div 
-                        className="flex space-x-3"
-                        onClick={(e) => e.preventDefault()}
-                    >
-                        <FaTrashAlt 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleDelete(correction);
-                            }} 
-                            className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
-                        />
+        return corrections.map((correction) => {
+            // Ensure events and correction.eventID exist before accessing properties
+            const event = events?.find(e => e._id === correction.eventID);
+            const user = users?.find(e => e._id === correction.userID);
+    
+            return {
+                title: (
+                    <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold">
+                            {event ? event.eventName : 'Unknown Event'}
+                        </span>
+                        <div 
+                            className="flex space-x-3"
+                            onClick={(e) => e.preventDefault()}
+                        >
+                            <FaTrashAlt 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDelete(correction);
+                                }} 
+                                className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
+                            />
+                        </div>
                     </div>
-                </div>
-            ),
-            description: (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <span className="text-neutral-400 font-medium">Event Date:</span>
-                        <span className="ml-2 text-white">{new Date(correction.eventDate).toLocaleString()}</span>
+                ),
+                description: (
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Created By:</span>
+                            <span className="ml-2 text-white">{user ? user.name : 'Unknown User'}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Correction Type:</span>
+                            <span className="ml-2 text-white">{correction.requestType}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Created:</span>
+                            <span className="ml-2 text-white">{new Date(correction.submittedAt).toLocaleString()}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Last Updated:</span>
+                            <span className="ml-2 text-white">{new Date(correction.updatedAt).toLocaleString()}</span>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <span className="text-neutral-400 font-medium">Start Date:</span>
-                        <span className="ml-2 text-white">{new Date(correction.startDate).toLocaleString()}</span>
-                    </div>
-                </div>
-            ),
-            link: `/admin/corrections/${correction._id}`,
-            _id: correction._id,
-            onClick: (e) => {
-                if (!e.defaultPrevented) {
-                    handleEventClick(correction._id);
+                ),
+                link: `/admin/corrections/${correction._id}`,
+                _id: correction._id,
+                onClick: (e) => {
+                    if (!e.defaultPrevented) {
+                        handleEventClick(correction._id);
+                    }
                 }
-            }
-        }));
+            };
+        });
     };
+    
 
     const getSortIcon = (key) => {
         if (sortConfig.key === key) {

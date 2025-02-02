@@ -1,17 +1,20 @@
 // src/components/admin/ViewEvent.js
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
-import { FaList, FaTrashAlt, FaRedo, FaSort, FaTh } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
+import { FaList, FaEdit, FaTrashAlt, FaRedo, FaSort, FaTh } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
 import { HoverEffect } from "../../../ui/card-hover-effect";
-import { useNavigate } from 'react-router-dom';
-// import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
+import { Link, useNavigate } from 'react-router-dom';
+import { AuthContext } from "../../../../AuthContext";
+import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
 
 export default function ViewCorrections() {
+    const { auth } = useContext(AuthContext);
     const navigate = useNavigate();
     const [corrections, setCorrections] = useState([]);
+    const [events, setEvents] = useState(null);
     const [contractors, setContractors] = useState([]);
     // const [selectedContractors, setSelectedContractors] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -47,7 +50,6 @@ export default function ViewCorrections() {
 
     useEffect(() => {
         fetchCorrections();
-        fetchContractors();
     }, []);
 
     useEffect(() => {
@@ -62,24 +64,21 @@ export default function ViewCorrections() {
 
     const fetchCorrections = async () => {
         try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections`);
-            const sortedCorrections = response.data.sort((a, b) => {
+            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections/${auth.email}`);
+            console.log(response.data); // Debug: Check what is actually returned
+    
+            // Ensure we're sorting the corrections array inside the response object
+            const sortedCorrections = response.data.corrections.sort((a, b) => {
                 return new Date(b.createdAt) - new Date(a.createdAt);
             });
+    
             setCorrections(sortedCorrections);
+            setEvents(response.data.events);
+    
             setLoading(false);
         } catch (error) {
             console.error('Error fetching corrections:', error);
             setLoading(false);
-        }
-    };
-
-    const fetchContractors = async () => {
-        try {
-            const response = await axios.get(`${process.env.REACT_APP_BACKEND}/users`);
-            setContractors(response.data.filter(user => user.status === 'active'));
-        } catch (error) {
-            console.error('Error fetching contractors:', error);
         }
     };
 
@@ -90,6 +89,11 @@ export default function ViewCorrections() {
     const handleDelete = (correction) => {
         setCorrectionToDelete(correction);
         setShowDeletePopup(true);
+    };
+
+    // Edit
+    const handleEdit = (correction) => {
+        navigate(`/user/corrections/edit/${correction._id}`, { state: { from: '/user/manage-corrections' } });
     };
 
     const confirmDelete = async () => {
@@ -192,50 +196,70 @@ export default function ViewCorrections() {
     }
 
     const handleEventClick = (correctionId) => {
-        navigate(`/admin/corrections/${correctionId}`);
+        navigate(`/users/corrections/${correctionId}`);
     };
 
     const formatEventsForHoverEffect = (corrections) => {
-        return corrections.map((correction) => ({
-            title: (
-                <div className="flex justify-between items-center">
-                    <span className="text-lg font-semibold">{correction.reportTitle}</span>
-                    <div 
-                        className="flex space-x-3"
-                        onClick={(e) => e.preventDefault()}
-                    >
-                        <FaTrashAlt 
-                            onClick={(e) => {
-                                e.preventDefault();
-                                e.stopPropagation();
-                                handleDelete(correction);
-                            }} 
-                            className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
-                        />
+        return corrections.map((correction) => {
+            // Ensure events and correction.eventID exist before accessing properties
+            const event = events?.find(e => e._id === correction.eventID);
+    
+            return {
+                title: (
+                    <div className="flex justify-between items-center">
+                        <span className="text-lg font-semibold">
+                            {event ? event.eventName : 'Unknown Event'}
+                        </span>
+                        <div 
+                            className="flex space-x-3"
+                            onClick={(e) => e.preventDefault()}
+                        >
+                            <FaEdit 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleEdit(correction);
+                                }} 
+                                className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                            />
+                            <FaTrashAlt 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleDelete(correction);
+                                }} 
+                                className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
+                            />
+                        </div>
                     </div>
-                </div>
-            ),
-            description: (
-                <div className="space-y-4">
-                    <div className="space-y-2">
-                        <span className="text-neutral-400 font-medium">Event Date:</span>
-                        <span className="ml-2 text-white">{new Date(correction.eventDate).toLocaleString()}</span>
+                ),
+                description: (
+                    <div className="space-y-4">
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Correction Type:</span>
+                            <span className="ml-2 text-white">{correction.requestType}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Created:</span>
+                            <span className="ml-2 text-white">{new Date(correction.submittedAt).toLocaleString()}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Last Updated:</span>
+                            <span className="ml-2 text-white">{new Date(correction.updatedAt).toLocaleString()}</span>
+                        </div>
                     </div>
-                    <div className="space-y-2">
-                        <span className="text-neutral-400 font-medium">Start Date:</span>
-                        <span className="ml-2 text-white">{new Date(correction.startDate).toLocaleString()}</span>
-                    </div>
-                </div>
-            ),
-            link: `/admin/corrections/${correction._id}`,
-            _id: correction._id,
-            onClick: (e) => {
-                if (!e.defaultPrevented) {
-                    handleEventClick(correction._id);
+                ),
+                link: `/user/corrections/${correction._id}`,
+                _id: correction._id,
+                onClick: (e) => {
+                    if (!e.defaultPrevented) {
+                        handleEventClick(correction._id);
+                    }
                 }
-            }
-        }));
+            };
+        });
     };
+    
 
     const getSortIcon = (key) => {
         if (sortConfig.key === key) {
@@ -261,7 +285,15 @@ export default function ViewCorrections() {
         <div className="w-full h-full overflow-auto px-5">
             <div className="flex justify-between items-center mb-5 sticky top-0 bg-neutral-900 py-4 z-50">
                 <div className="flex items-center gap-4">
-                    
+                    <Link to="/user/corrections/create">
+                        <HoverBorderGradient
+                            containerClassName="rounded-full"
+                            className="dark:bg-black bg-neutral-900 text-white flex items-center space-x-2"
+                        >
+                            <span className="text-lg mr-1">+</span> 
+                            <span>Create Correction Report</span>
+                        </HoverBorderGradient>
+                    </Link>
                 </div>
                 
                 <div className="flex items-center gap-2 relative">
@@ -443,7 +475,14 @@ export default function ViewCorrections() {
                                             
                                             <td className="p-4">
                                                 <div className="flex space-x-4">
-                                        
+                                                    <FaEdit 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent row click
+                                                            handleEdit(correction);
+                                                        }} 
+                                                        className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                                                        title="Edit Event" 
+                                                    />
                                                     <FaTrashAlt 
                                                         onClick={(e) => {
                                                             e.stopPropagation(); // Prevent row click

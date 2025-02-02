@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
 import { AuthContext } from "../../../../AuthContext";
 
@@ -14,14 +14,15 @@ const CorrectionReport = () => {
     description: '',
     requestedCorrection: '',
   });
+  const navigate = useNavigate();
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState([]);
   const [files, setFiles] = useState(null);
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch events
+    // Fetches events
     const fetchEvents = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
@@ -45,8 +46,29 @@ const CorrectionReport = () => {
       }
     };
 
+    // Fetches the correction
+    const fetchCorrection = async () => {
+      try {
+        const correctionRes = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections/${id}`);
+
+        console.log("Fetched Correction Data:", correctionRes.data);
+
+        setFormData({
+          eventID: correctionRes.data.correction.eventID,
+          requestType: correctionRes.data.correction.requestType,
+          description: correctionRes.data.correction.description,
+          requestedCorrection: correctionRes.data.correction.requestedCorrection,
+        }); 
+
+      } catch (error) {
+        console.error('Error fetching correction:', error);
+        toast.error('Failed to fetch correction details.');
+      }
+    };
+
     fetchUser();
     fetchEvents();
+    fetchCorrection();
   }, [auth?.email]);
 
   // Form submission handler
@@ -79,8 +101,8 @@ const CorrectionReport = () => {
       formDataToSend.forEach((value, key) => {
         console.log(`${key}: ${value}`);
       });
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND}/correction-report`,
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND}/correction-report/${id}`,
         formattedData,
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -125,7 +147,7 @@ const CorrectionReport = () => {
       </Link>
 
       <div className="w-full max-w-4xl bg-neutral-800 p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-white mb-8 text-center">Submit Correction Report</h1>
+        <h1 className="text-3xl font-bold text-white mb-8 text-center">Edit Correction Report</h1>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Event Selector */}
           <div className="col-span-2">
@@ -202,7 +224,7 @@ const CorrectionReport = () => {
                 disabled={loading}
                 className="text-white hover:text-orange-500 transition-colors disabled:text-neutral-500 bg-transparent mb-4"
               >
-                {loading ? 'Submitting...' : 'Submit Report'}
+                {loading ? 'Saving...' : 'Save Changes'}
               </button>
             </HoverBorderGradient>
           </div>

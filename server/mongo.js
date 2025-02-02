@@ -65,7 +65,8 @@ const correctionReportSchema = new mongoose.Schema({
     requestedCorrection: { type: String, required: true },
     files: [{ type: String }],
     status: { type: String, default: 'pending' },
-    submittedAt: { type: Date, default: Date.now }
+    submittedAt: { type: Date, default: Date.now },
+    updatedAt: { type: Date, default: Date.now }
 });
 
 
