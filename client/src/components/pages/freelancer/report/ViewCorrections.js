@@ -244,7 +244,7 @@ export default function ViewCorrections() {
                             <span className="ml-2 text-white">{new Date(correction.submittedAt).toLocaleString()}</span>
                         </div>
                         <div className="space-y-2">
-                            <span className="text-neutral-400 font-medium">Last Updated:</span>
+                            <span className="text-neutral-400 font-medium">Last Modified:</span>
                             <span className="ml-2 text-white">{new Date(correction.updatedAt).toLocaleString()}</span>
                         </div>
                     </div>
@@ -460,6 +460,37 @@ export default function ViewCorrections() {
                                             <span className="ml-2">{getSortIcon('reportTitle')}</span>
                                         </div>
                                     </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadIn')}
+                                    >
+                                        <div className="flex items-center">
+                                            Correction Type
+                                            <span className="ml-2">{getSortIcon('eventLoadIn')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadInHours')}
+                                    >
+                                        <div className="flex items-center">
+                                            Created
+                                            <span className="ml-2">{getSortIcon('eventLoadInHours')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadOut')}
+                                    >
+                                        <div className="flex items-center">
+                                            Last Modified
+                                            <span className="ml-2">{getSortIcon('eventLoadOut')}</span>
+                                        </div>
+                                    </th>
+                                    
+                                    <th className="p-4 text-left text-white whitespace-nowrap">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                                 <tbody>
@@ -470,7 +501,16 @@ export default function ViewCorrections() {
                                             onClick={() => handleEventClick(correction._id)}
                                         >
                                             <td className="p-4 text-white">
-                                                {correction.reportTitle}
+                                                {correction.eventName}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {correction.requestType}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {new Date(correction.submittedAt).toLocaleString()}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {new Date(correction.updatedAt).toLocaleString()}
                                             </td>
                                             
                                             <td className="p-4">

@@ -189,7 +189,7 @@ export default function CorrectionDetails() {
                                     <span className="ml-2">{new Date(correction.submittedAt).toLocaleString()}</span>
                                 </p>
                                 <p className="flex items-center">
-                                    <span className="font-medium">Last Updated:</span>
+                                    <span className="font-medium">Last Modified:</span>
                                     <span className="ml-2">{new Date(correction.updatedAt).toLocaleString()}</span>
                                 </p>
                             </div>

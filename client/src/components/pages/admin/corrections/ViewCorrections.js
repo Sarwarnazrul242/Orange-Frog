@@ -1,7 +1,7 @@
 // src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaList, FaTrashAlt, FaRedo, FaSort, FaTh } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
+import { FaList, FaTrashAlt, FaEdit, FaRedo, FaSort, FaTh } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
@@ -101,6 +101,11 @@ export default function ViewCorrections() {
             console.error('Error deleting correction:', error);
             toast.error('Failed to delete correction');
         }
+    };
+
+    // Edit
+    const handleEdit = (correction) => {
+        navigate(`/user/corrections/edit/${correction._id}`, { state: { from: '/user/manage-corrections' } });
     };
 
     const handleSortChange = (e) => {
@@ -236,7 +241,7 @@ export default function ViewCorrections() {
                             <span className="ml-2 text-white">{new Date(correction.submittedAt).toLocaleString()}</span>
                         </div>
                         <div className="space-y-2">
-                            <span className="text-neutral-400 font-medium">Last Updated:</span>
+                            <span className="text-neutral-400 font-medium">Last Modified:</span>
                             <span className="ml-2 text-white">{new Date(correction.updatedAt).toLocaleString()}</span>
                         </div>
                     </div>
@@ -444,6 +449,46 @@ export default function ViewCorrections() {
                                             <span className="ml-2">{getSortIcon('reportTitle')}</span>
                                         </div>
                                     </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadIn')}
+                                    >
+                                        <div className="flex items-center">
+                                            Created By
+                                            <span className="ml-2">{getSortIcon('eventLoadIn')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadIn')}
+                                    >
+                                        <div className="flex items-center">
+                                            Correction Type
+                                            <span className="ml-2">{getSortIcon('eventLoadIn')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadInHours')}
+                                    >
+                                        <div className="flex items-center">
+                                            Created
+                                            <span className="ml-2">{getSortIcon('eventLoadInHours')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventLoadOut')}
+                                    >
+                                        <div className="flex items-center">
+                                            Last Modified
+                                            <span className="ml-2">{getSortIcon('eventLoadOut')}</span>
+                                        </div>
+                                    </th>
+                                    
+                                    <th className="p-4 text-left text-white whitespace-nowrap">
+                                        Actions
+                                    </th>
                                 </tr>
                             </thead>
                                 <tbody>
@@ -454,12 +499,31 @@ export default function ViewCorrections() {
                                             onClick={() => handleEventClick(correction._id)}
                                         >
                                             <td className="p-4 text-white">
-                                                {correction.reportTitle}
+                                                {correction.eventName}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {correction.user}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {correction.requestType}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {new Date(correction.submittedAt).toLocaleString()}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {new Date(correction.updatedAt).toLocaleString()}
                                             </td>
                                             
                                             <td className="p-4">
                                                 <div className="flex space-x-4">
-                                        
+                                                    <FaEdit 
+                                                        onClick={(e) => {
+                                                            e.stopPropagation(); // Prevent row click
+                                                            handleEdit(correction);
+                                                        }} 
+                                                        className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                                                        title="Edit Event" 
+                                                    />
                                                     <FaTrashAlt 
                                                         onClick={(e) => {
                                                             e.stopPropagation(); // Prevent row click
