@@ -499,10 +499,10 @@ export default function ViewCorrections() {
                                             onClick={() => handleEventClick(correction._id)}
                                         >
                                             <td className="p-4 text-white">
-                                                {correction.eventName}
+                                                {events?.find(event => event._id === correction.eventID)?.eventName}
                                             </td>
                                             <td className="p-4 text-white">
-                                                {correction.user}
+                                                {users?.find(user => user._id === correction.userID)?.name}
                                             </td>
                                             <td className="p-4 text-white">
                                                 {correction.requestType}
