@@ -1,18 +1,20 @@
-// src/components/admin/ViewEvent.js
-
 import React, { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
-import { FaList, FaEdit, FaTrashAlt, FaUsers, FaSort, FaTh } from 'react-icons/fa';
+import { FaList, FaEdit, FaTrashAlt, FaUsers, FaSort, FaTh, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
 import { HoverEffect } from "../../../ui/card-hover-effect";
 import { Link, useNavigate } from 'react-router-dom';
 import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ViewEvent() {
     const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [showSortOptions, setShowSortOptions] = useState(false);
+    // const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+
 
     // View toggle
     const [view, setView] = useState('grid');
@@ -103,6 +105,49 @@ export default function ViewEvent() {
         adjustSelectWidth();
     };
 
+    const sortedEvents = [...events].sort((a, b) => {
+        if (sortConfig.key) {
+            const aVal = a[sortConfig.key];
+            const bVal = b[sortConfig.key];
+
+            if (typeof aVal === 'string') {
+                return sortConfig.direction === 'ascending'
+                    ? aVal.localeCompare(bVal)
+                    : bVal.localeCompare(aVal);
+            }
+
+            if (typeof aVal === 'number' || aVal instanceof Date) {
+                return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+            }
+        }
+        return 0;
+    });
+    const getSortedEvents = () => {
+        return [...events].sort((a, b) => {
+            if (sortConfig.key) {
+                const aVal = a[sortConfig.key];
+                const bVal = b[sortConfig.key];
+
+                if (typeof aVal === 'string') {
+                    return sortConfig.direction === 'ascending'
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                }
+                if (typeof aVal === 'number' || aVal instanceof Date) {
+                    return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+                }
+            }
+            return 0;
+        });
+    };
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === 'ascending' ? <FaSortUp /> : <FaSortDown />;
+        }
+        return <FaSort />;
+    };
+
     const adjustSelectWidth = () => {
         const selectElement = selectRef.current;
         if (selectElement) {
@@ -118,49 +163,26 @@ export default function ViewEvent() {
 
     // Filtering only by name
     const getFilteredAndSortedEvents = () => {
-        // Filter by name
         let filtered = events.filter(event => {
-            if (nameFilter && !event.eventName.toLowerCase().includes(nameFilter.toLowerCase())) {
-                return false;
-            }
-            return true;
+            return !nameFilter || event.eventName.toLowerCase().includes(nameFilter.toLowerCase());
         });
-
-        // Then sort the filtered list
+    
         if (sortConfig.key) {
             filtered.sort((a, b) => {
-                if (sortConfig.key === 'eventName') {
-                    return sortConfig.direction === 'ascending' 
-                        ? a.eventName.localeCompare(b.eventName)
-                        : b.eventName.localeCompare(a.eventName);
-                }
-                if (
-                    sortConfig.key === 'eventLoadIn' || 
-                    sortConfig.key === 'eventLoadOut' || 
-                    sortConfig.key === 'updatedAt' || 
-                    sortConfig.key === 'createdAt'
-                ) {
-                    const dateA = new Date(a[sortConfig.key]);
-                    const dateB = new Date(b[sortConfig.key]);
-                    return sortConfig.direction === 'ascending' ? dateA - dateB : dateB - dateA;
-                }
-                if (
-                    sortConfig.key === 'eventLoadInHours' || 
-                    sortConfig.key === 'eventLoadOutHours'
-                ) {
+                const aVal = a[sortConfig.key];
+                const bVal = b[sortConfig.key];
+    
+                if (typeof aVal === 'string') {
                     return sortConfig.direction === 'ascending'
-                        ? a[sortConfig.key] - b[sortConfig.key]
-                        : b[sortConfig.key] - a[sortConfig.key];
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
                 }
-                if (sortConfig.key === 'assignedContractors') {
-                    const countA = a.assignedContractors?.length || 0;
-                    const countB = b.assignedContractors?.length || 0;
-                    return sortConfig.direction === 'ascending' ? countA - countB : countB - countA;
+                if (typeof aVal === 'number' || aVal instanceof Date) {
+                    return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
                 }
                 return 0;
             });
         }
-
         return filtered;
     };
 
@@ -238,27 +260,17 @@ export default function ViewEvent() {
         }));
     };
 
-    const getSortIcon = (key) => {
-        if (sortConfig.key === key) {
-            return (
-                <FaSort
-                    className={`ml-1 inline-block transition-transform duration-200 ${
-                        sortConfig.direction === 'ascending' ? 'rotate-0' : 'rotate-180'
-                    }`}
-                />
-            );
-        }
-        return <FaSort className="ml-1 inline-block text-neutral-600" />;
-    };
+    
 
     const handleSort = (key) => {
-        setSortConfig(prevConfig => ({
-            key,
-            direction: prevConfig.key === key && prevConfig.direction === 'ascending'
+        setSortConfig(prevConfig => {
+            const direction = prevConfig.key === key && prevConfig.direction === 'ascending'
                 ? 'descending'
-                : 'ascending'
-        }));
+                : 'ascending';
+            return { key, direction };
+        });
     };
+    
 
     return (
         <div className="w-full h-full overflow-auto px-5">
@@ -277,31 +289,86 @@ export default function ViewEvent() {
                         </HoverBorderGradient>
                     </Link>
                     
-                    <div className='flex items-center gap-3 mt-5'>
+                    <div className='flex items-center gap-3 mt-3'>
                         {/* Name filter input */}
                         <input
                             type="text"
-                            placeholder="Filter by Name"
+                            placeholder="Search by Name"
                             value={nameFilter}
                             onChange={(e) => setNameFilter(e.target.value)}
-                            className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors outline-none"
+                            className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors outline-none mt-2"
                             style={{ minWidth: "150px" }}
                         />
 
                         {/* Sort dropdown */}
-                        <select
-                            ref={selectRef}
-                            onChange={handleSortChange}
-                            className="px-4 py-2 bg-neutral-600 hover:bg-neutral-600 text-white rounded transition-colors outline-none"
-                        >
-                            <option value="">Sort By</option>
-                            <option value="name-asc">Name (Ascending)</option>
-                            <option value="name-desc">Name (Descending)</option>
-                            <option value="createdAt-asc">Date (Ascending)</option>
-                            <option value="createdAt-desc">Date (Descending)</option>
-                            <option value="assignedContractors-asc">Contractors (Ascending)</option>
-                            <option value="assignedContractors-desc">Contractors (Descending)</option>
-                        </select>
+                        <div className="flex items-center gap-3 mt-0">
+                            <AnimatePresence>
+                                {!showSortOptions && (
+                                    <motion.button
+                                        initial={{ opacity: 0, x: -20 }}      
+                                        animate={{ opacity: 1, x: 0 }}         
+                                        exit={{ opacity: 0, x: -20 }}         
+                                        transition={{ duration: 0.3 }}
+                                        onClick={() => setShowSortOptions(true)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded transition-colors mt-0 ${
+                                            showSortOptions
+                                                ? 'bg-neutral-700 text-white'
+                                                : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                                        }`}
+                                    >
+                                        <FaSort className="text-xl" />
+                                        <span className="whitespace-nowrap">Filter by</span>
+                                    </motion.button>
+                                )}
+                            </AnimatePresence>
+
+                            <AnimatePresence>
+                                {showSortOptions && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: 20 }}        // Start hidden & to the right
+                                        animate={{ opacity: 1, x: 0 }}          // Fade in from the right
+                                        exit={{ opacity: 0, x: 20 }}            // Fade out to the right when hidden
+                                        transition={{ duration: 0.3 }}
+                                        className="flex items-center gap-3"
+                                    >
+                                        <span className="text-white whitespace-nowrap">Sort by:</span>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0"
+                                            onClick={() => handleSort('eventName')}
+                                        >
+                                            Name
+                                        </button>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0"
+                                            onClick={() => handleSort('createdAt')}
+                                        >
+                                            Date
+                                        </button>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0"
+                                            onClick={() => handleSort('assignedContractors')}
+                                        >
+                                            Contractors
+                                        </button>
+
+                                        <motion.button
+                                            initial={{ opacity: 0, x: -20 }}    // Fade in from the left
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}       // Fade out to the left when hiding
+                                            transition={{ delay: 0.2 }}
+                                            type="button"
+                                            onClick={() => setShowSortOptions(false)}
+                                            className="h-9 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors mt-0"
+                                        >
+                                            Cancel
+                                        </motion.button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
                     </div>
                     
                 </div>
@@ -341,8 +408,8 @@ export default function ViewEvent() {
                     </div>
                 ) : view === 'grid' ? (
                     <div className="max-w-full mx-auto">
-                        <HoverEffect 
-                            items={formatEventsForHoverEffect(getFilteredAndSortedEvents())} 
+                        <HoverEffect
+                            items={formatEventsForHoverEffect(getFilteredAndSortedEvents())}
                             className="grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 auto-rows-auto"
                         />
                     </div>

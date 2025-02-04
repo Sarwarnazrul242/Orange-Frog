@@ -22,7 +22,7 @@ export default function CreateEvent() {
     const [showContractorPopup, setShowContractorPopup] = useState(false);
     const [contractors, setContractors] = useState([]);
     const [selectedContractors, setSelectedContractors] = useState([]);
-    const [setMessage] = useState('');
+    const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(false);
 
     useEffect(() => {
