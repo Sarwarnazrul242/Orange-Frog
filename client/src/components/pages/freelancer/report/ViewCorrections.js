@@ -1,4 +1,3 @@
-// src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
 import { FaList, FaEdit, FaTrashAlt, FaUsers, FaSort, FaTh, FaSortUp, FaSortDown } from 'react-icons/fa';
@@ -190,7 +189,7 @@ export default function ViewCorrections() {
     }
 
     const handleEventClick = (correctionId) => {
-        navigate(`/users/corrections/${correctionId}`);
+        navigate(`/user/corrections/${correctionId}`);
     };
 
     const formatEventsForHoverEffect = (corrections) => {

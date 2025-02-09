@@ -76,12 +76,12 @@ const CorrectionReport = () => {
         { headers: { 'Content-Type': 'application/json' } }
       );
       
-      toast.success('Correction report submitted successfully.');
+      toast.success('Correction report status updated successfully.');
       
       navigate(location.state?.from);
     } catch (error) {
-      console.error('Error submitting correction report:', error);
-      toast.error('Failed to submit correction report.');
+      console.error('Error updating correction report status:', error);
+      toast.error('Failed to update correction report status.');
     } finally {
       setLoading(false);
     }

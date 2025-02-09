@@ -32,20 +32,6 @@ const CorrectionReport = () => {
       }
     };
 
-    // Fetch user by email from AuthContext
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND}/user-profile/${auth.email}`);
-        setFormData((prevData) => ({
-          ...prevData,
-          userID: response.data._id, // Set user's ID in formData
-        }));
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        toast.error('Failed to fetch user details.');
-      }
-    };
-
     // Fetches the correction
     const fetchCorrection = async () => {
       try {
@@ -66,7 +52,6 @@ const CorrectionReport = () => {
       }
     };
 
-    fetchUser();
     fetchEvents();
     fetchCorrection();
   }, [auth?.email]);
@@ -107,12 +92,12 @@ const CorrectionReport = () => {
         { headers: { 'Content-Type': 'application/json' } }
       );
       
-      toast.success('Correction report submitted successfully.');
+      toast.success('Correction report updated successfully.');
       
       navigate(location.state?.from);
     } catch (error) {
-      console.error('Error submitting correction report:', error);
-      toast.error('Failed to submit correction report.');
+      console.error('Error updating correction report:', error);
+      toast.error('Failed to update correction report.');
     } finally {
       setLoading(false);
     }

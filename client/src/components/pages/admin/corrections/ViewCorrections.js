@@ -187,7 +187,7 @@ export default function ViewCorrections() {
     }
 
     const handleEventClick = (correctionId) => {
-        navigate(`/users/corrections/${correctionId}`);
+        navigate(`/admin/corrections/${correctionId}`);
     };
 
     const formatEventsForHoverEffect = (corrections) => {
@@ -232,12 +232,12 @@ export default function ViewCorrections() {
                             <span className="ml-2 text-white">{correction.status}</span>
                         </div>
                         <div className="space-y-2">
-                            <span className="text-neutral-400 font-medium">Event:</span>
-                            <span className="ml-2 text-white">{event ? event.eventName : 'Unknown Event'}</span>
-                        </div>
-                        <div className="space-y-2">
                             <span className="text-neutral-400 font-medium">Created By:</span>
                             <span className="ml-2 text-white">{user ? user.name : 'Unknown User'}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Event:</span>
+                            <span className="ml-2 text-white">{event ? event.eventName : 'Unknown Event'}</span>
                         </div>
                         <div className="space-y-2">
                             <span className="text-neutral-400 font-medium">Correction Type:</span>
@@ -452,21 +452,21 @@ export default function ViewCorrections() {
 
                                     <th 
                                         className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
-                                        onClick={() => handleSort('eventID')}
-                                    >
-                                        <div className="flex items-center">
-                                            Event
-                                            <span className="ml-2">{getSortIcon('eventID')}</span>
-                                        </div>
-                                    </th>
-
-                                    <th 
-                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
                                         onClick={() => handleSort('userID')}
                                     >
                                         <div className="flex items-center">
                                             Created By
                                             <span className="ml-2">{getSortIcon('userID')}</span>
+                                        </div>
+                                    </th>
+
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventID')}
+                                    >
+                                        <div className="flex items-center">
+                                            Event
+                                            <span className="ml-2">{getSortIcon('eventID')}</span>
                                         </div>
                                     </th>
 
@@ -518,10 +518,10 @@ export default function ViewCorrections() {
                                                 {correction.status}
                                             </td>
                                             <td className="p-4 text-white">
-                                                {events?.find(event => event._id === correction.eventID)?.eventName}
+                                                {users?.find(user => user._id === correction.userID)?.name}
                                             </td>
                                             <td className="p-4 text-white">
-                                                {users?.find(user => user._id === correction.userID)?.name}
+                                                {events?.find(event => event._id === correction.eventID)?.eventName}
                                             </td>
                                             <td className="p-4 text-white">
                                                 {correction.requestType}
