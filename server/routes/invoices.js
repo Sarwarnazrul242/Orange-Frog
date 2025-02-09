@@ -43,6 +43,23 @@ router.get('/:id', async (req, res) => {
       res.status(500).json({ message: 'Failed to fetch invoice' });
     }
   });
+
+  // Route to update an invoice by ID
+  router.put('/:id', async (req, res) => {
+    try {
+      const { id } = req.params;
+      const updatedInvoice = await invoiceCollection.findByIdAndUpdate(id, req.body, { new: true });
+
+      if (!updatedInvoice) {
+        return res.status(404).json({ message: 'Invoice not found' });
+      }
+
+      res.status(200).json(updatedInvoice);
+    } catch (error) {
+      console.error('Error updating invoice:', error);
+      res.status(500).json({ message: 'Failed to update invoice' });
+    }
+  });
   
 
 module.exports = router;
