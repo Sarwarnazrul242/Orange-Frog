@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
       requestType,
       description,
       files: req.files ? req.files.map((file) => file.path) : [],
-      status: 'pending',
+      status: 'Pending',
       submittedAt: new Date(),
     });
 

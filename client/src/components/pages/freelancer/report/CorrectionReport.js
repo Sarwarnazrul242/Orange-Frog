@@ -87,7 +87,7 @@ const CorrectionReport = () => {
       
       toast.success('Correction report submitted successfully.');
       
-      navigate(location.state?.from);
+      navigate('/user/manage-corrections');
     } catch (error) {
       console.error('Error submitting correction report:', error);
       toast.error('Failed to submit correction report.');

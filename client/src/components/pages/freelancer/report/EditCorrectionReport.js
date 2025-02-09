@@ -218,16 +218,21 @@ const CorrectionReport = () => {
           </div>
 
           {/* Submit Button */}
-          <div className="col-span-2 flex justify-center">
-            <HoverBorderGradient className="rounded-full flex items-center space-x-2 h-12 px-6">
-              <button
-                type="submit"
-                disabled={loading}
-                className="text-white hover:text-orange-500 transition-colors disabled:text-neutral-500 bg-transparent mb-4"
-              >
-                {loading ? 'Saving...' : 'Save Changes'}
-              </button>
-            </HoverBorderGradient>
+          <div className="col-span-2 flex justify-center space-x-4 pt-6">
+          <button
+              type="button"
+              onClick={() => navigate(location.state?.from)}
+              className="px-6 py-2.5 rounded-lg bg-neutral-700 text-white hover:bg-neutral-600 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="px-6 py-2.5 rounded-lg bg-black text-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {loading ? 'Saving...' : 'Save Changes'}
+            </button>
           </div>
         </form>
       </div>
