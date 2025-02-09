@@ -102,7 +102,7 @@ export default function CorrectionDetails() {
                         className="text-4xl font-bold text-white "
                         {...fadeIn}
                     >
-                        {event.eventName}
+                        {correction.correctionName}
                     </motion.h1>
                     <div className="flex space-x-4 -mt-6">
                         <button
@@ -135,6 +135,11 @@ export default function CorrectionDetails() {
                                 Event Details
                             </h2>
                             <div className="space-y-3 text-neutral-300">
+                                <p className="flex items-center">
+                                    <FaInfoCircle className="mr-2 text-grey-400" />
+                                    <span className="font-medium">Event:</span>
+                                    <span className="ml-2">{event.eventName}</span>
+                                </p>
                                 <p className="flex items-center">
                                     <FaMapMarkerAlt className="mr-2 text-red-400" />
                                     <span className="font-medium">Location:</span>
@@ -209,19 +214,15 @@ export default function CorrectionDetails() {
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div className="mt-8">
-                <h2 className="text-xl font-semibold text-white mb-4"></h2>
                 <div className="bg-neutral-800 rounded-lg p-6">
                     <div className="bg-neutral-700 bg-opacity-40 rounded-lg p-6">
                         <h2 className="text-xl font-semibold text-white mb-4 flex items-center">
                             <FaInfoCircle className="mr-2 text-blue-400" />
-                            Requested Correction
+                            Status: {correction.status}
                         </h2>
                         <div className="space-y-3 text-neutral-300">
                             <p className="flex items-center">
-                                <span className="ml-2">{correction.requestedCorrection}</span>
+                                <span className="ml-2">{correction.additionalComments}</span>
                             </p>
                         </div>
                     </div>

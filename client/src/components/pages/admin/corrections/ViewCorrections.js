@@ -105,7 +105,7 @@ export default function ViewCorrections() {
 
     // Edit
     const handleEdit = (correction) => {
-        navigate(`/user/corrections/edit/${correction._id}`, { state: { from: '/user/manage-corrections' } });
+        navigate(`/admin/corrections/edit/${correction._id}`, { state: { from: '/admin/manage-corrections' } });
     };
 
     const handleSortChange = (e) => {
@@ -209,12 +209,20 @@ export default function ViewCorrections() {
                 title: (
                     <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold">
-                            {event ? event.eventName : 'Unknown Event'}
+                            {correction.correctionName}
                         </span>
                         <div 
                             className="flex space-x-3"
                             onClick={(e) => e.preventDefault()}
                         >
+                            <FaEdit 
+                                onClick={(e) => {
+                                    e.preventDefault();
+                                    e.stopPropagation();
+                                    handleEdit(correction);
+                                }} 
+                                className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                            />
                             <FaTrashAlt 
                                 onClick={(e) => {
                                     e.preventDefault();
@@ -228,6 +236,14 @@ export default function ViewCorrections() {
                 ),
                 description: (
                     <div className="space-y-4">
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Status:</span>
+                            <span className="ml-2 text-white">{correction.status}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Event:</span>
+                            <span className="ml-2 text-white">{event ? event.eventName : 'Unknown Event'}</span>
+                        </div>
                         <div className="space-y-2">
                             <span className="text-neutral-400 font-medium">Created By:</span>
                             <span className="ml-2 text-white">{user ? user.name : 'Unknown User'}</span>

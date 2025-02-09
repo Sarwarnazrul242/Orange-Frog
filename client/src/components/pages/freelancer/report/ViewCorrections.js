@@ -208,7 +208,7 @@ export default function ViewCorrections() {
                 title: (
                     <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold">
-                            {event ? event.eventName : 'Unknown Event'}
+                            {correction.correctionName}
                         </span>
                         <div 
                             className="flex space-x-3"
@@ -235,6 +235,14 @@ export default function ViewCorrections() {
                 ),
                 description: (
                     <div className="space-y-4">
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Status:</span>
+                            <span className="ml-2 text-white">{correction.status}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Event:</span>
+                            <span className="ml-2 text-white">{event ? event.eventName : 'Unknown Event'}</span>
+                        </div>
                         <div className="space-y-2">
                             <span className="text-neutral-400 font-medium">Correction Type:</span>
                             <span className="ml-2 text-white">{correction.requestType}</span>

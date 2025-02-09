@@ -1,52 +1,43 @@
 import React, { useState, useEffect, useContext } from 'react';
 import axios from 'axios';
 import { toast } from 'sonner';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
 import { AuthContext } from "../../../../AuthContext";
 
 const CorrectionReport = () => {
   const { auth } = useContext(AuthContext); // Get user authentication context
   const [formData, setFormData] = useState({
-    correctionName: "",
-    eventID: '',
-    userID: '',
-    requestType: '',
-    description: '',
+    status: '',
+    additionalComments: '',
   });
+  const navigate = useNavigate();
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState([]);
   const [files, setFiles] = useState(null);
   const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch events
-    const fetchEvents = async () => {
+    // Fetches the correction
+    const fetchCorrection = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
-        setEvents(response.data);
+        const correctionRes = await axios.get(`${process.env.REACT_APP_BACKEND}/corrections/${id}`);
+
+        console.log("Fetched Correction Data:", correctionRes.data);
+
+        setFormData({
+          status: correctionRes.data.correction.status,
+          additionalComments: correctionRes.data.correction.additionalComments,
+        }); 
+
       } catch (error) {
-        console.error('Error fetching events:', error);
+        console.error('Error fetching correction:', error);
+        toast.error('Failed to fetch correction details.');
       }
     };
 
-    // Fetch user by email from AuthContext
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND}/user-profile/${auth.email}`);
-        setFormData((prevData) => ({
-          ...prevData,
-          userID: response.data._id, // Set user's ID in formData
-        }));
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        toast.error('Failed to fetch user details.');
-      }
-    };
-
-    fetchUser();
-    fetchEvents();
+    fetchCorrection();
   }, [auth?.email]);
 
   // Form submission handler
@@ -55,7 +46,7 @@ const CorrectionReport = () => {
     setLoading(true);
 
     // Validate required fields
-    if (!formData.correctionName || !formData.eventID || !formData.requestType || !formData.description) {
+    if (!formData.status || !formData.additionalComments) {
       toast.error("Please fill in all required fields.");
       setLoading(false);
       return;
@@ -79,8 +70,8 @@ const CorrectionReport = () => {
       formDataToSend.forEach((value, key) => {
         console.log(`${key}: ${value}`);
       });
-      await axios.post(
-        `${process.env.REACT_APP_BACKEND}/correction-report`,
+      await axios.put(
+        `${process.env.REACT_APP_BACKEND}/correction-report/${id}`,
         formattedData,
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -107,7 +98,7 @@ const CorrectionReport = () => {
   return (
     <div className="flex flex-col items-center w-full min-h-screen p-8 bg-neutral-900">
       <Link
-        to="/user/manage-corrections"
+        to="/admin/manage-corrections"
         className="mb-8 flex items-start text-neutral-400 hover:text-white transition-colors"
       >
         <svg
@@ -125,73 +116,33 @@ const CorrectionReport = () => {
       </Link>
 
       <div className="w-full max-w-4xl bg-neutral-800 p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-white mb-8 text-center">Submit Correction Report</h1>
+        <h1 className="text-3xl font-bold text-white mb-8 text-center">Update Correction Status</h1>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Correction Name*/}
-          <div className="col-span-2">
-            <label className="block text-white mb-2">Correction Name</label>
-            <input
-              type="text"
-              name="correctionName"
-              value={formData.correctionName}
-              onChange={handleChange}
-              className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
-              required
-            />
-          </div>
-
           {/* Event Selector */}
           <div className="col-span-2">
-            <label className="block text-white mb-2">Event</label>
+            <label className="block text-white mb-2">Status</label>
             <select
-              name="eventID"
-              value={formData.eventID}
+              name="status"
+              value={formData.status}
               onChange={handleChange}
               className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
               required
             >
-              <option value="">Select an Event</option>
-              {events.map((event) => (
-                <option key={event._id} value={event._id}>
-                  {event.eventName}
-                </option>
-              ))}
+                <option value="Pending">Pending</option>
+                <option value="Approved">Approved</option>
+                <option value="Declined">Declined</option>
             </select>
           </div>
 
-          {/* Request Type */}
+          {/* Additional Comments */}
           <div className="col-span-2">
-            <label className="block text-white mb-2">Request Type</label>
-            <input
-              type="text"
-              name="requestType"
-              value={formData.requestType}
-              onChange={handleChange}
-              className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
-              required
-            />
-          </div>
-
-          {/* Description */}
-          <div className="col-span-2">
-            <label className="block text-white mb-2">Description</label>
+            <label className="block text-white mb-2">Additional Comments</label>
             <textarea
-              name="description"
-              value={formData.description}
+              name="additionalComments"
+              value={formData.additionalComments}
               onChange={handleChange}
               className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors h-32"
               required
-            />
-          </div>
-
-          {/* File Upload */}
-          <div className="col-span-2">
-            <label className="block text-white mb-2">Upload Files</label>
-            <input
-              type="file"
-              multiple
-              onChange={(e) => setFiles(e.target.files)}
-              className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
             />
           </div>
 
@@ -203,7 +154,7 @@ const CorrectionReport = () => {
                 disabled={loading}
                 className="text-white hover:text-orange-500 transition-colors disabled:text-neutral-500 bg-transparent mb-4"
               >
-                {loading ? 'Submitting...' : 'Submit Report'}
+                {loading ? 'Saving...' : 'Save Changes'}
               </button>
             </HoverBorderGradient>
           </div>

@@ -58,13 +58,14 @@ const eventCollection = mongoose.model('eventCollection', eventSchema);
 
 
 const correctionReportSchema = new mongoose.Schema({
+    correctionName: { type: String, required: true },
     eventID: { type: String, required: true },
     userID: { type: String, required: true },
     requestType: { type: String, required: true },
     description: { type: String, required: true },
-    requestedCorrection: { type: String, required: true },
     files: [{ type: String }],
-    status: { type: String, default: 'pending' },
+    status: { type: String, default: 'Pending' },
+    additionalComments: { type: String, default: '' },
     submittedAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 });

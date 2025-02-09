@@ -18,6 +18,8 @@ import EventDetails from "./components/pages/admin/event/EventDetails";
 
 import ManageCorrections from "./components/pages/admin/corrections/ManageCorrections";
 import CorrectionDetails from "./components/pages/admin/corrections/CorrectionDetails";
+import AdminEditCorrectionReport from "./components/pages/admin/corrections/EditCorrectionReport";
+import UpdateCorrectionReportStatus from "./components/pages/admin/corrections/UpdateCorrectionReportStatus";
 
 // User Pages
 import UserDashboard from "./components/pages/freelancer/UserDashboard";
@@ -80,6 +82,8 @@ function App() {
             <Route path="events/edit/:id" element={<EditEvent />} />
             <Route path="manage-corrections" element={<ManageCorrections />} />
             <Route path="corrections/:correctionId" element={<CorrectionDetails />} />
+            <Route path="corrections/edit/:id" element={<AdminEditCorrectionReport />} />
+            <Route path="corrections/update-status/:id" element={<UpdateCorrectionReportStatus />} />
             <Route path="invoices" element={<AdminInvoices />} />
             <Route path="invoices/:id" element={<Invoice />} />
           </Route>
