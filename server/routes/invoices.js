@@ -47,23 +47,52 @@ router.get('/:id', async (req, res) => {
   // Route to update an invoice by ID
   router.put('/:id', async (req, res) => {
     try {
-      const { id } = req.params;
-      const updatedInvoice = await invoiceCollection.findByIdAndUpdate(
-        id, 
-        { $set: { items: req.body.items } }, 
-        { new: true }
-      );
+        const { id } = req.params;
+        const { items } = req.body;
 
-      if (!updatedInvoice) {
-        return res.status(404).json({ message: 'Invoice not found' });
-      }
+        console.log("Incoming PUT request for invoice ID:", id);
+        console.log("Request body:", req.body);
 
-      res.status(200).json(updatedInvoice);
+        // Extract relevant fields to update
+        const billableHours = items.map(item => Number(item.billableHours));
+        const rate = items.map(item => Number(item.rate));
+        const totals = items.map(item => Number(item.total));
+
+        // Ensure numbers are correctly formatted before updating
+        const formattedItems = items.map(item => ({
+            ...item,
+            billableHours: Number(item.billableHours),
+            rate: Number(item.rate),
+            total: Number(item.total)
+        }));
+
+        console.log("Formatted Items before updating:", formattedItems);
+
+        const updatedInvoice = await invoiceCollection.findByIdAndUpdate(
+            id,
+            {
+                $set: {
+                    items: formattedItems,
+                    billableHours,
+                    rate,
+                    totals
+                }
+            },
+            { new: true }
+        );
+
+        if (!updatedInvoice) {
+            console.error("Invoice not found:", id);
+            return res.status(404).json({ message: 'Invoice not found' });
+        }
+
+        console.log("Updated invoice successfully:", updatedInvoice);
+        res.status(200).json(updatedInvoice);
     } catch (error) {
-      console.error('Error updating invoice:', error);
-      res.status(500).json({ message: 'Failed to update invoice' });
+        console.error('Error updating invoice:', error);
+        res.status(500).json({ message: 'Failed to update invoice' });
     }
-  });
+});
   
 
 module.exports = router;

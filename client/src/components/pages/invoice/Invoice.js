@@ -135,7 +135,7 @@ const Invoice = ({invoiceData}) => {
   
 
   const formattedDate = (date) => {
-    console.log("Checking date:", date); // Debugging
+    // console.log("Checking date:", date); // Debugging
 
     if (!date) {
         console.error("Invalid date found:", date);
@@ -204,16 +204,31 @@ const Invoice = ({invoiceData}) => {
         const updatedItems = [...invoice.items];
         updatedItems[index] = {
             ...editedData,
-            total: (editedData.billableHours * editedData.rate).toFixed(2),
+            billableHours: Number(editedData.billableHours), // Ensure it's a number
+            rate: Number(editedData.rate), // Ensure it's a number
+            total: (Number(editedData.billableHours) * Number(editedData.rate)).toFixed(2),
         };
 
-        // Make sure `items` array is sent in correct format
-        await axios.put(`${process.env.REACT_APP_BACKEND}/invoices/${id}`, { items: updatedItems });
+        console.log("Sending update request:", updatedItems);
 
-        // Update frontend state
-        setInvoice((prev) => ({ ...prev, items: updatedItems }));
-        setEditingRow(null);
-        window.location.reload(); // Refresh page to reflect changes
+        const response = await axios.put(
+            `${process.env.REACT_APP_BACKEND}/invoices/${id}`,
+            { items: updatedItems }
+        );
+
+        console.log("Update response:", response.data);
+
+        if (response.status === 200) {
+            setInvoice((prev) => ({ ...prev, items: updatedItems }));
+            setEditingRow(null);
+
+            // Force a refresh to ensure the latest data is loaded before downloading
+            setTimeout(() => {
+                window.location.reload();
+            }, 500); // Small delay to allow database updates before refreshing
+        } else {
+            console.error("Update failed:", response.status, response.data);
+        }
     } catch (error) {
         console.error('Error updating invoice:', error);
     }
