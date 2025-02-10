@@ -109,8 +109,8 @@ const EditPopup = ({ user, onSave, onCancel }) => {
     );
 };
 
-const UserRow = ({ name, email, status, hourlyRate, onEdit, onDelete, onResendEmail }) => (
-    <article className="grid grid-cols-5 items-center w-full border-b-[1px] border-b-white/40 relative text-sm md:text-base">
+const UserRow = ({ name, email, status, hourlyRate, onEdit, onDelete, onResendEmail, className }) => (
+    <article className={`grid grid-cols-5 items-center w-full border-b-[1px] border-b-white/40 relative text-sm md:text-base ${className}`}>
         <div className="col-span-1 py-2 px-2 md:py-4 md:px-4 text-white truncate">
             {name}
         </div>
@@ -418,15 +418,17 @@ export default function ViewUsers() {
 
     return (
         <div className="w-full h-full overflow-auto">
-            <CreateUsers onUserCreated={fetchUsers} />
+            
             <div className="w-full flex justify-between items-center mb-5 mt-5">
+                
                 <div className="flex items-center space-x-2">
-                    {/* <span
+                    <CreateUsers onUserCreated={fetchUsers} />
+                    {<span
                         onClick={() => setShowSearchBox(!showSearchBox)}
                         className="cursor-pointer text-white/60 hover:text-white transition-colors flex items-center px-2"
                     >
                         <FaSearch className="text-lg" title='Search for a user'/>
-                    </span> */}
+                    </span> }
                     <div className="relative flex items-center">
                         <input
                             type="text"
@@ -491,32 +493,32 @@ export default function ViewUsers() {
                         )}
                         {!isGridView && window.innerWidth > 768 && (
                             <>
-                                <header className="grid grid-cols-5 items-center w-full border-b-2 border-b-white/40 pb-2">
-                                    <div className="col-span-1 px-4 text-white font-bold flex items-center">
+                                <header className="grid grid-cols-5 items-center w-full border-b-2 border-b-neutral-700 pb-2 bg-neutral-700">
+                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
                                         Name
                                         <span onClick={() => handleSort('name')} className="ml-2 cursor-pointer text-white">
                                             {sortField === 'name' && sortDirection === 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
                                         </span>
                                     </div>
-                                    <div className="col-span-1 px-4 text-white font-bold flex items-center">
+                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
                                         Email
                                         <span onClick={() => handleSort('email')} className="ml-2 cursor-pointer text-white">
                                             {sortField === 'email' && sortDirection === 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
                                         </span>
                                     </div>
-                                    <div className="col-span-1 px-4 text-white font-bold flex items-center">
+                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
                                         Status
                                         <span onClick={() => handleSort('status')} className="ml-2 cursor-pointer text-white">
                                             {sortField === 'status' && sortDirection === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
                                         </span>
                                     </div>
-                                    <div className="col-span-1 px-4 text-white font-bold flex items-center">
+                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
                                         Hourly Rate
                                         <span onClick={() => handleSort('hourlyRate')} className="ml-2 cursor-pointer text-white">
                                             {sortField === 'hourlyRate' && sortDirection === 'asc' ? <FaArrowDown /> : <FaArrowUp />}
                                         </span>
                                     </div>
-                                    <div className="col-span-1 px-4 text-white font-bold text-right">
+                                    <div className="col-span-1 px-4 mt-2  text-neutral-200 font-bold text-right">
                                         Actions
                                     </div>
                                 </header>
@@ -531,6 +533,7 @@ export default function ViewUsers() {
                                         onEdit={() => handleEdit(user)}
                                         onDelete={() => handleDelete(user._id)}
                                         onResendEmail={() => handleResendEmail(user._id)}
+                                        className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer bg-neutral-800 text-neutral-200"
                                     />
                                 ))}
                             </>
