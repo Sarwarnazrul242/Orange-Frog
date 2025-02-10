@@ -3,9 +3,9 @@ const router = express.Router();
 const { correctionReportCollection, eventCollection } = require('../mongo');
 
 router.post('/', async (req, res) => {
-  const { eventID, userID, requestType, description, requestedCorrection } = req.body;
+  const { correctionName, eventID, userID, requestType, description } = req.body;
 
-  if (!eventID || !userID || !requestType || !description || !requestedCorrection) {
+  if (!correctionName || !eventID || !userID || !requestType || !description) {
     return res.status(400).json({ message: 'All fields are required.' });
   }
 
@@ -16,13 +16,13 @@ router.post('/', async (req, res) => {
     }
 
     const newReport = new correctionReportCollection({
+      correctionName,
       eventID,
       userID,
       requestType,
       description,
-      requestedCorrection,
       files: req.files ? req.files.map((file) => file.path) : [],
-      status: 'pending',
+      status: 'Pending',
       submittedAt: new Date(),
     });
 

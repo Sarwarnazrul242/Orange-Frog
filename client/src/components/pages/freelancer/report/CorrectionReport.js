@@ -8,11 +8,11 @@ import { AuthContext } from "../../../../AuthContext";
 const CorrectionReport = () => {
   const { auth } = useContext(AuthContext); // Get user authentication context
   const [formData, setFormData] = useState({
+    correctionName: "",
     eventID: '',
     userID: '',
     requestType: '',
     description: '',
-    requestedCorrection: '',
   });
   const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState([]);
@@ -55,7 +55,7 @@ const CorrectionReport = () => {
     setLoading(true);
 
     // Validate required fields
-    if (!formData.eventID || !formData.requestType || !formData.description || !formData.requestedCorrection) {
+    if (!formData.correctionName || !formData.eventID || !formData.requestType || !formData.description) {
       toast.error("Please fill in all required fields.");
       setLoading(false);
       return;
@@ -87,7 +87,7 @@ const CorrectionReport = () => {
       
       toast.success('Correction report submitted successfully.');
       
-      navigate(location.state?.from);
+      navigate('/user/manage-corrections');
     } catch (error) {
       console.error('Error submitting correction report:', error);
       toast.error('Failed to submit correction report.');
@@ -127,6 +127,19 @@ const CorrectionReport = () => {
       <div className="w-full max-w-4xl bg-neutral-800 p-8 rounded-lg shadow-lg">
         <h1 className="text-3xl font-bold text-white mb-8 text-center">Submit Correction Report</h1>
         <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* Correction Name*/}
+          <div className="col-span-2">
+            <label className="block text-white mb-2">Correction Name</label>
+            <input
+              type="text"
+              name="correctionName"
+              value={formData.correctionName}
+              onChange={handleChange}
+              className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors"
+              required
+            />
+          </div>
+
           {/* Event Selector */}
           <div className="col-span-2">
             <label className="block text-white mb-2">Event</label>
@@ -165,18 +178,6 @@ const CorrectionReport = () => {
             <textarea
               name="description"
               value={formData.description}
-              onChange={handleChange}
-              className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors h-32"
-              required
-            />
-          </div>
-
-          {/* Requested Correction */}
-          <div className="col-span-2">
-            <label className="block text-white mb-2">Requested Correction</label>
-            <textarea
-              name="requestedCorrection"
-              value={formData.requestedCorrection}
               onChange={handleChange}
               className="w-full p-3 bg-neutral-700 text-white rounded-lg border border-neutral-600 focus:outline-none focus:border-orange-500 transition-colors h-32"
               required

@@ -242,6 +242,18 @@ export default function ViewEvent() {
                             <p className="text-neutral-300">Hours: {event.eventLoadOutHours}h</p>
                         </div>
                     </div>
+                    <div className="space-y-2">
+                        <p className="text-neutral-400 font-medium">Created</p>
+                        <div className="pl-2 border-l-2 border-neutral-700">
+                            <p className="text-white">{new Date(event.createdAt).toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <p className="text-neutral-400 font-medium">Last Modified</p>
+                        <div className="pl-2 border-l-2 border-neutral-700">
+                            <p className="text-white">{new Date(event.updatedAt).toLocaleString()}</p>
+                        </div>
+                    </div>
                     <div className="flex items-center pt-2 border-t border-neutral-700">
                         <FaUsers className="mr-2 text-neutral-400" />
                         <span className="text-neutral-300">
@@ -474,6 +486,15 @@ export default function ViewEvent() {
                                     </th>
                                     <th 
                                         className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('createdAt')}
+                                    >
+                                        <div className="flex items-center">
+                                            Created
+                                            <span className="ml-2">{getSortIcon('createdAt')}</span>
+                                        </div>
+                                    </th>
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
                                         onClick={() => handleSort('updatedAt')}
                                     >
                                         <div className="flex items-center">
@@ -510,6 +531,11 @@ export default function ViewEvent() {
                                         </td>
                                         <td className="p-4 text-white">
                                             {event.assignedContractors?.length || 0}
+                                        </td>
+                                        <td className="p-4 text-white">
+                                            {event.createdAt
+                                                ? new Date(event.createdAt).toLocaleString()
+                                                : 'Not modified'}
                                         </td>
                                         <td className="p-4 text-white">
                                             {event.updatedAt

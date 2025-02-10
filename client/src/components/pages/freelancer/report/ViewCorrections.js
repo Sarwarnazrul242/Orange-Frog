@@ -1,7 +1,6 @@
-// src/components/admin/ViewEvent.js
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import axios from 'axios';
-import { FaList, FaEdit, FaTrashAlt, FaRedo, FaSort, FaTh } from 'react-icons/fa'; //FaSortAlphaUp, FaSortAlphaDown, FaArrowUp, FaArrowDown, FaClock,
+import { FaList, FaEdit, FaTrashAlt, FaUsers, FaSort, FaTh, FaSortUp, FaSortDown } from 'react-icons/fa';
 import MultiSelect from './MultiSelect';
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
@@ -9,6 +8,7 @@ import { HoverEffect } from "../../../ui/card-hover-effect";
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from "../../../../AuthContext";
 import { HoverBorderGradient } from '../../../ui/hover-border-gradient';
+import { motion, AnimatePresence } from 'framer-motion';
 
 export default function ViewCorrections() {
     const { auth } = useContext(AuthContext);
@@ -22,17 +22,8 @@ export default function ViewCorrections() {
     const [view, setView] = useState('grid');
     const [showDeletePopup, setShowDeletePopup] = useState(false);
     const [correctionToDelete, setCorrectionToDelete] = useState(null);
-    // const [setShowEditPopup] = useState(false);
-    // const [eventToEdit, setEventToEdit] = useState({
-    //     eventName: '',
-    //     eventLoadIn: '',
-    //     eventLoadInHours: '',
-    //     eventLoadOut: '',
-    //     eventLoadOutHours: '',
-    //     eventLocation: '',
-    //     eventDescription: '',
-    //     assignedContractors: []
-    // });
+    // Single filter: name only
+    const [nameFilter, setNameFilter] = useState('');
     // const [setShowContractorPopup] = useState(false); 
     const selectRef = useRef(null);
     // const [sortField, setSortField] = useState(null);
@@ -45,6 +36,7 @@ export default function ViewCorrections() {
     // const [selectedContractor, setSelectedContractor] = useState([]);
     // const [error, setError] = useState(null);
     const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
+    const [showSortOptions, setShowSortOptions] = useState(false);
 
     
 
@@ -163,27 +155,28 @@ export default function ViewCorrections() {
         setFilterValues((prev) => ({ ...prev, [name]: value }));
     };
 
+    // Filtering only by name
     const getFilteredAndSortedCorrections = () => {
         let filtered = corrections.filter(correction => {
-            if (filterValues.name && !correction.reportTitle.toLowerCase().includes(filterValues.name.toLowerCase())) {
-                return false;
-            }
-            
-            return true;
+            return !nameFilter || correction.correctionName.toLowerCase().includes(nameFilter.toLowerCase());
         });
     
-        // Sort the filtered events
         if (sortConfig.key) {
             filtered.sort((a, b) => {
-                if (sortConfig.key === 'reportTitle') {
-                    return sortConfig.direction === 'ascending' 
-                        ? a.reportTitle.localeCompare(b.reportTitle)
-                        : b.reportTitle.localeCompare(a.reportTitle);
+                const aVal = a[sortConfig.key];
+                const bVal = b[sortConfig.key];
+    
+                if (typeof aVal === 'string') {
+                    return sortConfig.direction === 'ascending'
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                }
+                if (typeof aVal === 'number' || aVal instanceof Date) {
+                    return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
                 }
                 return 0;
             });
         }
-        
         return filtered;
     };
 
@@ -196,7 +189,7 @@ export default function ViewCorrections() {
     }
 
     const handleEventClick = (correctionId) => {
-        navigate(`/users/corrections/${correctionId}`);
+        navigate(`/user/corrections/${correctionId}`);
     };
 
     const formatEventsForHoverEffect = (corrections) => {
@@ -208,7 +201,7 @@ export default function ViewCorrections() {
                 title: (
                     <div className="flex justify-between items-center">
                         <span className="text-lg font-semibold">
-                            {event ? event.eventName : 'Unknown Event'}
+                            {correction.correctionName}
                         </span>
                         <div 
                             className="flex space-x-3"
@@ -235,6 +228,14 @@ export default function ViewCorrections() {
                 ),
                 description: (
                     <div className="space-y-4">
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Status:</span>
+                            <span className="ml-2 text-white">{correction.status}</span>
+                        </div>
+                        <div className="space-y-2">
+                            <span className="text-neutral-400 font-medium">Event:</span>
+                            <span className="ml-2 text-white">{event ? event.eventName : 'Unknown Event'}</span>
+                        </div>
                         <div className="space-y-2">
                             <span className="text-neutral-400 font-medium">Correction Type:</span>
                             <span className="ml-2 text-white">{correction.requestType}</span>
@@ -263,22 +264,18 @@ export default function ViewCorrections() {
 
     const getSortIcon = (key) => {
         if (sortConfig.key === key) {
-            return (
-                <FaSort className={`ml-1 inline-block transition-transform duration-200 ${
-                    sortConfig.direction === 'ascending' ? 'rotate-0' : 'rotate-180'
-                }`} />
-            );
+            return sortConfig.direction === 'ascending' ? <FaSortUp /> : <FaSortDown />;
         }
-        return <FaSort className="ml-1 inline-block text-neutral-600" />;
+        return <FaSort />;
     };
 
     const handleSort = (key) => {
-        setSortConfig(prevConfig => ({
-            key,
-            direction: prevConfig.key === key && prevConfig.direction === 'ascending' 
-                ? 'descending' 
-                : 'ascending'
-        }));
+        setSortConfig(prevConfig => {
+            const direction = prevConfig.key === key && prevConfig.direction === 'ascending'
+                ? 'descending'
+                : 'ascending';
+            return { key, direction };
+        });
     };
 
     return (
@@ -294,117 +291,105 @@ export default function ViewCorrections() {
                             <span>Create Correction Report</span>
                         </HoverBorderGradient>
                     </Link>
+
+                    <div className='flex items-center gap-3 mt-3'>
+                        {/* Name filter input */}
+                        <input
+                            type="text"
+                            placeholder="Search by Name"
+                            value={nameFilter}
+                            onChange={(e) => setNameFilter(e.target.value)}
+                            className="px-4 py-2 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors outline-none mt-2"
+                            style={{ minWidth: "150px" }}
+                        />
+
+                        {/* Sort dropdown */}
+                        <div className="flex items-center gap-3 mt-2">
+                            <AnimatePresence>
+                                {!showSortOptions && (
+                                    <motion.button
+                                        initial={{ opacity: 0, x: -20 }}      
+                                        animate={{ opacity: 1, x: 0 }}         
+                                        exit={{ opacity: 0, x: -20 }}         
+                                        transition={{ duration: 0.3 }}
+                                        onClick={() => setShowSortOptions(true)}
+                                        className={`flex items-center gap-2 px-4 py-2 rounded transition-colors mt-0 ${
+                                            showSortOptions
+                                                ? 'bg-neutral-700 text-white'
+                                                : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                                        }`}
+                                    >
+                                        <FaSort className="text-xl" />
+                                        <span className="whitespace-nowrap">Filter by</span>
+                                    </motion.button>
+                                )}
+                            </AnimatePresence>
+
+                            <AnimatePresence>
+                                {showSortOptions && (
+                                    <motion.div
+                                        initial={{ opacity: 0, x: 20 }}        // Start hidden & to the right
+                                        animate={{ opacity: 1, x: 0 }}          // Fade in from the right
+                                        exit={{ opacity: 0, x: 20 }}            // Fade out to the right when hidden
+                                        transition={{ duration: 0.3 }}
+                                        className="flex items-center gap-3"
+                                    >
+                                        <span className="text-white whitespace-nowrap">Sort by:</span>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0"
+                                            onClick={() => handleSort('correctionName')}
+                                        >
+                                            Name
+                                        </button>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 whitespace-nowrap"
+                                            onClick={() => handleSort('requestType')}
+                                        >
+                                            Correction Type
+                                        </button>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0"
+                                            onClick={() => handleSort('status')}
+                                        >
+                                            Status
+                                        </button>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 whitespace-nowrap"
+                                            onClick={() => handleSort('submittedAt')}
+                                        >
+                                            Creation Date
+                                        </button>
+
+                                        <button
+                                            className="px-4 py-2 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 whitespace-nowrap"
+                                            onClick={() => handleSort('updatedAt')}
+                                        >
+                                            Last Modified Date
+                                        </button>
+
+                                        <motion.button
+                                            initial={{ opacity: 0, x: -20 }}    // Fade in from the left
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}       // Fade out to the left when hiding
+                                            transition={{ delay: 0.2 }}
+                                            type="button"
+                                            onClick={() => setShowSortOptions(false)}
+                                            className="h-9 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors mt-0"
+                                        >
+                                            Cancel
+                                        </motion.button>
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
                 </div>
                 
                 <div className="flex items-center gap-2 relative">
-                    <button
-                        onClick={() => setShowFilterDropdown((prev) => !prev)}
-                        className="hidden md:block px-4 py-2 mt-0 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors"
-                    >
-                        Apply Filter
-                    </button>
-                    <select
-                        ref={selectRef}
-                        onChange={handleSortChange}
-                        className="hidden md:block px-4 py-2 mx-2 mt-0 bg-neutral-800 hover:bg-neutral-700 text-white rounded transition-colors outline-none"
-                    >
-                        <option value="">Sort By</option>
-                        <option value="name-asc">Name (Ascending)</option>
-                        <option value="name-desc">Name (Descending)</option>
-                        <option value="createdAt-asc">Date (Ascending)</option>
-                        <option value="createdAt-desc">Date (Descending)</option>
-                        <option value="assignedContractors-asc">Contractors (Ascending)</option>
-                        <option value="assignedContractors-desc">Contractors (Descending)</option>
-                    </select>
-
-                    {showFilterDropdown && (
-                        <div 
-                            ref={filterDropdownRef} 
-                            className="absolute top-full mt-2 left-0 bg-neutral-900 text-white rounded-lg shadow-lg w-52 z-[100] border border-neutral-800"
-                        >
-                            <div className="flex justify-between items-center px-4 py-3 border-b border-neutral-800">
-                                <p className="font-semibold">Select a filter:</p>
-                                <FaRedo
-                                    className="cursor-pointer hover:text-neutral-400 transition-colors"
-                                    onClick={resetFilters}
-                                    title="Reset all filters"
-                                />
-                            </div>
-                            <div className="space-y-1 relative">
-                                {['name', 'location', 'startDate', 'endDate', 'contractor'].map((field) => (
-                                    <div key={field} className="relative group">
-                                        <button
-                                            onMouseEnter={() => handleFilterFieldChange(field)}
-                                            className="flex items-center justify-between text-left w-full px-4 py-2 text-white hover:bg-neutral-800 transition-colors"
-                                            style={{ backgroundColor: 'transparent' }}
-                                        >
-                                            {field.charAt(0).toUpperCase() + field.slice(1)}
-                                        </button>
-
-                                        {filterField === field && (
-                                            <div className="absolute right-full top-0 bg-neutral-900 text-white rounded-lg shadow-lg p-4 w-72 z-20 mr-4 border border-neutral-800">
-                                                <h3 className="font-semibold mb-2">
-                                                    Filter by {field.charAt(0).toUpperCase() + field.slice(1)}
-                                                </h3>
-                                                {field === 'startDate' || field === 'endDate' ? (
-                                                    <input
-                                                        type="date"
-                                                        name={field}
-                                                        value={filterValues[field]}
-                                                        onChange={handleFilterChange}
-                                                        className="w-full p-2 bg-neutral-800 text-white rounded border border-neutral-700 focus:outline-none"
-                                                    />
-                                                ) : field === 'contractor' ? (
-                                                    <MultiSelect
-                                                        options={contractors.map(contractor => ({
-                                                            value: contractor._id,
-                                                            label: contractor.name
-                                                        }))}
-                                                        value={(Array.isArray(filterValues.contractor) ? filterValues.contractor : []).map(id => ({
-                                                            value: id,
-                                                            label: contractors.find(contractor => contractor._id === id)?.name
-                                                        }))}
-                                                        onChange={(selectedOptions) => {
-                                                            const selectedContractorIds = selectedOptions.map(option => option.value);
-                                                            setFilterValues((prev) => ({ ...prev, contractor: selectedContractorIds }));
-                                                        }}
-                                                        isMulti
-                                                        closeMenuOnSelect={false}
-                                                        hideSelectedOptions={false}
-                                                        placeholder="Select Contractors"
-                                                        className="w-full"
-                                                    />
-                                                ) : (
-                                                    <input
-                                                        type="text"
-                                                        name={field}
-                                                        placeholder={`Enter ${field}`}
-                                                        value={filterValues[field]}
-                                                        onChange={handleFilterChange}
-                                                        className="w-full p-2 bg-neutral-800 text-white rounded border border-neutral-700 focus:outline-none"
-                                                    />
-                                                )}
-                                                <div className="flex justify-between mt-3">
-                                                    <button
-                                                        onClick={() => setFilterValues({ ...filterValues, [field]: '' })}
-                                                        className="bg-neutral-800 hover:bg-neutral-700 text-white px-4 py-2 rounded transition-colors"
-                                                    >
-                                                        Reset
-                                                    </button>
-                                                    <button
-                                                        onClick={() => setFilterField(null)}
-                                                        className="bg-neutral-800 hover:bg-neutral-700 text-white ml-6 px-4 py-2 rounded transition-colors"
-                                                    >
-                                                        Apply
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    )}
 
                     <div className="hidden md:flex gap-2">
                         <button
@@ -453,38 +438,60 @@ export default function ViewCorrections() {
                                 <tr>
                                     <th 
                                         className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
-                                        onClick={() => handleSort('reportTitle')}
+                                        onClick={() => handleSort('correctionName')}
                                     >
                                         <div className="flex items-center">
                                             Correction Name
-                                            <span className="ml-2">{getSortIcon('reportTitle')}</span>
+                                            <span className="ml-2">{getSortIcon('correctionName')}</span>
                                         </div>
                                     </th>
+
                                     <th 
                                         className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
-                                        onClick={() => handleSort('eventLoadIn')}
+                                        onClick={() => handleSort('status')}
+                                    >
+                                        <div className="flex items-center">
+                                            Status
+                                            <span className="ml-2">{getSortIcon('status')}</span>
+                                        </div>
+                                    </th>
+
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('eventID')}
+                                    >
+                                        <div className="flex items-center">
+                                            Event
+                                            <span className="ml-2">{getSortIcon('eventID')}</span>
+                                        </div>
+                                    </th>
+
+                                    <th 
+                                        className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
+                                        onClick={() => handleSort('requestType')}
                                     >
                                         <div className="flex items-center">
                                             Correction Type
-                                            <span className="ml-2">{getSortIcon('eventLoadIn')}</span>
+                                            <span className="ml-2">{getSortIcon('requestType')}</span>
                                         </div>
                                     </th>
+
                                     <th 
                                         className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
-                                        onClick={() => handleSort('eventLoadInHours')}
+                                        onClick={() => handleSort('submittedAt')}
                                     >
                                         <div className="flex items-center">
                                             Created
-                                            <span className="ml-2">{getSortIcon('eventLoadInHours')}</span>
+                                            <span className="ml-2">{getSortIcon('submittedAt')}</span>
                                         </div>
                                     </th>
                                     <th 
                                         className="p-4 text-left text-white cursor-pointer whitespace-nowrap"
-                                        onClick={() => handleSort('eventLoadOut')}
+                                        onClick={() => handleSort('updatedAt')}
                                     >
                                         <div className="flex items-center">
                                             Last Modified
-                                            <span className="ml-2">{getSortIcon('eventLoadOut')}</span>
+                                            <span className="ml-2">{getSortIcon('updatedAt')}</span>
                                         </div>
                                     </th>
                                     
@@ -500,6 +507,12 @@ export default function ViewCorrections() {
                                             className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer"
                                             onClick={() => handleEventClick(correction._id)}
                                         >
+                                            <td className="p-4 text-white">
+                                                {correction.correctionName}
+                                            </td>
+                                            <td className="p-4 text-white">
+                                                {correction.status}
+                                            </td>
                                             <td className="p-4 text-white">
                                                 {events?.find(event => event._id === correction.eventID)?.eventName}
                                             </td>

@@ -32,20 +32,6 @@ const CorrectionReport = () => {
       }
     };
 
-    // Fetch user by email from AuthContext
-    const fetchUser = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND}/user-profile/${auth.email}`);
-        setFormData((prevData) => ({
-          ...prevData,
-          userID: response.data._id, // Set user's ID in formData
-        }));
-      } catch (error) {
-        console.error('Error fetching user:', error);
-        toast.error('Failed to fetch user details.');
-      }
-    };
-
     // Fetches the correction
     const fetchCorrection = async () => {
       try {
@@ -66,7 +52,6 @@ const CorrectionReport = () => {
       }
     };
 
-    fetchUser();
     fetchEvents();
     fetchCorrection();
   }, [auth?.email]);
@@ -129,7 +114,7 @@ const CorrectionReport = () => {
   return (
     <div className="flex flex-col items-center w-full min-h-screen p-8 bg-neutral-900">
       <Link
-        to="/user/manage-corrections"
+        to="/admin/manage-corrections"
         className="mb-8 flex items-start text-neutral-400 hover:text-white transition-colors"
       >
         <svg
