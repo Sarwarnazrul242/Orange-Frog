@@ -132,7 +132,6 @@ export default function CreateUsers({ onUserCreated }) {
                                 className="w-full px-4 py-2 rounded-full bg-neutral-900 text-white placeholder:text-white/50 outline-none border border-neutral-700 focus:border-neutral-500"
                                 required
                             />
-                            
                         </motion.div>
 
                         <motion.div
@@ -158,8 +157,8 @@ export default function CreateUsers({ onUserCreated }) {
                                 className="w-full px-4 py-2 rounded-full bg-neutral-900 text-white placeholder:text-white/50 outline-none border border-neutral-700 focus:border-neutral-500"
                                 required
                             />
-                            
                         </motion.div>
+
                         <motion.div
                             initial={{ opacity: 0, x: -20 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -196,7 +195,7 @@ export default function CreateUsers({ onUserCreated }) {
                                 <button
                                     type="submit"
                                     disabled={isLoading}
-                                    className="flex items-center rounded-full bg-black text-white h-9 px-8 py-5 disabled:opacity-50"
+                                    className="flex items-center justify-center rounded-full bg-black text-white h-10 px-8 disabled:opacity-50"
                                 >
                                     {isLoading ? (
                                         <FaSpinner className="animate-spin mr-2" />
@@ -213,7 +212,7 @@ export default function CreateUsers({ onUserCreated }) {
                                 exit={{ opacity: 0 }}
                                 type="button"
                                 onClick={handleCancel}
-                                className="h-9 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors"
+                                className="flex items-center justify-center h-10 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors"
                             >
                                 Cancel
                             </motion.button>
