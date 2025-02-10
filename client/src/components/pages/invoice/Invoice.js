@@ -1,16 +1,15 @@
 import React, { useEffect, useState, useRef } from "react";
 import { useParams, Link } from "react-router-dom"; //useLocation
-import { FaDownload } from "react-icons/fa";
+import { FaDownload, FaEdit, FaSave, FaTimes } from "react-icons/fa";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import axios from 'axios';
+import { format, parseISO, isValid } from "date-fns";
 
-pdfMake.vfs = pdfFonts.pdfMake.vfs;
-
+pdfMake.vfs = pdfFonts.vfs;
 
 // pdfMake.vfs = pdfFonts.vfs;
 // console.log(pdfFonts);
-
 
 const Invoice = ({invoiceData}) => {
   const { id } = useParams(); // Extract invoice ID from URL params
@@ -19,7 +18,6 @@ const Invoice = ({invoiceData}) => {
   const invoiceRef = useRef(); // Reference for PDF generation
   const [editingRow, setEditingRow] = useState(null);
   const [editedData, setEditedData] = useState({});
-
 
   const generatePDF = () => {
     const invoiceElement = invoiceRef.current;
@@ -132,13 +130,34 @@ const Invoice = ({invoiceData}) => {
     pdfMake.createPdf(docDefinition).download(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
 
+  
+
+  const formattedDate = (date) => {
+    console.log("Checking date:", date); // Debugging
+
+    if (!date) {
+        console.error("Invalid date found:", date);
+        return "Invalid Date";
+    }
+
+    // If date is an array, extract the first element
+    const parsedDate = Array.isArray(date) ? date[0] : date;
+    
+    try {
+        const formatted = format(new Date(parsedDate), "MM/dd/yyyy h:mm a");
+        return formatted;
+    } catch (error) {
+        console.error("Date parsing error:", error, "with value:", parsedDate);
+        return "Invalid Date";
+    }
+};
+
   useEffect(() => {
     const fetchInvoice = async () => {
       if (!id) {
         console.error("Invoice ID is undefined");
         return;
       }
-      
 
       try {
         const response = await fetch(`${process.env.REACT_APP_BACKEND}/invoices/${id}`);
@@ -148,11 +167,26 @@ const Invoice = ({invoiceData}) => {
         }
 
         const data = await response.json();
-        // console.log("Fetched invoice data:", data); // Debugging line
+        console.log("Fetched invoice data:", data); // Debugging
+
+        // Manually construct items array if it does not exist
+        if (!data.items) {
+          data.items = data.dateOfWork.map((date, index) => ({
+            date: date || "N/A",
+            actualHours: data.actualHoursWorked[index] || "N/A",
+            notes: data.notes[index] || "N/A",
+            billableHours: data.billableHours[index] || "N/A",
+            rate: data.rate[index] || 0,
+            total: data.totals[index] || 0
+          }));
+        }
+
         setInvoice(data);
       } catch (error) {
         console.error("Error fetching invoice:", error);
       }
+
+      
     };
 
     fetchInvoice();
@@ -165,21 +199,23 @@ const Invoice = ({invoiceData}) => {
 
   const handleSave = async (index) => {
     try {
-      const updatedItems = [...invoice.items];
-      updatedItems[index] = {
-        ...editedData,
-        total: (editedData.billableHours * editedData.rate).toFixed(2), // Ensure the total is recalculated
-      };
-  
-      await axios.put(`${process.env.REACT_APP_BACKEND}/invoices/${id}`, { items: updatedItems });
-  
-      setInvoice((prev) => ({ ...prev, items: updatedItems }));
-      setEditingRow(null);
-      window.location.reload();
+        const updatedItems = [...invoice.items];
+        updatedItems[index] = {
+            ...editedData,
+            total: (editedData.billableHours * editedData.rate).toFixed(2),
+        };
+
+        // Make sure `items` array is sent in correct format
+        await axios.put(`${process.env.REACT_APP_BACKEND}/invoices/${id}`, { items: updatedItems });
+
+        // Update frontend state
+        setInvoice((prev) => ({ ...prev, items: updatedItems }));
+        setEditingRow(null);
+        window.location.reload(); // Refresh page to reflect changes
     } catch (error) {
-      console.error('Error updating invoice:', error);
+        console.error('Error updating invoice:', error);
     }
-  };
+};
 
   const handleChange = (e, field) => {
     setEditedData({ ...editedData, [field]: e.target.value });
@@ -259,12 +295,13 @@ const Invoice = ({invoiceData}) => {
             <table className="w-full border-collapse border border-gray-700">
               <thead>
                 <tr className="bg-gray-700">
-                  <th className="p-2 border border-gray-700 text-white">Date of Work</th>
-                  <th className="p-2 border border-gray-700 text-white">Actual Hours Worked</th>
-                  <th className="p-2 border border-gray-700 text-white">Notes</th>
-                  <th className="p-2 border border-gray-700 text-white">Billable Hours</th>
-                  <th className="p-2 border border-gray-700 text-white">Rate</th>
-                  <th className="p-2 border border-gray-700 text-white">Total</th>
+                  <th className="p-2 border border-gray-700 text-white w-56">Date of Work</th>
+                  <th className="p-2 border border-gray-700 text-white w-40">Actual Hours Worked</th>
+                  <th className="p-2 border border-gray-700 text-white w-64">Notes</th>
+                  <th className="p-2 border border-gray-700 text-white w-24">Billable Hours</th>
+                  <th className="p-2 border border-gray-700 text-white w-32">Rate</th>
+                  <th className="p-2 border border-gray-700 text-white w-32">Total</th>
+                  <th className="p-2 border border-gray-700 text-white w-28 text-center">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -273,26 +310,63 @@ const Invoice = ({invoiceData}) => {
                     <tr key={index}>
                       {editingRow === index ? (
                         <>
-                          <td><input value={editedData.date || ''} onChange={(e) => handleChange(e, 'date')} /></td>
-                          <td><input value={editedData.actualHours || ''} onChange={(e) => handleChange(e, 'actualHours')} /></td>
-                          <td><input value={editedData.notes || ''} onChange={(e) => handleChange(e, 'notes')} /></td>
-                          <td><input value={editedData.billableHours || ''} onChange={(e) => handleChange(e, 'billableHours')} /></td>
-                          <td><input value={editedData.rate || ''} onChange={(e) => handleChange(e, 'rate')} /></td>
-                          <td>{(editedData.billableHours * editedData.rate).toFixed(2)}</td>
-                          <td>
-                            <button onClick={() => handleSave(index)} className="bg-green-500 p-1 rounded">Save</button>
+                          <td className="w-40">
+                            <input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.date || ''} onChange={(e) => handleChange(e, 'date')} />
+                          </td>
+                          <td className="w-40">
+                            <input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.actualHours || ''} onChange={(e) => handleChange(e, 'actualHours')} />
+                          </td>
+                          <td className="w-64">
+                            <input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.notes || ''} onChange={(e) => handleChange(e, 'notes')} />
+                          </td>
+                          <td className="w-32">
+                            <input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.billableHours || ''} onChange={(e) => handleChange(e, 'billableHours')} />
+                          </td>
+                          <td className="w-32">
+                            <input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.rate || ''} onChange={(e) => handleChange(e, 'rate')} />
+                          </td>
+                          {/* Centered Total Calculation */}
+                          <td className="text-center w-32 whitespace-nowrap">
+                            ${(editedData.billableHours * editedData.rate).toFixed(2)}
+                          </td>
+
+                          {/* Centered Action Icons */}
+                          <td className="w-28 border border-gray-700 text-center">
+                            <div className="flex justify-center items-center gap-2">
+                              <button 
+                                onClick={() => handleSave(index)} 
+                                className="bg-gray-600 hover:bg-gray-500 p-2 rounded flex items-center justify-center mt-0"
+                              >
+                                <FaSave className="text-white" />
+                              </button>
+                              <button 
+                                onClick={() => setEditingRow(null)} 
+                                className="bg-gray-600 hover:bg-gray-500 p-2 rounded flex items-center justify-center mt-0"
+                              >
+                                <FaTimes className="text-white" />
+                              </button>
+                            </div>
                           </td>
                         </>
                       ) : (
                         <>
-                          <td>{item.date}</td>
-                          <td>{item.actualHours}</td>
-                          <td>{item.notes}</td>
-                          <td>{item.billableHours}</td>
-                          <td>${item.rate.toFixed(2)}</td>
-                          <td>${item.total.toFixed(2)}</td>
-                          <td>
-                            <button onClick={() => handleEdit(index)} className="bg-blue-500 p-1 rounded">Edit</button>
+                          
+                          <td className="w-56">{formattedDate(invoice.dateOfWork[index])}</td>
+                          <td className="w-40">{item.actualHours}</td>
+                          <td className="w-64">{item.notes}</td>
+                          <td className="w-24">{item.billableHours}</td>
+                          <td className="w-32">${Number(item.rate).toFixed(2)}</td>
+                          <td className="text-center w-32 whitespace-nowrap">${Number(item.total).toFixed(2)}</td>
+
+                          {/* Centered Action Icon */}
+                          <td className="w-28 border-none text-center">
+                            <div className="flex justify-center items-center gap-2">
+                              <button 
+                                onClick={() => handleEdit(index)} 
+                                className="bg-gray-600 hover:bg-gray-500 p-2 rounded flex items-center justify-center  w-1/2 mt-0">
+                                <FaEdit className="text-white" />
+                              </button>
+                            </div>
                           </td>
                         </>
                       )}
