@@ -1,10 +1,11 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams, Link } from "react-router-dom"; //useLocation
 import { FaDownload, FaEdit, FaSave, FaTimes } from "react-icons/fa";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import axios from 'axios';
 import { format, parseISO, isValid } from "date-fns";
+import { AuthContext } from "../../../AuthContext";
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -18,6 +19,7 @@ const Invoice = ({invoiceData}) => {
   const invoiceRef = useRef(); // Reference for PDF generation
   const [editingRow, setEditingRow] = useState(null);
   const [editedData, setEditedData] = useState({});
+  const { auth } = useContext(AuthContext);
 
   const generatePDF = () => {
     const invoiceElement = invoiceRef.current;
@@ -224,7 +226,7 @@ const Invoice = ({invoiceData}) => {
   return (
     <div className="p-8 bg-gray-100 dark:bg-neutral-900 min-h-screen">
       <Link
-        to="/user/invoices"
+        to={auth.role === "admin" ? "/admin/invoices" : "/user/invoices"}
         className="mb-8 flex items-center text-gray-300 hover:text-white transition-colors"
       >
         <svg
