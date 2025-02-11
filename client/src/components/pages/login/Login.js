@@ -70,20 +70,17 @@ const submit = async (e) => {
         setLoading(false);
 
         if (response.status === 200) {
-            login(form.email, data.role, data.userId);
+            login(form.email, data.role, data.userId); // ✅ Save user role & ID
             toast.success('Login successful!');
             console.log("Login Response:", data);
-            console.log(data.resetRequired);
-            console.log(data.completeProfile);
 
-
-            if (data.resetRequired) {
-                navigate('/reset-password');
-                // navigate('/complete-profile');
-            } else if (data.completeProfile) {
-                navigate('/complete-profile');
+            // ✅ Redirect users correctly based on role
+            if (data.role === 'admin') {
+                navigate('/admin/dashboard');
+            } else if (data.role === 'user') {
+                navigate('/user/dashboard');
             } else {
-                navigate(data.role === 'admin' ? '/admin/dashboard' : '/user/dashboard');
+                toast.error('Unexpected role. Please contact support.');
             }
         } else {
             toast.error('Invalid credentials, please try again.');

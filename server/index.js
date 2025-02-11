@@ -1,7 +1,7 @@
 require('dotenv').config();
 const cors = require('cors');
 const express = require('express');
-const { userCollection, eventCollection } = require('./mongo');
+const { userCollection, eventCollection, Admin } = require('./mongo');
 const PORT = process.env.PORT || 8000;
 const app = express();
 
@@ -26,6 +26,7 @@ const logoutRoute = require("./routes/logout");
 const correctionReportRouter = require('./routes/correction-report');
 const invoicesRoute = require('./routes/invoices');
 const viewCorrectionsRoute = require("./routes/view-corrections");
+const adminRoutes = require("./routes/admin");
 
 app.use("/users", usersRoute);
 app.use("/update-user", userProfileRoute);
@@ -45,6 +46,8 @@ app.use("/logout", logoutRoute);
 app.use('/correction-report', correctionReportRouter);
 app.use('/invoices', invoicesRoute);
 app.use("/corrections", viewCorrectionsRoute);
+
+app.use("/admin", adminRoutes);
 
 app.use("/health", (req, res) => {
   res.status(200).send("App is running!");

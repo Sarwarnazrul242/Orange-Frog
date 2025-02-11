@@ -2,7 +2,7 @@ require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const { userCollection } = require('../mongo');
-const Admin = require('./admin'); // Import Admin schema
+const { Admin } = require('../mongo'); 
 const bcrypt = require('bcrypt');
 
 // User & Admin login logic

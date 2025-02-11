@@ -1,5 +1,6 @@
 require('dotenv').config();
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
 
 const mongoURI = `mongodb+srv://${process.env.MONGO_USERNAME}:${process.env.MONGO_PASSWORD}@orangefrog.xmt6e.mongodb.net/?retryWrites=true&w=majority&appName=OrangeFrog`;
 
@@ -116,7 +117,7 @@ const collection = {
     eventCollection,
     correctionReportCollection,
     invoiceCollection,
-    Admin
+    Admin,
 };
 
 module.exports = collection;
