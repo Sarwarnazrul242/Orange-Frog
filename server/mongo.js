@@ -93,14 +93,30 @@ const invoiceSchema = new mongoose.Schema({
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now },
   });
-  
+
   const invoiceCollection = mongoose.model('invoiceCollection', invoiceSchema);
+
+  const adminSchema = new mongoose.Schema({
+    email: { type: String, required: true, unique: true },
+    password: { type: String, required: true },
+    address: { type: String }
+});
+
+// Hash password before saving
+adminSchema.pre('save', async function (next) {
+    if (!this.isModified('password')) return next();
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+});
+
+const Admin = mongoose.model('Admin', adminSchema);
 
 const collection = {
     userCollection,
     eventCollection,
     correctionReportCollection,
-    invoiceCollection
+    invoiceCollection,
+    Admin
 };
 
 module.exports = collection;

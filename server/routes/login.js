@@ -1,54 +1,72 @@
-/*NEW STUFF*/
 require('dotenv').config();
 const express = require("express");
 const router = express.Router();
 const { userCollection } = require('../mongo');
+const Admin = require('./admin'); // Import Admin schema
 const bcrypt = require('bcrypt');
 
-
-const adminCredentials = {
-    email: process.env.ADMIN_EMAIL,
-    password: process.env.ADMIN_PASSWORD
-};
-
-
-// User login and password reset flow
+// User & Admin login logic
 router.post('/', async (req, res) => {
     const { email, password } = req.body;
 
-    // Admin login check
-    if (email === adminCredentials.email && password === adminCredentials.password) {
-        return res.status(200).json({ message: 'Login successful, Admin', role: 'admin', });
-    }
-
     try {
+        // 🔹 Check if the user is an Admin in the database
+        const admin = await Admin.findOne({ email });
+
+        if (admin) {
+            const isPasswordMatch = await bcrypt.compare(password, admin.password);
+            if (isPasswordMatch) {
+                return res.status(200).json({ 
+                    message: 'Login successful, Admin',
+                    role: 'admin',
+                    userId: admin._id 
+                });
+            } else {
+                return res.status(401).json({ message: 'Invalid credentials' });
+            }
+        }
+
+        // 🔹 Check if the user is a normal User
         const user = await userCollection.findOne({ email });
+
         if (user) {
             const isPasswordMatch = await bcrypt.compare(password, user.password);
 
             if (isPasswordMatch) {
-                // If the user has reset the password, bypass temporary password checks
                 if (user.temporaryPassword) {
-                    return res.status(200).json({ message: 'Temporary password, must reset', role: 'user', resetRequired: true, userId: user._id, });
+                    return res.status(200).json({ 
+                        message: 'Temporary password, must reset',
+                        role: 'user',
+                        resetRequired: true,
+                        userId: user._id 
+                    });
                 }
 
-                // If profile is incomplete (status is pending), redirect to complete profile page
                 if (user.status === 'pending') {
-                    return res.status(200).json({ message: 'Profile incomplete, must complete', role: 'user', completeProfile: true, userId: user._id, });
+                    return res.status(200).json({ 
+                        message: 'Profile incomplete, must complete',
+                        role: 'user',
+                        completeProfile: true,
+                        userId: user._id 
+                    });
                 }
 
-                // Login successful with the new password
-                return res.status(200).json({ message: 'Login successful', role: 'user', userId: user._id });
+                return res.status(200).json({ 
+                    message: 'Login successful',
+                    role: 'user',
+                    userId: user._id 
+                });
             } else {
                 return res.status(401).json({ message: 'Invalid credentials' });
             }
-        } else {
-            return res.status(401).json({ message: 'Invalid credentials' });
-        }
+        } 
+
+        return res.status(401).json({ message: 'Invalid credentials' });
+
     } catch (error) {
+        console.error("Login Error:", error);
         return res.status(500).json({ message: 'Server error' });
     }
 }); 
 
 module.exports = router;
-/*END OF NEW STUFF*/

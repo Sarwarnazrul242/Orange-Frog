@@ -4,9 +4,10 @@ import { FaDownload, FaEdit, FaSave, FaTimes, FaPlus } from "react-icons/fa";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import axios from 'axios';
-import { format } from "date-fns";
+// import { format } from "date-fns";
 import { AuthContext } from "../../../AuthContext";
 import { parseDate } from "../../../utils/dateUtils"; 
+import { toast } from 'sonner';
 
 pdfMake.vfs = pdfFonts.vfs;
 
@@ -19,6 +20,9 @@ const Invoice = ({invoiceData}) => {
   const { auth } = useContext(AuthContext);
   const [newRow, setNewRow] = useState(null);
   const [errorMessage, setErrorMessage] = useState("");
+  const [subtotal, setSubtotal] = useState(0);
+  const [taxAmount, setTaxAmount] = useState(0);
+  const [total, setTotal] = useState(0);
 
   const generatePDF = () => {
     const invoiceElement = invoiceRef.current;
@@ -131,27 +135,25 @@ const Invoice = ({invoiceData}) => {
     pdfMake.createPdf(docDefinition).download(`Invoice_${invoice.invoiceNumber}.pdf`);
   };
 
-  
+//   const formattedDate = (date) => {
+//     // console.log("Checking date:", date); // Debugging
 
-  const formattedDate = (date) => {
-    // console.log("Checking date:", date); // Debugging
+//     if (!date) {
+//         console.error("Invalid date found:", date);
+//         return "Invalid Date";
+//     }
 
-    if (!date) {
-        console.error("Invalid date found:", date);
-        return "Invalid Date";
-    }
-
-    // If date is an array, extract the first element
-    const parsedDate = Array.isArray(date) ? date[0] : date;
+//     // If date is an array, extract the first element
+//     const parsedDate = Array.isArray(date) ? date[0] : date;
     
-    try {
-        const formatted = format(new Date(parsedDate), "MM/dd/yyyy h:mm a");
-        return formatted;
-    } catch (error) {
-        console.error("Date parsing error:", error, "with value:", parsedDate);
-        return "Invalid Date";
-    }
-};
+//     try {
+//         const formatted = format(new Date(parsedDate), "MM/dd/yyyy h:mm a");
+//         return formatted;
+//     } catch (error) {
+//         console.error("Date parsing error:", error, "with value:", parsedDate);
+//         return "Invalid Date";
+//     }
+// };
 
   useEffect(() => {
     const fetchInvoice = async () => {
@@ -203,44 +205,62 @@ const Invoice = ({invoiceData}) => {
 
   const handleSave = async (index) => {
     try {
-      const updatedItems = [...invoice.items];
-  
-      updatedItems[index] = {
-        ...editedData,
-        date: editedData.date.includes("T")
-          ? editedData.date // Already in correct ISO format, no need to convert
-          : parseDate(editedData.date, "MM/DD/YYYY", true), // Convert only if necessary
-        actualHours: editedData.actualHours ?? "", // Ensure this field is preserved
-        notes: editedData.notes ?? "", // Ensure this field is preserved
-        billableHours: Number(editedData.billableHours),
-        rate: Number(editedData.rate),
-        total: (Number(editedData.billableHours) * Number(editedData.rate)).toFixed(2),
-      };
-  
-      console.log("Sending update request:", { items: updatedItems });
-  
-      const response = await axios.put(
-        `${process.env.REACT_APP_BACKEND}/invoices/${id}`,
-        { items: updatedItems }
-      );
-  
-      console.log("Update response:", response.data);
-  
-      if (response.status === 200) {
-        setInvoice((prev) => ({ ...prev, items: updatedItems }));
-        setEditingRow(null);
-  
-        // Refresh page after saving
-        setTimeout(() => {
-          window.location.reload();
-        }, 500);
-      } else {
-        console.error("Update failed:", response.status, response.data);
-      }
+        // Validate Date Format
+        if (!editedData.date || !/^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/.test(editedData.date)) {
+            toast.error("Invalid Date Format. Use MM/DD/YYYY (e.g., 12/15/2024).");
+            return;
+        }
+
+        // Ensure Billable Hours & Rate are valid numbers
+        if (isNaN(editedData.billableHours) || Number(editedData.billableHours) <= 0) {
+            toast.error("Billable Hours must be a positive number.");
+            return;
+        }
+
+        if (isNaN(editedData.rate) || Number(editedData.rate) <= 0) {
+            toast.error("Rate must be a positive number.");
+            return;
+        }
+
+        const updatedItems = [...invoice.items];
+
+        updatedItems[index] = {
+            ...editedData,
+            date: parseDate(editedData.date, "MM/DD/YYYY", true), // Convert only if necessary
+            actualHours: editedData.actualHours ?? "",
+            notes: editedData.notes ?? "",
+            billableHours: Number(editedData.billableHours),
+            rate: Number(editedData.rate),
+            total: (Number(editedData.billableHours) * Number(editedData.rate)).toFixed(2),
+        };
+
+        console.log("Sending update request:", { items: updatedItems });
+
+        const response = await axios.put(
+            `${process.env.REACT_APP_BACKEND}/invoices/${id}`,
+            { items: updatedItems }
+        );
+
+        console.log("Update response:", response.data);
+
+        if (response.status === 200) {
+            setInvoice((prev) => ({ ...prev, items: updatedItems }));
+            setEditingRow(null);
+            toast.success("Row updated successfully!");
+
+            // Refresh page after saving
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
+        } else {
+            console.error("Update failed:", response.status, response.data);
+            toast.error("Failed to update row. Please try again.");
+        }
     } catch (error) {
-      console.error("Error updating invoice:", error);
+        console.error("Error updating invoice:", error);
+        toast.error("Error updating invoice. Please check your input and try again.");
     }
-  };
+};
 
   const handleChange = (e, field) => {
     setEditedData({ ...editedData, [field]: e.target.value });
@@ -257,18 +277,34 @@ const Invoice = ({invoiceData}) => {
 
   const handleSaveNewRow = async () => {
     if (!newRow.date || !newRow.billableHours || !newRow.rate) {
-        setErrorMessage("Please fill in all required fields: Date, Billable Hours, and Rate.");
+        toast.error("Please fill in all required fields: Date, Billable Hours, and Rate.");
         return;
     }
 
+    // Validate Date Format (MM/DD/YYYY)
+    const datePattern = /^(0[1-9]|1[0-2])\/(0[1-9]|[12][0-9]|3[01])\/\d{4}$/;
+    if (!datePattern.test(newRow.date)) {
+        toast.error("Invalid Date Format. Use MM/DD/YYYY (e.g., 12/15/2024).");
+        return;
+    }
+
+    // Ensure Billable Hours & Rate are valid numbers
+    if (isNaN(newRow.billableHours) || Number(newRow.billableHours) <= 0) {
+        toast.error("Billable Hours must be a positive number.");
+        return;
+    }
+
+    if (isNaN(newRow.rate) || Number(newRow.rate) <= 0) {
+        toast.error("Rate must be a positive number.");
+        return;
+    }
+
+    // Format the new row data properly before saving
     const formattedNewRow = {
         ...newRow,
-        date: newRow.date.includes("T")
-            ? newRow.date.trim() // Ensure existing ISO format remains valid
-            : parseDate(newRow.date.trim(), "MM/DD/YYYY", true), // Convert MM/DD/YYYY → ISO
-
-        actualHours: newRow.actualHours ? newRow.actualHours.trim() : "", // Trim spaces
-        notes: newRow.notes ? newRow.notes.trim() : "", // Trim spaces
+        date: parseDate(newRow.date.trim(), "MM/DD/YYYY", true), // Convert to ISO format
+        actualHours: newRow.actualHours ? newRow.actualHours.trim() : "",
+        notes: newRow.notes ? newRow.notes.trim() : "",
         billableHours: Number(newRow.billableHours),
         rate: Number(newRow.rate),
         total: (Number(newRow.billableHours) * Number(newRow.rate)).toFixed(2),
@@ -286,11 +322,34 @@ const Invoice = ({invoiceData}) => {
             setInvoice((prev) => ({ ...prev, items: updatedItems }));
             setNewRow(null);
             setErrorMessage("");
+            toast.success("New row added successfully!");
+            
+            // Refresh page after saving
+            setTimeout(() => {
+                window.location.reload();
+            }, 500);
         }
     } catch (error) {
         console.error("Error updating invoice:", error);
+        toast.error("Failed to update invoice. Please try again.");
     }
-};
+  };
+
+  const calculateTotals = () => {
+    if (!invoice || !invoice.items) return;
+
+    const newSubtotal = invoice.items.reduce((sum, item) => sum + (Number(item.total) || 0), 0);
+    const newTaxAmount = (newSubtotal * (invoice.taxPercentage / 100)).toFixed(2);
+    const newTotal = (newSubtotal + Number(newTaxAmount)).toFixed(2);
+
+    setSubtotal(newSubtotal);
+    setTaxAmount(newTaxAmount);
+    setTotal(newTotal);
+  };
+
+  useEffect(() => {
+    calculateTotals();
+  }, [invoice]);
 
   return (
     <div className="p-8 bg-gray-100 dark:bg-neutral-900 min-h-screen">
@@ -391,10 +450,10 @@ const Invoice = ({invoiceData}) => {
                               placeholder="MM/DD/YYYY"
                             />
                           </td>
-                          <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.actualHours || ''} onChange={(e) => handleChange(e, 'actualHours')} /></td>
+                          <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.actualHours || ''} onChange={(e) => handleChange(e, 'actualHours')} placeholder="HH:MM - HH:MM" /></td>
                           <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.notes || ''} onChange={(e) => handleChange(e, 'notes')} /></td>
                           <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.billableHours || ''} onChange={(e) => handleChange(e, 'billableHours')} /></td>
-                          <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={editedData.rate || ''} onChange={(e) => handleChange(e, 'rate')} /></td>
+                          <td>$ <input className="bg-transparent border border-gray-500 p-1 text-white w-3/4" value={editedData.rate || ''} onChange={(e) => handleChange(e, 'rate')} /></td>
                           <td className="text-center w-32">${(editedData.billableHours * editedData.rate).toFixed(2)}</td>
                           <td className="w-28 border border-gray-700 text-center flex justify-center gap-2">
                             <button onClick={() => handleSave(index)} className="bg-gray-600 hover:bg-gray-500 p-2 rounded text-white w-auto mt-0">
@@ -432,11 +491,11 @@ const Invoice = ({invoiceData}) => {
                 {/* New Row Input Fields (Only Shown When 'Add Row' is Clicked) */}
                 {newRow && (
                   <tr className="">
-                    <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={newRow.date} onChange={(e) => handleNewRowChange(e, 'date')} /></td>
-                    <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={newRow.actualHours} onChange={(e) => handleNewRowChange(e, 'actualHours')} /></td>
+                    <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={newRow.date} onChange={(e) => handleNewRowChange(e, 'date')} placeholder="MM/DD/YYYY" /></td>
+                    <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={newRow.actualHours} onChange={(e) => handleNewRowChange(e, 'actualHours')} placeholder="HH:MM - HH:MM" /></td>
                     <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={newRow.notes} onChange={(e) => handleNewRowChange(e, 'notes')} /></td>
                     <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={newRow.billableHours} onChange={(e) => handleNewRowChange(e, 'billableHours')} /></td>
-                    <td><input className="bg-transparent border border-gray-500 p-1 text-white w-full" value={newRow.rate} onChange={(e) => handleNewRowChange(e, 'rate')} /></td>
+                    <td>$ <input className="bg-transparent border border-gray-500 p-1 text-white w-3/4" value={newRow.rate} onChange={(e) => handleNewRowChange(e, 'rate')} /></td>
                     <td className="text-center w-32">${(newRow.billableHours * newRow.rate).toFixed(2)}</td>
                     <td className="text-center flex justify-center gap-2">
                       <button onClick={handleSaveNewRow} className="bg-gray-600 hover:bg-gray-500 p-2 rounded text-white w-auto mt-0">
@@ -461,16 +520,16 @@ const Invoice = ({invoiceData}) => {
             {/* Invoice Totals */}
             <div className="mt-6 text-white">
               <p className="mb-2">
-                <strong>Subtotal:</strong> ${invoice.subtotal.toFixed(2)}
+                <strong>Subtotal:</strong> ${subtotal.toFixed(2)}
               </p>
               <p className="mb-2">
                 <strong>Tax Percentage:</strong> {invoice.taxPercentage}%
               </p>
               <p className="mb-2">
-                <strong>Tax Amount:</strong> ${invoice.taxAmount.toFixed(2)}
+                <strong>Tax Amount:</strong> ${taxAmount}
               </p>
               <p className="text-xl font-bold">
-                <strong>Total:</strong> ${invoice.total.toFixed(2)}
+                <strong>Total:</strong> ${total}
               </p>
             </div>
           </div>
