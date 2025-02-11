@@ -1,6 +1,8 @@
 const express = require('express');
 const { invoiceCollection, userCollection } = require('../mongo');
 const router = express.Router();
+const { parseDate } = require("../utils/dateUtils"); 
+
 
 // Admin route to fetch all invoices
 router.get('/admin', async (req, res) => {
@@ -53,14 +55,19 @@ router.get('/:id', async (req, res) => {
         console.log("Incoming PUT request for invoice ID:", id);
         console.log("Request body:", req.body);
 
-        // Extract relevant fields to update
-        const billableHours = items.map(item => Number(item.billableHours));
-        const rate = items.map(item => Number(item.rate));
-        const totals = items.map(item => Number(item.total));
+        if (!items || !Array.isArray(items)) {
+            return res.status(400).json({ message: "Invalid request format" });
+        }
 
-        // Ensure numbers are correctly formatted before updating
+        // Ensure proper date formatting and remove hidden characters
         const formattedItems = items.map(item => ({
             ...item,
+            date: item.date.includes("T") 
+                ? item.date.replace(/\s/g, "") // Remove spaces/tabs from already formatted ISO dates
+                : parseDate(item.date.trim(), "MM/DD/YYYY", true), // Convert MM/DD/YYYY → ISO
+
+            actualHours: item.actualHours ? item.actualHours.trim() : "",
+            notes: item.notes ? item.notes.trim() : "",
             billableHours: Number(item.billableHours),
             rate: Number(item.rate),
             total: Number(item.total)
@@ -68,6 +75,14 @@ router.get('/:id', async (req, res) => {
 
         console.log("Formatted Items before updating:", formattedItems);
 
+        const billableHours = formattedItems.map(item => item.billableHours);
+        const rate = formattedItems.map(item => item.rate);
+        const totals = formattedItems.map(item => item.total);
+        const actualHours = formattedItems.map(item => item.actualHours);
+        const notes = formattedItems.map(item => item.notes);
+        const dateOfWork = formattedItems.map(item => new Date(item.date)); // Ensure valid Date objects
+
+        // Perform the update in MongoDB
         const updatedInvoice = await invoiceCollection.findByIdAndUpdate(
             id,
             {
@@ -75,10 +90,13 @@ router.get('/:id', async (req, res) => {
                     items: formattedItems,
                     billableHours,
                     rate,
-                    totals
+                    totals,
+                    actualHoursWorked: actualHours,
+                    notes,
+                    dateOfWork
                 }
             },
-            { new: true }
+            { new: true, runValidators: true } // Ensure it returns the updated invoice
         );
 
         if (!updatedInvoice) {
@@ -89,10 +107,9 @@ router.get('/:id', async (req, res) => {
         console.log("Updated invoice successfully:", updatedInvoice);
         res.status(200).json(updatedInvoice);
     } catch (error) {
-        console.error('Error updating invoice:', error);
-        res.status(500).json({ message: 'Failed to update invoice' });
+        console.error("Error updating invoice:", error);
+        res.status(500).json({ message: "Failed to update invoice" });
     }
 });
-  
 
 module.exports = router;

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaTh, FaList, FaEdit, FaTrashAlt, FaRedo, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown, FaEnvelope} from 'react-icons/fa';
+import { FaTh, FaList, FaEdit, FaTrashAlt, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown, FaEnvelope} from 'react-icons/fa';
 import autoAnimate from '@formkit/auto-animate';
 import axios from 'axios';
 import { toast } from 'sonner';
