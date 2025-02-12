@@ -408,7 +408,7 @@ export default function ViewEvent() {
                         >
                             <FaList className="text-xl" />
                         </button>
-                    </div>
+                </div>
             </div>
 
             <div className="relative z-0 pb-8">
