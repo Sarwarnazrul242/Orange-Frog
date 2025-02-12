@@ -202,27 +202,6 @@ export default function ViewCorrections() {
                         <span className="text-lg font-semibold">
                             {correction.correctionName}
                         </span>
-                        <div 
-                            className="flex space-x-3"
-                            onClick={(e) => e.preventDefault()}
-                        >
-                            <FaEdit 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleEdit(correction);
-                                }} 
-                                className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
-                            />
-                            <FaTrashAlt 
-                                onClick={(e) => {
-                                    e.preventDefault();
-                                    e.stopPropagation();
-                                    handleDelete(correction);
-                                }} 
-                                className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
-                            />
-                        </div>
                     </div>
                 ),
                 description: (
@@ -498,10 +477,7 @@ export default function ViewCorrections() {
                                             <span className="ml-2">{getSortIcon('updatedAt')}</span>
                                         </div>
                                     </th>
-                                    
-                                    <th className="p-4 text-left text-white whitespace-nowrap">
-                                        Actions
-                                    </th>
+                                
                                 </tr>
                             </thead>
                             <tbody>
@@ -531,27 +507,6 @@ export default function ViewCorrections() {
                                             </td>
                                             <td className="p-4 text-white">
                                                 {new Date(correction.updatedAt).toLocaleString()}
-                                            </td>
-                                            
-                                            <td className="p-4">
-                                                <div className="flex space-x-4">
-                                                    <FaEdit 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent row click
-                                                            handleEdit(correction);
-                                                        }} 
-                                                        className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
-                                                        title="Edit Event" 
-                                                    />
-                                                    <FaTrashAlt 
-                                                        onClick={(e) => {
-                                                            e.stopPropagation(); // Prevent row click
-                                                            handleDelete(correction);
-                                                        }} 
-                                                        className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
-                                                        title="Delete Correction" 
-                                                    />
-                                                </div>
                                             </td>
                                         </tr>
                                     ))}
