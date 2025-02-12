@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { FaTh, FaList, FaEdit, FaTrashAlt, FaSortAlphaDown, FaSortAlphaUp, FaSearch, FaArrowUp, FaArrowDown, FaEnvelope} from 'react-icons/fa';
+import { FaTh, FaList, FaEdit, FaSort, FaTrashAlt, FaSortUp, FaSortDown, FaEnvelope, FaSortAlphaDown, FaSortAlphaUp, FaSearch } from 'react-icons/fa';
 import autoAnimate from '@formkit/auto-animate';
 import axios from 'axios';
 import { toast } from 'sonner';
@@ -261,6 +261,12 @@ export default function ViewUsers() {
             toast.error('Failed to delete user. Please try again.');
         }
     };
+    const getSortIcon = (key) => {
+        if (sortField === key) {
+            return sortDirection === 'asc' ? <FaSortUp /> : <FaSortDown />;
+        }
+        return <FaSort />;
+    };
     
 
     const handleEdit = (user) => {
@@ -491,52 +497,93 @@ export default function ViewUsers() {
                                 />
                             </div>
                         )}
-                        {!isGridView && window.innerWidth > 768 && (
-                            <>
-                                <header className="grid grid-cols-5 items-center w-full border-b-2 border-b-neutral-700 pb-2 bg-neutral-700">
-                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
-                                        Name
-                                        <span onClick={() => handleSort('name')} className="ml-2 cursor-pointer text-white">
-                                            {sortField === 'name' && sortDirection === 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
-                                        </span>
-                                    </div>
-                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
-                                        Email
-                                        <span onClick={() => handleSort('email')} className="ml-2 cursor-pointer text-white">
-                                            {sortField === 'email' && sortDirection === 'asc' ? <FaSortAlphaDown /> : <FaSortAlphaUp />}
-                                        </span>
-                                    </div>
-                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
-                                        Status
-                                        <span onClick={() => handleSort('status')} className="ml-2 cursor-pointer text-white">
-                                            {sortField === 'status' && sortDirection === 'asc' ? <FaArrowUp /> : <FaArrowDown />}
-                                        </span>
-                                    </div>
-                                    <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
-                                        Hourly Rate
-                                        <span onClick={() => handleSort('hourlyRate')} className="ml-2 cursor-pointer text-white">
-                                            {sortField === 'hourlyRate' && sortDirection === 'asc' ? <FaArrowDown /> : <FaArrowUp />}
-                                        </span>
-                                    </div>
-                                    <div className="col-span-1 px-4 mt-2  text-neutral-200 font-bold text-right">
-                                        Actions
-                                    </div>
-                                </header>
-
-                                {getFilteredAndSortedUsers().map((user) => (
-                                    <UserRow
-                                        key={user._id}
-                                        name={user.name}
-                                        email={user.email}
-                                        status={user.temporaryPassword ? 'Pending' : 'Active'}
-                                        hourlyRate={user.hourlyRate}
-                                        onEdit={() => handleEdit(user)}
-                                        onDelete={() => handleDelete(user._id)}
-                                        onResendEmail={() => handleResendEmail(user._id)}
-                                        className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer bg-neutral-800 text-neutral-200"
-                                    />
-                                ))}
-                            </>
+                        {!isGridView && (
+                            <div className="w-full flex justify-center">
+                                <div className="overflow-x-auto w-full max-w-full">
+                                    <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden">
+                                        <thead className="bg-neutral-700">
+                                            <tr>
+                                                <th 
+                                                    className="p-2 text-left text-white text-sm md:text-base cursor-pointer whitespace-nowrap"
+                                                    onClick={() => handleSort('name')}
+                                                >
+                                                    <div className="flex items-center">
+                                                        Name
+                                                        <span className="ml-2">{getSortIcon('name')}</span>
+                                                    </div>
+                                                </th>
+                                                <th 
+                                                    className="p-2 text-left text-white text-sm md:text-base cursor-pointer whitespace-nowrap"
+                                                    onClick={() => handleSort('email')}
+                                                >
+                                                    <div className="flex items-center">
+                                                        Email
+                                                        <span className="ml-2">{getSortIcon('email')}</span>
+                                                    </div>
+                                                </th>
+                                                <th 
+                                                    className="p-2 text-left text-white text-sm md:text-base cursor-pointer whitespace-nowrap"
+                                                    onClick={() => handleSort('status')}
+                                                >
+                                                    <div className="flex items-center">
+                                                        Status
+                                                        <span className="ml-2">{getSortIcon('status')}</span>
+                                                    </div>
+                                                </th>
+                                                <th 
+                                                    className="p-2 text-left text-white text-sm md:text-base cursor-pointer whitespace-nowrap"
+                                                    onClick={() => handleSort('hourlyRate')}
+                                                >
+                                                    <div className="flex items-center">
+                                                        Hourly Rate
+                                                        <span className="ml-2">{getSortIcon('hourlyRate')}</span>
+                                                    </div>
+                                                </th>
+                                                <th className="p-2 text-left text-white text-sm md:text-base whitespace-nowrap">
+                                                    Actions
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {getFilteredAndSortedUsers().map((user) => (
+                                                <tr 
+                                                    key={user._id} 
+                                                    className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer"
+                                                >
+                                                    <td className="p-2 text-white text-sm md:text-base truncate max-w-[200px] whitespace-nowrap">{user.name}</td>
+                                                    <td className="p-2 text-white text-sm md:text-base truncate max-w-[200px] whitespace-nowrap">{user.email}</td>
+                                                    <td className="p-2 text-white text-sm md:text-base">
+                                                        <span className={`${user.temporaryPassword ? 'text-yellow-500' : 'text-green-500'}`}>
+                                                            {user.temporaryPassword ? 'Pending' : 'Active'}
+                                                        </span>
+                                                    </td>
+                                                    <td className="p-2 text-white text-sm md:text-base">${user.hourlyRate}/hr</td>
+                                                    <td className="p-2">
+                                                        <div className="flex space-x-4">
+                                                            <FaEdit 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation(); // Prevent row click
+                                                                    handleEdit(user);
+                                                                }} 
+                                                                className="text-blue-500 cursor-pointer text-xl hover:text-blue-600 transition-colors" 
+                                                                title='Edit User'
+                                                            />
+                                                            <FaTrashAlt 
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation(); // Prevent row click
+                                                                    handleDelete(user._id);
+                                                                }} 
+                                                                className="text-red-500 cursor-pointer text-xl hover:text-red-600 transition-colors" 
+                                                                title='Delete User'
+                                                            />
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
                         )}
                     </section>;
                 </>
