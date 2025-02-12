@@ -77,7 +77,7 @@ export default function CreateUsers({ onUserCreated }) {
     };
 
     return (
-        <div className="w-full flex items-center mb-3">
+        <div className="w-full flex items-center">
             <AnimatePresence mode="wait">
                 {!showAddForm ? (
                     <motion.div

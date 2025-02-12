@@ -73,37 +73,37 @@ export default function ViewEvent() {
     };
 
     // Sorting dropdown
-    const handleSortChange = (e) => {
-        const value = e.target.value;
-        if (!value) {
-            setSortConfig({ key: null, direction: 'ascending' });
-            return;
-        }
-        const [field, direction] = value.split('-');
+    // const handleSortChange = (e) => {
+    //     const value = e.target.value;
+    //     if (!value) {
+    //         setSortConfig({ key: null, direction: 'ascending' });
+    //         return;
+    //     }
+    //     const [field, direction] = value.split('-');
 
-        // Map dropdown values to sortConfig keys
-        let sortKey;
-        switch (field) {
-            case 'name':
-                sortKey = 'eventName';
-                break;
-            case 'createdAt':
-                sortKey = 'createdAt';
-                break;
-            case 'assignedContractors':
-                sortKey = 'assignedContractors';
-                break;
-            default:
-                sortKey = field;
-        }
+    //     // Map dropdown values to sortConfig keys
+    //     let sortKey;
+    //     switch (field) {
+    //         case 'name':
+    //             sortKey = 'eventName';
+    //             break;
+    //         case 'createdAt':
+    //             sortKey = 'createdAt';
+    //             break;
+    //         case 'assignedContractors':
+    //             sortKey = 'assignedContractors';
+    //             break;
+    //         default:
+    //             sortKey = field;
+    //     }
 
-        setSortConfig({
-            key: sortKey,
-            direction: direction === 'asc' ? 'ascending' : 'descending'
-        });
+    //     setSortConfig({
+    //         key: sortKey,
+    //         direction: direction === 'asc' ? 'ascending' : 'descending'
+    //     });
         
-        adjustSelectWidth();
-    };
+    //     adjustSelectWidth();
+    // };
 
     const sortedEvents = [...events].sort((a, b) => {
         if (sortConfig.key) {
@@ -122,24 +122,24 @@ export default function ViewEvent() {
         }
         return 0;
     });
-    const getSortedEvents = () => {
-        return [...events].sort((a, b) => {
-            if (sortConfig.key) {
-                const aVal = a[sortConfig.key];
-                const bVal = b[sortConfig.key];
+    // const getSortedEvents = () => {
+    //     return [...events].sort((a, b) => {
+    //         if (sortConfig.key) {
+    //             const aVal = a[sortConfig.key];
+    //             const bVal = b[sortConfig.key];
 
-                if (typeof aVal === 'string') {
-                    return sortConfig.direction === 'ascending'
-                        ? aVal.localeCompare(bVal)
-                        : bVal.localeCompare(aVal);
-                }
-                if (typeof aVal === 'number' || aVal instanceof Date) {
-                    return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
-                }
-            }
-            return 0;
-        });
-    };
+    //             if (typeof aVal === 'string') {
+    //                 return sortConfig.direction === 'ascending'
+    //                     ? aVal.localeCompare(bVal)
+    //                     : bVal.localeCompare(aVal);
+    //             }
+    //             if (typeof aVal === 'number' || aVal instanceof Date) {
+    //                 return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+    //             }
+    //         }
+    //         return 0;
+    //     });
+    // };
 
     const getSortIcon = (key) => {
         if (sortConfig.key === key) {
@@ -290,16 +290,6 @@ export default function ViewEvent() {
                 
                 {/* Left section: Filter & Sort */}
                 <div className="flex items-center gap-3 mt-2">
-                    {/* Right section: Create Event button */}
-                    <Link to="/admin/events/create">
-                        <HoverBorderGradient
-                            containerClassName="rounded-full"
-                            className="dark:bg-black bg-neutral-900 text-white flex items-center space-x-2"
-                        >
-                            <span className="text-lg mr-1">+</span> 
-                            <span>Create Event</span>
-                        </HoverBorderGradient>
-                    </Link>
                     
                     <div className='flex items-center gap-3 mt-3'>
                         {/* Name filter input */}
@@ -384,6 +374,17 @@ export default function ViewEvent() {
                     </div>
                     
                 </div>
+
+                {/* Right section: Create Event button */}
+                <Link to="/admin/events/create">
+                        <HoverBorderGradient
+                            containerClassName="rounded-full"
+                            className="dark:bg-black bg-neutral-900 text-white flex items-center space-x-2"
+                        >
+                            <span className="text-lg mr-1">+</span> 
+                            <span>Create Event</span>
+                        </HoverBorderGradient>
+                    </Link>
 
                 
                 {/* View toggles (hidden on smaller screens if desired) */}

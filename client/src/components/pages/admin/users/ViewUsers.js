@@ -419,10 +419,10 @@ export default function ViewUsers() {
     return (
         <div className="w-full h-full overflow-auto">
             
-            <div className="w-full flex justify-between items-center mb-5 mt-5">
+            <div className="w-full flex justify-between items-center mb-3 mt-5">
                 
                 <div className="flex items-center space-x-2">
-                    <CreateUsers onUserCreated={fetchUsers} />
+                    
                     {<span
                         onClick={() => setShowSearchBox(!showSearchBox)}
                         className="cursor-pointer text-white/60 hover:text-white transition-colors flex items-center px-2"
@@ -446,6 +446,8 @@ export default function ViewUsers() {
                     </div>
                 </div>
 
+                
+
                 <div className="flex space-x-2 items-center">
                 <button
                     onClick={() => setIsGridView(true)}
@@ -468,7 +470,10 @@ export default function ViewUsers() {
                     <FaList className="text-xl" />
                 </button>
                 </div>
+
+                
             </div>
+            <CreateUsers onUserCreated={fetchUsers} />
             
             {getFilteredAndSortedUsers().length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-[50vh] text-white/60">
@@ -482,7 +487,7 @@ export default function ViewUsers() {
                 </div>
             ) : (
                 <>
-                    <section className="w-full flex flex-col items-center mb-10">
+                    <section className="w-full flex flex-col items-center  mb-10">
                         {isGridView && (
                             <div className="w-full">
                                 <HoverEffect 
@@ -493,7 +498,7 @@ export default function ViewUsers() {
                         )}
                         {!isGridView && window.innerWidth > 768 && (
                             <>
-                                <header className="grid grid-cols-5 items-center w-full border-b-2 border-b-neutral-700 pb-2 bg-neutral-700">
+                                <header className="grid grid-cols-5 items-center w-full border-b-2 border-b-neutral-700 pb-2 bg-neutral-700 mt-10">
                                     <div className="col-span-1 px-4 mt-2 text-neutral-200 font-bold flex items-center text-lg">
                                         Name
                                         <span onClick={() => handleSort('name')} className="ml-2 cursor-pointer text-white">
