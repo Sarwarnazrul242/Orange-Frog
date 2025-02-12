@@ -505,7 +505,7 @@ export default function ViewUsers() {
                         {!isGridView && (
                             <div className="w-full flex justify-center">
                                 <div className="overflow-x-auto w-full max-w-full">
-                                    <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden mt-2">
+                                    <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden mt-4">
                                         <thead className="bg-neutral-700">
                                             <tr>
                                                 <th 
