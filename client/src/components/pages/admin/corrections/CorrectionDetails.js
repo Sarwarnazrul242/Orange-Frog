@@ -108,22 +108,6 @@ export default function CorrectionDetails() {
                     >
                         {correction.correctionName}
                     </motion.h1>
-                    <div className="flex space-x-4 -mt-6">
-                        <button
-                            onClick={() => handleEdit(correction)}
-                            className="flex items-center space-x-2 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-lg transition-colors"
-                        >
-                            <FaEdit />
-                            <span>Edit</span>
-                        </button>
-                        <button
-                            onClick={handleDelete}
-                            className="flex items-center space-x-2 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg transition-colors"
-                        >
-                            <FaTrashAlt />
-                            <span>Delete</span>
-                        </button>
-                    </div>
                 </div>
                 
                 <div className="grid md:grid-cols-2 gap-8">
