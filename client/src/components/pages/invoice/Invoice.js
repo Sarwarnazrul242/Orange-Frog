@@ -1,9 +1,10 @@
 import React, { useEffect, useState, useRef, useContext } from "react";
 import { useParams, Link } from "react-router-dom"; //useLocation
-import { FaDownload, FaEdit, FaSave, FaTimes, FaPlus } from "react-icons/fa";
+import { FaDownload, FaEdit, FaSave, FaTimes, FaPlus, FaTrashAlt } from "react-icons/fa";
 import pdfMake from 'pdfmake/build/pdfmake';
 import pdfFonts from 'pdfmake/build/vfs_fonts';
 import axios from 'axios';
+import Modal from "../../Modal";
 // import { format } from "date-fns";
 import { AuthContext } from "../../../AuthContext";
 import { parseDate } from "../../../utils/dateUtils"; 
@@ -23,6 +24,8 @@ const Invoice = ({invoiceData}) => {
   const [subtotal, setSubtotal] = useState(0);
   const [taxAmount, setTaxAmount] = useState(0);
   const [total, setTotal] = useState(0);
+  const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const generatePDF = () => {
     const invoiceElement = invoiceRef.current;
@@ -155,6 +158,48 @@ const Invoice = ({invoiceData}) => {
 //     }
 // };
 
+const handleDelete = (index) => {
+  setItemToDelete(index);
+  setShowDeletePopup(true);
+};
+
+const confirmDelete = async () => {
+  if (itemToDelete === null || !invoice) return;
+
+  // console.log("Attempting to delete item at index:", itemToDelete);
+  // console.log("Invoice ID:", id);
+  // console.log("Total items in invoice:", invoice.items.length);
+
+  // Prevent sending an invalid index
+  if (itemToDelete >= invoice.items.length || itemToDelete < 0) {
+      console.error("Invalid item index:", itemToDelete);
+      toast.error("Invalid row selection. Please refresh and try again.");
+      return;
+  }
+
+  try {
+      const response = await axios.delete(
+          `${process.env.REACT_APP_BACKEND}/invoices/${id}/item/${itemToDelete}`
+      );
+
+      if (response.status === 200) {
+          // console.log("Item deleted successfully:", response.data);
+
+          // ✅ Remove deleted row from local state
+          const updatedItems = invoice.items.filter((_, i) => i !== itemToDelete);
+          setInvoice(prev => ({ ...prev, items: updatedItems }));
+
+          setShowDeletePopup(false);
+          toast.success("Row deleted successfully!");
+      } else {
+          toast.error("Failed to delete row. Please try again.");
+      }
+  } catch (error) {
+      console.error("Error deleting row:", error);
+      toast.error("Failed to delete row. Please try again.");
+  }
+};
+
   useEffect(() => {
     const fetchInvoice = async () => {
       if (!id) {
@@ -170,7 +215,7 @@ const Invoice = ({invoiceData}) => {
         }
 
         const data = await response.json();
-        console.log("Fetched invoice data:", data); // Debugging
+        // console.log("Fetched invoice data:", data); // Debugging
 
         // Manually construct items array if it does not exist
         if (!data.items) {
@@ -474,8 +519,24 @@ const Invoice = ({invoiceData}) => {
                           <td className="w-32">${Number(item.rate).toFixed(2)}</td>
                           <td className="text-center w-32 whitespace-nowrap">${Number(item.total).toFixed(2)}</td>
                           <td className="w-28 border-none text-center flex justify-center gap-2">
-                            <button onClick={() => handleEdit(index)} className="bg-gray-600 hover:bg-gray-500 p-2 py-1 rounded text-white w-auto mt-0">
+                            {/* Edit Button */}
+                            <button 
+                              onClick={() => handleEdit(index)} 
+                              className="bg-gray-600 hover:bg-gray-500 p-2 py-1 rounded text-white w-auto mt-0"
+                            >
                               <FaEdit />
+                            </button>
+
+                            {/* Delete Button */}
+                            <button 
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleDelete(index);
+                              }} 
+                              className="bg-gray-600 hover:bg-gray-500 p-2 py-1 rounded text-white w-auto mt-0"
+                            >
+                              <FaTrashAlt className="text-red-500" />
                             </button>
                           </td>
                         </>
@@ -537,7 +598,37 @@ const Invoice = ({invoiceData}) => {
           <p className="text-white text-center">Loading invoice details...</p>
         )}
       </div>
+      {/* Delete Confirmation Popup */}
+      {showDeletePopup && (
+        <Modal>
+            <div className="bg-neutral-900 p-8 rounded-md shadow-lg w-full max-w-md border border-neutral-700">
+                <h2 className="text-red-500 text-2xl mb-4">
+                    Are you sure you want to delete this row?
+                </h2>
+                <p className="text-neutral-300 mb-6">
+                    This action cannot be undone. Once deleted, this row's data will be permanently removed.
+                </p>
+                <div className="flex justify-end gap-4">
+                    <button 
+                        onClick={() => setShowDeletePopup(false)} 
+                        className="px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        onClick={confirmDelete} 
+                        className="px-4 py-2 bg-red-700 hover:bg-red-800 text-white rounded-full transition-colors"
+                    >
+                        Delete
+                    </button>
+                </div>
+            </div>
+        </Modal>
+      )}
     </div>
+
+    
+    
   );
 };
 
