@@ -129,6 +129,7 @@ const CorrectionReport = () => {
               required
             >
                 <option value="Pending">Pending</option>
+                <option value="Declined">Received</option>
                 <option value="Approved">Approved</option>
                 <option value="Declined">Declined</option>
             </select>

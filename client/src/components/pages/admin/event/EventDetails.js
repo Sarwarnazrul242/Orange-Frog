@@ -202,6 +202,14 @@ export default function EventDetails() {
                                         </div>
                                     </div>
                                 </div>
+                                <p className="flex items-center">
+                                    <span className="font-medium">Created:</span>
+                                    <span className="ml-2">{new Date(event.createdAt).toLocaleString()}</span>
+                                </p>
+                                <p className="flex items-center">
+                                    <span className="font-medium">Last Modified:</span>
+                                    <span className="ml-2">{new Date(event.updatedAt).toLocaleString()}</span>
+                                </p>
                             </div>
                         </div>
                     </motion.div>
