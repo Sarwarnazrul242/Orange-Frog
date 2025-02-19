@@ -7,9 +7,13 @@ import { AuthContext } from "../../../../AuthContext";
 
 const CorrectionReport = () => {
   const { auth } = useContext(AuthContext); // Get user authentication context
+  const location = useLocation();
+  const navigate = useNavigate();
+  const queryParams = new URLSearchParams(location.search);
+  const eventIDFromURL = queryParams.get('eventID');
   const [formData, setFormData] = useState({
     correctionName: "",
-    eventID: '',
+    eventID: eventIDFromURL || '',
     userID: '',
     requestType: '',
     description: '',
@@ -17,8 +21,6 @@ const CorrectionReport = () => {
   const [loading, setLoading] = useState(false);
   const [events, setEvents] = useState([]);
   const [files, setFiles] = useState(null);
-  const location = useLocation();
-  const navigate = useNavigate();
 
   useEffect(() => {
     // Fetch events
@@ -48,6 +50,15 @@ const CorrectionReport = () => {
     fetchUser();
     fetchEvents();
   }, [auth?.email]);
+
+  useEffect(() => {
+    if (eventIDFromURL) {
+      setFormData((prevData) => ({
+        ...prevData,
+        eventID: eventIDFromURL,
+      }));
+    }
+  }, [eventIDFromURL]);
 
   // Form submission handler
   const handleSubmit = async (e) => {

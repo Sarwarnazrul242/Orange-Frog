@@ -5,6 +5,7 @@ import { Link } from "react-router-dom";
 import { FaTh, FaList, FaRegSadTear, FaSort, FaSearch, FaFilter } from 'react-icons/fa';
 import { HoverEffect } from "../../../ui/card-hover-effect";
 import { motion } from "framer-motion";
+import { useNavigate } from 'react-router-dom';
 
 const LoadingSpinner = () => (
     <div className="flex flex-col items-center justify-center min-h-[400px]">
@@ -27,6 +28,7 @@ const CurrentJobs = () => {
     const [statusFilter, setStatusFilter] = useState('all');
     const [timeFilter, setTimeFilter] = useState('future');
     const [showFilters, setShowFilters] = useState(false);
+    const navigate = useNavigate();
 
     // const fetchJobs = async () => {
     //     try {
@@ -124,6 +126,10 @@ const CurrentJobs = () => {
         );
     };
 
+    const handleEventClick = (eventID) => {
+        navigate(`/user/events/${eventID}`);
+    };
+
     const formatJobsForHoverEffect = (jobs) => {
         return jobs.map((job) => ({
             title: (
@@ -160,7 +166,13 @@ const CurrentJobs = () => {
                     </div>
                 </div>
             ),
-            link: '#'
+            link: `/user/events/${job._id}`,
+            _id: job._id,
+            onClick: (e) => {
+                if (!e.defaultPrevented) {
+                    handleEventClick(job._id);
+                }
+            }
         }));
     };
 
@@ -415,6 +427,7 @@ const CurrentJobs = () => {
                                         <tr 
                                             key={job._id} 
                                             className="hover:bg-neutral-800/50 transition-colors"
+                                            onClick={() => handleEventClick(job._id)}
                                         >
                                             <td className="px-6 py-4 whitespace-nowrap text-sm text-neutral-300">
                                                 {job.eventName.length > 25

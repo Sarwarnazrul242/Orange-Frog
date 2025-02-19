@@ -26,6 +26,7 @@ import UserDashboard from "./components/pages/freelancer/UserDashboard";
 import UserProfile from "./components/pages/freelancer/UserProfile";
 import FindJobs from "./components/pages/freelancer/jobs/FindJobs";
 import CurrentJobs from "./components/pages/freelancer/jobs/CurrentJobs";
+import UserEventDetails from "./components/pages/freelancer/jobs/EventDetails";
 import TimeCard from "./components/pages/freelancer/timecard/TimeCard";
 import CorrectionReport from "./components/pages/freelancer/report/CorrectionReport";
 import UserInvoices from "./components/pages/invoice/UserInvoices";
@@ -101,6 +102,7 @@ function App() {
             <Route path="profile" element={<UserProfile />} />
             <Route path="find-jobs" element={<FindJobs />} />
             <Route path="current-jobs" element={<CurrentJobs />} />
+            <Route path="events/:eventID" element={<UserEventDetails />} />
             <Route path="time-card" element={<TimeCard />} />
             <Route path="corrections/create" element={<CorrectionReport />} />
             <Route path="manage-corrections" element={<ViewCorrections />} />
