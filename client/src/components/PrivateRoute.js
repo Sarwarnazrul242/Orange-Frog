@@ -1,41 +1,15 @@
 import React, { useContext } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../AuthContext';
-import jwt_decode from 'jwt-decode'; // To decode and verify JWT token expiration
+import { jwtDecode } from 'jwt-decode';  // Correct import
 
 const PrivateRoute = ({ children, allowedRoles }) => {
   const { auth } = useContext(AuthContext);
   const location = useLocation();
 
-  // Get JWT token from localStorage
-  const token = localStorage.getItem('authToken');
-
-  // If no token or the token is invalid/expired, redirect to login
-  if (!token) {
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
-
-  // Decode token to get expiration date and other user details
-  let decodedToken;
-  try {
-    decodedToken = jwt_decode(token);
-    const currentTime = Date.now() / 1000; // Current time in seconds
-    if (decodedToken.exp < currentTime) {
-      // Token is expired
-      localStorage.removeItem('authToken');
-      return <Navigate to="/" state={{ from: location }} replace />;
-    }
-  } catch (error) {
-    // Invalid token
-    localStorage.removeItem('authToken');
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
-
-  // Update auth context with token details
+  // If not authenticated, redirect to login
   if (!auth.isAuthenticated) {
-    auth.isAuthenticated = true;
-    auth.role = decodedToken.role;
-    auth.userId = decodedToken.userId;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   // Redirect to reset-password if reset is required
