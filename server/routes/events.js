@@ -421,6 +421,54 @@ router.get('/contractor/:email', async (req, res) => {
     }
 });
 
+// Update or add this route
+router.get('/contractor/corrections/:email', async (req, res) => {
+    try {
+        const contractor = await userCollection.findOne({ email: req.params.email });
+        if (!contractor) {
+            return res.status(404).json({ message: 'Contractor not found' });
+        }
+
+        // Find events where contractor is in any of the relevant arrays
+        const events = await eventCollection.find({
+            $or: [
+                { assignedContractors: contractor._id },
+                { acceptedContractors: contractor._id },    // Applied events
+                { approvedContractors: contractor._id },    // Approved events
+                { rejectedContractors: contractor._id }     // Denied events
+            ]
+        });
+
+        // Map events to include status
+        const eventsWithStatus = events.map(event => {
+            let status = 'pending';
+            if (event.approvedContractors.includes(contractor._id)) {
+                status = 'approved';
+            } else if (event.rejectedContractors.includes(contractor._id)) {
+                status = 'denied';
+                // Add deniedAt timestamp if not present
+                if (!event.deniedAt) {
+                    event.deniedAt = new Date();
+                    event.save();
+                }
+            } else if (event.acceptedContractors.includes(contractor._id)) {
+                status = 'applied';
+            }
+
+            return {
+                ...event.toObject(),
+                status
+            };
+        });
+
+        res.status(200).json(eventsWithStatus);
+    } catch (error) {
+        console.error('Error fetching contractor events:', error);
+        res.status(500).json({ message: 'Error fetching contractor events' });
+    }
+});
+
+
 router.get('/approved-events/:userId', async (req, res) => {
     try {
         const userId = req.params.userId;

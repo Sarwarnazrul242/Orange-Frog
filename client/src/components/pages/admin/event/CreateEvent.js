@@ -170,9 +170,7 @@ export default function CreateEvent() {
                                         maxLength={40}
                                         required
                                     />
-                                    <p className="text-sm text-neutral-400 mt-1">
-                                        {formData.eventName.length}/40 characters
-                                    </p>
+                                    
                                 </div>
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-6">
@@ -268,9 +266,7 @@ export default function CreateEvent() {
                                         maxLength={50}
                                         required
                                     />
-                                    <p className="text-sm text-neutral-400 mt-1">
-                                        {formData.eventLocation.length}/50 characters
-                                    </p>
+                                    
                                 </div>
                             </div>
                             <div className="flex flex-wrap -mx-3 mb-6">
@@ -287,9 +283,7 @@ export default function CreateEvent() {
                                         onChange={handleInputChange}
                                         maxLength={200}
                                     />
-                                    <p className="text-sm text-neutral-400 mt-1">
-                                        {formData.eventDescription.length}/200 characters
-                                    </p>
+                                
                                 </div>
                             </div>
                             <div className="flex justify-center">

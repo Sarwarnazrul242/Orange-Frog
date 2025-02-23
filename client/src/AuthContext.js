@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect } from 'react';
-import Cookies from 'js-cookie';
 
 export const AuthContext = createContext();
 
@@ -9,6 +8,7 @@ export const AuthProvider = ({ children }) => {
     email: null,
     role: null,
     userId: null, // Add userId here
+    token: null, // JWT token
   });
 
   const [loading, setLoading] = useState(true);
@@ -18,41 +18,31 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const checkAuthStatus = () => {
-    const isAuthenticated = Cookies.get('isAuthenticated') === 'true';
-    const email = Cookies.get('email');
-    const role = Cookies.get('role');
-    const userId = Cookies.get('userId'); // Retrieve userId from cookies
-
-    if (isAuthenticated && email && role && userId) {
-      setAuth({ isAuthenticated, email, role, userId });
+    const token = localStorage.getItem('token'); // JWT token stored in localStorage
+    if (token) {
+      // You can also validate the token here by making an API call or decoding it
+      const decodedToken = JSON.parse(atob(token.split('.')[1])); // Decode JWT
+      setAuth({
+        isAuthenticated: true,
+        email: decodedToken.email,
+        role: decodedToken.role,
+        userId: decodedToken.userId,
+        token: token
+      });
     } else {
-      setAuth({ isAuthenticated: false, email: null, role: null, userId: null });
+      setAuth({ isAuthenticated: false, email: null, role: null, userId: null, token: null });
     }
     setLoading(false);
   };
 
-  const login = (email, role, userId) => {
-    const cookieOptions = { 
-      secure: true,
-      expires: 1,
-      sameSite: 'strict',
-    };
-
-    Cookies.set('isAuthenticated', 'true', cookieOptions);
-    Cookies.set('email', email, cookieOptions);
-    Cookies.set('role', role, cookieOptions);
-    Cookies.set('userId', userId, cookieOptions); // Save userId in cookies
-
-    setAuth({ isAuthenticated: true, email, role, userId });
+  const login = (email, role, userId, token) => {
+    localStorage.setItem('token', token); // Save JWT in localStorage
+    setAuth({ isAuthenticated: true, email, role, userId, token });
   };
 
   const logout = () => {
-    Cookies.remove('isAuthenticated');
-    Cookies.remove('email');
-    Cookies.remove('role');
-    Cookies.remove('userId'); // Remove userId from cookies
-
-    setAuth({ isAuthenticated: false, email: null, role: null, userId: null });
+    localStorage.removeItem('token'); // Remove JWT from localStorage
+    setAuth({ isAuthenticated: false, email: null, role: null, userId: null, token: null });
   };
 
   return (

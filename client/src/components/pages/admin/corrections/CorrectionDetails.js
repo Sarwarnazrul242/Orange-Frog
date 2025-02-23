@@ -126,7 +126,14 @@ export default function CorrectionDetails() {
                                 <p className="flex items-center">
                                     <FaInfoCircle className="mr-2 text-grey-400" />
                                     <span className="font-medium">Event:</span>
-                                    <span className="ml-2">{event.eventName}</span>
+                                    <span className="ml-2 text-white">
+                                        <Link 
+                                            to={`/admin/events/${event._id}`}
+                                            className="hover:text-blue-500 transition-colors group"
+                                        >
+                                            <u>{event.eventName}</u>
+                                        </Link>
+                                    </span>
                                 </p>
                                 <p className="flex items-center">
                                     <FaMapMarkerAlt className="mr-2 text-red-400" />

@@ -26,7 +26,7 @@ const CorrectionReport = () => {
     // Fetch events
     const fetchEvents = async () => {
       try {
-        const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events`);
+        const response = await axios.get(`${process.env.REACT_APP_BACKEND}/events/contractor/corrections/${auth.email}`);
         setEvents(response.data);
       } catch (error) {
         console.error('Error fetching events:', error);
