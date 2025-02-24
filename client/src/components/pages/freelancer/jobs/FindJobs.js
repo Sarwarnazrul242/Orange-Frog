@@ -1,23 +1,25 @@
 import React, { useState, useEffect, useContext } from "react";
 import axios from "axios";
-import { FaTh, FaList, FaRegSadTear} from 'react-icons/fa';
+import { FaTh, FaList, FaRegSadTear, FaSort, FaSortUp, FaSortDown } from 'react-icons/fa';
 import { AuthContext } from "../../../../AuthContext";
 import { Link } from "react-router-dom";
 import { toast } from 'sonner';
 import Modal from "../../../Modal";
 import { HoverEffect } from "../../../ui/card-hover-effect";
-// import { motion } from "framer-motion";
+import { AnimatePresence, motion } from 'framer-motion';
 
 export default function FindJobs() {
     const { auth } = useContext(AuthContext);
     const [isGridView, setIsGridView] = useState(true);
     const [jobs, setJobs] = useState([]);
     const [jobStatuses, setJobStatuses] = useState({});
-    const [sortConfig, setSortConfig] = useState({ type: 'recent' });
-    // const [showFilters, setShowFilters] = useState(false);
+    const [sortConfig, setSortConfig] = useState({ key: null, direction: 'ascending' });
     const [showConfirmModal, setShowConfirmModal] = useState(false);
     const [confirmationType, setConfirmationType] = useState(null);
     const [selectedJobId, setSelectedJobId] = useState(null);
+    const [nameFilter, setNameFilter] = useState("");
+    const [showSortOptions, setShowSortOptions] = useState(false);
+    const [animateSortOptions, setAnimateSortOptions] = useState(false);
 
     useEffect(() => {
         const fetchAssignedJobs = async () => {
@@ -28,7 +30,6 @@ export default function FindJobs() {
                 );
                 console.log("Jobs response:", response.data);
                 
-                // Filter out past events
                 const currentDate = new Date();
                 const futureJobs = response.data.filter(job => {
                     const loadInDate = new Date(job.eventLoadIn);
@@ -37,7 +38,6 @@ export default function FindJobs() {
 
                 setJobs(futureJobs);
 
-                // Initialize jobStatuses for future jobs only
                 const statuses = {};
                 futureJobs.forEach((job) => {
                     if (job.acceptedContractors.includes(auth.email)) {
@@ -60,25 +60,52 @@ export default function FindJobs() {
         }
     }, [auth.email]);
 
-    const sortedJobs = React.useMemo(() => {
-        const sortedArray = [...jobs];
-        // const currentDate = new Date();
+    const handleSort = (key) => {
+        setSortConfig(prevConfig => {
+            const direction = prevConfig.key === key && prevConfig.direction === 'ascending'
+                ? 'descending'
+                : 'ascending';
+            return { key, direction };
+        });
+    };
 
-        if (sortConfig.type === 'recent') {
-            // Sort by most recently posted (using _id as a proxy for creation time)
-            return sortedArray.sort((a, b) => {
-                return b._id.localeCompare(a._id);
-            });
-        } else if (sortConfig.type === 'closest') {
-            // Sort by closest upcoming load-in date
-            return sortedArray.sort((a, b) => {
-                const dateA = new Date(a.eventLoadIn);
-                const dateB = new Date(b.eventLoadIn);
-                return dateA - dateB;
+    const toggleSortOptions = () => {
+        setShowSortOptions((prev) => !prev);
+        setAnimateSortOptions(true);
+    };
+
+    const cancelSortOptions = () => {
+        setAnimateSortOptions(false);
+        setShowSortOptions(false);
+    };
+
+    const sortedJobs = React.useMemo(() => {
+        let sortedArray = [...jobs];
+        if (sortConfig.key) {
+            sortedArray.sort((a, b) => {
+                const aVal = a[sortConfig.key];
+                const bVal = b[sortConfig.key];
+
+                if (typeof aVal === 'string') {
+                    return sortConfig.direction === 'ascending'
+                        ? aVal.localeCompare(bVal)
+                        : bVal.localeCompare(aVal);
+                }
+                if (typeof aVal === 'number' || aVal instanceof Date) {
+                    return sortConfig.direction === 'ascending' ? aVal - bVal : bVal - aVal;
+                }
+                return 0;
             });
         }
         return sortedArray;
     }, [jobs, sortConfig]);
+
+    const getSortIcon = (key) => {
+        if (sortConfig.key === key) {
+            return sortConfig.direction === 'ascending' ? <FaSortUp /> : <FaSortDown />;
+        }
+        return <FaSort />;
+    };
 
     const handleReject = async (id) => {
         try {
@@ -92,10 +119,6 @@ export default function FindJobs() {
             console.error("Error rejecting job:", error);
         }
     };
-
-    // const handleCardClick = (job) => {
-    //     // No need to setSelectedJob as we're not using a Modal
-    // };
 
     const handleApply = async (eventId) => {
         try {
@@ -245,6 +268,13 @@ export default function FindJobs() {
   };
   
 
+  const getFilteredJobs = () => {
+    return sortedJobs.filter(job => {
+        const matchesName = job.eventName.toLowerCase().includes(nameFilter.toLowerCase());
+        return matchesName;
+    });
+  };
+
   return (
     <div className="flex flex-col w-full min-h-screen h-full p-8 bg-gray-100 dark:bg-neutral-900">
         <Link
@@ -269,171 +299,238 @@ export default function FindJobs() {
             Available Jobs
         </h1>
 
-        {jobs.length > 0 ? (
-            <>
-                <div className="mb-6 flex flex-col md:flex-row gap-4 items-center justify-between">
-                    <div className="flex items-center gap-4">
-                        <select
-                            value={sortConfig.type}
-                            onChange={(e) => setSortConfig({ type: e.target.value })}
-                            className="px-4 py-2 bg-neutral-800 rounded-lg text-white hover:bg-neutral-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        >
-                            <option value="recent">Recent Posts</option>
-                            <option value="closest">Closest Date</option>
-                        </select>
-                    </div>
-                    <div className="hidden md:flex gap-2">
-                        <button
-                            onClick={() => setIsGridView(true)}
-                            className={`p-2 mt-0 rounded transition-colors ${
-                                isGridView ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-white hover:bg-neutral-700'
-                            } flex items-center gap-2`}
-                            title="Grid View"
-                        >
-                            <FaTh className="text-xl" />
-                            
-                            
-                        </button>
-                        <button
-                            onClick={() => setIsGridView(false)}
-                            className={`p-2 mt-0 rounded transition-colors ${
-                                !isGridView ? 'bg-neutral-700 text-white' : 'bg-neutral-800 text-white hover:bg-neutral-700'
-                            } flex items-center gap-2`}
-                            title="List View"
-                        >
-                            <FaList className="text-xl" />
-                            
-                        </button>
-                    </div>
-                </div>
+        <div className="flex flex-col items-center mb-8">
+            <div className="flex justify-between items-center w-full mt-4">
+                <div className="flex gap-4">
+                    
+                    <input
+                        type="text"
+                        placeholder="Search by Job Name"
+                        value={nameFilter}
+                        onChange={(e) => setNameFilter(e.target.value)}
+                        className="px-4 py-2 bg-neutral-800 text-white rounded transition-colors outline-none w-7/9 mt-5"
+                    />
+                    
+               
+                    <AnimatePresence>
+                        {!showSortOptions && (
+                            <motion.button
+                                initial={{ opacity: 0, x: -20 }}      
+                                animate={{ opacity: 1, x: 0 }}         
+                                exit={{ opacity: 0, x: -20 }}         
+                                transition={{ duration: 0.3 }}
+                                onClick={toggleSortOptions}
+                                className={`flex items-center gap-2 px-4 py-2 rounded transition-colors mt-5 ${
+                                    showSortOptions
+                                        ? 'bg-neutral-700 text-white'
+                                        : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                                }`}
+                            >
+                                <FaSort className="text-xl" />
+                                <span className="whitespace-nowrap">Sort by</span>
+                            </motion.button>
+                        )}
+                    </AnimatePresence>
 
-                {isGridView ? (
-                    <div className="w-full">
-                        <HoverEffect
-                            items={formatJobsForHoverEffect(sortedJobs)}
-                            className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
-                        />
-                    </div>
-                ) : (
-                    <table className="min-w-full bg-white dark:bg-neutral-800 rounded-lg overflow-hidden">
-                        <thead className="bg-neutral-100 dark:bg-neutral-700">
-                            <tr>
-                                <th className="p-4 text-left text-neutral-900 dark:text-white">
-                                    Job Name
-                                </th>
-                                <th className="p-4 text-left text-neutral-900 dark:text-white">
-                                    Load In
-                                </th>
-                                <th className="p-4 text-left text-neutral-900 dark:text-white">
-                                    Load In Hours
-                                </th>
-                                <th className="p-4 text-left text-neutral-900 dark:text-white">
-                                    Load Out
-                                </th>
-                                <th className="p-4 text-left text-neutral-900 dark:text-white">
-                                    Load Out Hours
-                                </th>
-                                <th className="p-4 text-left text-neutral-900 dark:text-white">
-                                    Location
-                                </th>
-                                <th className="p-4 text-left text-neutral-900 dark:text-white">
-                                    Description
-                                </th>
-                                <th className="p-4 text-center text-neutral-900 dark:text-white">
-                                    Actions
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {sortedJobs.map((job) => (
-                                <tr
-                                    key={job._id}
-                                    className="border-t border-neutral-200 dark:border-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-700/50 transition-colors"
+                    <AnimatePresence>
+                        {showSortOptions && (
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}        
+                                animate={{ opacity: 1, x: 0 }}          
+                                exit={{ opacity: animateSortOptions ? 0 : 1, x: 20 }}
+                                transition={{ duration: 0.3 }}
+                                className="flex items-center gap-3 mt-5"
+                            >
+                                <span className="text-white whitespace-nowrap">Sort by:</span>
+
+                                <button
+                                    className="px-2 py-1 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 text-sm"
+                                    onClick={() => handleSort('eventName')}
                                 >
-                                    <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {job.eventName.length > 25
-                                            ? `${job.eventName.substring(0, 25)}...`
-                                            : job.eventName}
-                                    </td>
-                                    <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {new Date(job.eventLoadIn).toLocaleString()}
-                                    </td>
-                                    <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {job.eventLoadInHours}h
-                                    </td>
-                                    <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {new Date(job.eventLoadOut).toLocaleString()}
-                                    </td>
-                                    <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {job.eventLoadOutHours}h
-                                    </td>
-                                    <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {job.eventLocation}
-                                    </td>
-                                    <td className="p-4 text-neutral-900 dark:text-white truncate">
-                                        {job.eventDescription}
-                                    </td>
-                                    <td className="p-4">
-                                        <div className="flex justify-center gap-2">
-                                            {jobStatuses[job._id] === "" ? (
-                                                <>
-                                                    <button
-                                                        onClick={() =>
-                                                            openConfirmModal(
-                                                                "apply",
-                                                                job._id
-                                                            )
-                                                        }
-                                                        className="text-green-500 bg-neutral-800 dark:bg-neutral-700 hover:bg-neutral-700 dark:hover:bg-neutral-600 px-3 py-1.5 rounded-md transition-colors font-semibold whitespace-nowrap"
-                                                    >
-                                                        ✔ Apply
-                                                    </button>
-                                                    <button
-                                                        onClick={() =>
-                                                            openConfirmModal(
-                                                                "reject",
-                                                                job._id
-                                                            )
-                                                        }
-                                                        className="text-red-500 bg-neutral-800 dark:bg-neutral-700 hover:bg-neutral-700 dark:hover:bg-neutral-600 px-3 py-1.5 rounded-md transition-colors font-semibold whitespace-nowrap"
-                                                    >
-                                                        ✖ Reject
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                <span
-                                                    className={`font-semibold ${
-                                                        jobStatuses[job._id] ===
-                                                        "Accepted"
-                                                            ? "text-green-600"
-                                                            : "text-red-600"
-                                                    }`}
-                                                >
-                                                    {jobStatuses[job._id] ===
-                                                    "Accepted"
-                                                        ? "✔ Applied"
-                                                        : "✖ Rejected"}
-                                                </span>
-                                            )}
-                                        </div>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                )}
-            </>
-        ) : (
-            <div className="flex flex-col items-center justify-center flex-1 min-h-[400px] text-center">
-                <FaRegSadTear className="w-16 h-16 text-neutral-400 dark:text-neutral-600 mb-4" />
-                <h2 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
-                    No Available Jobs
-                </h2>
-                <p className="text-neutral-600 dark:text-neutral-400">
-                    There aren't any upcoming jobs available at the moment. Please check back later!
-                </p>
+                                    Name
+                                </button>
+
+                                <button
+                                    className="px-2 py-1 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 text-sm"
+                                    onClick={() => handleSort('eventLoadIn')}
+                                >
+                                    In Date
+                                </button>
+
+                                <button
+                                    className="px-2 py-1 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 text-sm"
+                                    onClick={() => handleSort('eventLoadOut')}
+                                >
+                                    Out Date
+                                </button>
+
+                                <button
+                                    className="px-2 py-1 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 text-sm"
+                                    onClick={() => handleSort('eventLoadInHours')}
+                                >
+                                    In Hours
+                                </button>
+
+                                <button
+                                    className="px-2 py-1 bg-neutral-800 text-white rounded hover:bg-neutral-700 transition-colors mt-0 text-sm"
+                                    onClick={() => handleSort('eventLoadOutHours')}
+                                >
+                                    Out Hours
+                                </button>
+
+                                
+
+                                <motion.button
+                                    initial={{ opacity: 0, x: -20 }}    
+                                    animate={{ opacity: 1, x: 0 }}
+                                    exit={{ opacity: 0, x: -20 }}       
+                                    transition={{ delay: 0.2 }}
+                                    type="button"
+                                    onClick={cancelSortOptions}
+                                    className="h-9 px-4 py-2 bg-neutral-700 hover:bg-neutral-600 text-white rounded-full transition-colors mt-0"
+                                >
+                                    Cancel
+                                </motion.button>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    
+                </div>
+                <div className="flex items-center gap-3 mt-2">
+                    <button
+                        onClick={() => setIsGridView(true)}
+                        className={`p-2 rounded transition-colors ${
+                            isGridView 
+                                ? 'bg-neutral-700 text-white' 
+                                : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                        }`}
+                    >
+                        <FaTh className="text-xl" />
+                    </button>
+                    <button
+                        onClick={() => setIsGridView(false)}
+                        className={`p-2 rounded transition-colors ${
+                            !isGridView 
+                                ? 'bg-neutral-700 text-white' 
+                                : 'bg-neutral-800 text-white hover:bg-neutral-700'
+                        }`}
+                    >
+                        <FaList className="text-xl" />
+                    </button>
+                </div>
             </div>
-        )}
+        </div>
+
+        <AnimatePresence>
+            {getFilteredJobs().length > 0 ? (
+                <>
+                    {isGridView ? (
+                        <div className="w-full">
+                            <HoverEffect
+                                items={formatJobsForHoverEffect(getFilteredJobs())}
+                                className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6"
+                            />
+                        </div>
+                    ) : (
+                        <div className="overflow-x-auto">
+                            <table className="min-w-full bg-neutral-800/50 rounded-lg overflow-hidden">
+                                <thead className="bg-neutral-700">
+                                    <tr>
+                                        <th className="p-4 text-left text-white cursor-pointer" onClick={() => handleSort('eventName')}>
+                                            <div className="flex items-center">
+                                                Event Name
+                                                <span className="ml-2">{getSortIcon('eventName')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-left text-white cursor-pointer" onClick={() => handleSort('eventLoadIn')}>
+                                            <div className="flex items-center">
+                                                Load In Date
+                                                <span className="ml-2">{getSortIcon('eventLoadIn')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-left text-white cursor-pointer" onClick={() => handleSort('eventLoadInHours')}>
+                                            <div className="flex items-center">
+                                                Load In Hours
+                                                <span className="ml-2">{getSortIcon('eventLoadInHours')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-left text-white cursor-pointer" onClick={() => handleSort('eventLoadOut')}>
+                                            <div className="flex items-center">
+                                                Load Out Date
+                                                <span className="ml-2">{getSortIcon('eventLoadOut')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-left text-white cursor-pointer" onClick={() => handleSort('eventLoadOutHours')}>
+                                            <div className="flex items-center">
+                                                Load Out Hours
+                                                <span className="ml-2">{getSortIcon('eventLoadOutHours')}</span>
+                                            </div>
+                                        </th>
+                                        
+                                        <th className="p-4 text-left text-white cursor-pointer" onClick={() => handleSort('createdAt')}>
+                                            <div className="flex items-center">
+                                                Created Date
+                                                <span className="ml-2">{getSortIcon('createdAt')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-left text-white cursor-pointer" onClick={() => handleSort('updatedAt')}>
+                                            <div className="flex items-center">
+                                                Last Modified
+                                                <span className="ml-2">{getSortIcon('updatedAt')}</span>
+                                            </div>
+                                        </th>
+                                        <th className="p-4 text-left text-white">Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {sortedJobs.map((job) => (
+                                        <tr key={job._id} className="border-t border-neutral-700 hover:bg-neutral-700/50 transition-colors cursor-pointer">
+                                            <td className="p-4 text-white">{job.eventName}</td>
+                                            <td className="p-4 text-white">{new Date(job.eventLoadIn).toLocaleString()}</td>
+                                            <td className="p-4 text-white">{job.eventLoadInHours}</td>
+                                            <td className="p-4 text-white">{new Date(job.eventLoadOut).toLocaleString()}</td>
+                                            <td className="p-4 text-white">{job.eventLoadOutHours}</td>
+                                            <td className="p-4 text-white">{new Date(job.createdAt).toLocaleString()}</td>
+                                            <td className="p-4 text-white">{new Date(job.updatedAt).toLocaleString()}</td>
+                                            <td className="p-4 text-white">
+                                                <button 
+                                                    onClick={() => handleApply(job._id)} 
+                                                    className="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded transition-colors"
+                                                >
+                                                    Apply
+                                                </button>
+                                                <button 
+                                                    onClick={() => handleReject(job._id)} 
+                                                    className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded transition-colors"
+                                                >
+                                                    Reject
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    )}
+                </>
+            ) : (
+                <motion.div
+                    className="flex flex-col items-center justify-center flex-1 min-h-[400px] text-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                >
+                    <FaRegSadTear className="w-16 h-16 text-neutral-400 dark:text-neutral-600 mb-4" />
+                    <h2 className="text-xl font-semibold text-neutral-700 dark:text-neutral-300 mb-2">
+                        No Available Jobs
+                    </h2>
+                    <p className="text-neutral-600 dark:text-neutral-400">
+                        There aren't any upcoming jobs available at the moment. Please check back later!
+                    </p>
+                </motion.div>
+            )}
+        </AnimatePresence>
 
         {/* Confirmation Modal */}
         {showConfirmModal && (
@@ -477,6 +574,6 @@ export default function FindJobs() {
             </Modal>
         )}
     </div>
-);
+  
 
-}
+);}
