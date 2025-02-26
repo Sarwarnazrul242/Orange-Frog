@@ -171,19 +171,26 @@ export default function CreateUsers({ onUserCreated }) {
                             >
                                 Hourly Rate ($)
                             </label>
-                            <input
-                                type="number"
-                                id="hourlyRate"
-                                name="hourlyRate"
-                                value={formData.hourlyRate}
-                                onChange={handleInputChange}
-                                required
-                                min="0"
-                                max="99.99"
-                                step="0.01"
-                                className="w-full px-6 py-2 bg-neutral-900 border border-neutral-700 rounded-full text-white focus:outline-none focus:border-neutral-500"
-                                placeholder=""
-                            />
+
+                            <div className="relative w-full">
+                                {/* Absolute Positioned Dollar Sign */}
+                                <span className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400/70">$</span>
+
+                                {/* Input Field */}
+                                <input
+                                    type="number"
+                                    id="hourlyRate"
+                                    name="hourlyRate"
+                                    value={formData.hourlyRate}
+                                    onChange={handleInputChange}
+                                    required
+                                    min="0"
+                                    max="99.99"
+                                    step="0.01"
+                                    className="w-full pl-8 pr-4 py-2 bg-neutral-900 border border-neutral-700 rounded-full text-white focus:outline-none focus:border-neutral-500"
+                                    placeholder=""
+                                />
+                            </div>
                         </motion.div>
 
                         <div className="flex gap-3 mt-1">

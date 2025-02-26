@@ -39,6 +39,10 @@ const Invoice = ({invoiceData}) => {
       console.error("Invoice data is not loaded");
       return;
     }
+
+    const invoiceSubtotal = Number(subtotal) || 0;
+    const invoiceTaxAmount = Number(taxAmount) || 0;
+    const invoiceTotal = Number(total) || 0;
   
     const docDefinition = {
       content: [
@@ -97,33 +101,32 @@ const Invoice = ({invoiceData}) => {
           layout: 'lightHorizontalLines'
         },
   
-        // Additional Details Outside the Table
         {
           margin: [0, 20, 0, 0],
           text: [
-            { text: `Subtotal: `, bold: true },
-            { text: `$${invoice.subtotal?.toFixed(2) ?? '0.00'}` }
+              { text: `Subtotal: `, bold: true },
+              { text: `$${invoiceSubtotal.toFixed(2)}` } 
           ]
-        },
-        {
+      },
+      {
           text: [
-            { text: `Tax %: `, bold: true },
-            { text: `${invoice.taxPercentage ?? '0'}%` }
+              { text: `Tax %: `, bold: true },
+              { text: `${invoice.taxPercentage ?? '0'}%` }
           ]
-        },
-        {
+      },
+      {
           text: [
-            { text: `Sales Tax: `, bold: true },
-            { text: `$${invoice.taxAmount?.toFixed(2) ?? '0.00'}` }
+              { text: `Sales Tax: `, bold: true },
+              { text: `$${invoiceTaxAmount.toFixed(2)}` } 
           ]
-        },
-        {
+      },
+      {
           text: [
-            { text: `TOTAL: `, bold: true, fontSize: 14 },
-            { text: `$${invoice.total?.toFixed(2) ?? '0.00'}`, fontSize: 14 }
+              { text: `TOTAL: `, bold: true, fontSize: 14 },
+              { text: `$${invoiceTotal.toFixed(2)}`, fontSize: 14 } 
           ],
           margin: [0, 5, 0, 0]
-        }
+      }
       ],
       styles: {
         header: {
@@ -183,14 +186,16 @@ const confirmDelete = async () => {
       );
 
       if (response.status === 200) {
-          // console.log("Item deleted successfully:", response.data);
-
-          // ✅ Remove deleted row from local state
           const updatedItems = invoice.items.filter((_, i) => i !== itemToDelete);
           setInvoice(prev => ({ ...prev, items: updatedItems }));
 
           setShowDeletePopup(false);
           toast.success("Row deleted successfully!");
+
+          // Refresh page after saving
+          setTimeout(() => {
+            window.location.reload();
+          }, 500);
       } else {
           toast.error("Failed to delete row. Please try again.");
       }
@@ -215,7 +220,6 @@ const confirmDelete = async () => {
         }
 
         const data = await response.json();
-        // console.log("Fetched invoice data:", data); // Debugging
 
         // Manually construct items array if it does not exist
         if (!data.items) {

@@ -19,20 +19,32 @@ export default function AdminProfile() {
 
     useEffect(() => {
         const fetchAdminProfile = async () => {
+            if (!auth.email) {
+                console.error("Admin email is missing in AuthContext.");
+                return;
+            }
+    
+            console.log(`Fetching Admin Profile for: ${auth.email}`); // 🔹 Debugging Log
+    
             try {
                 const response = await fetch(`${process.env.REACT_APP_BACKEND}/admin-profile/${auth.email}`);
+                if (!response.ok) {
+                    console.error(`Failed to fetch admin profile. Status: ${response.status}`);
+                    throw new Error(`HTTP Error: ${response.status}`);
+                }
+    
                 const data = await response.json();
                 setProfileData({ email: data.email || '', address: data.address || '' });
             } catch (error) {
-                toast.error('Failed to load admin profile.');
+                console.error("Error fetching admin profile:", error);
+                toast.error("Failed to load admin profile.");
             }
         };
-
+    
         if (auth.email) {
             fetchAdminProfile();
         }
     }, [auth.email]);
-
     const handleInputChange = (e) => {
         setProfileData({ ...profileData, [e.target.name]: e.target.value });
     };
