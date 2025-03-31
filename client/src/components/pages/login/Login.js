@@ -44,12 +44,12 @@ export default function Login() {
             setLoading(false);
 
             if (response.status === 200) {
-                // ✅ Save user role, ID, and token
+                // Save user role, ID, and token
                 login(form.email, data.role, data.userId, data.token);
                 toast.success('Login successful!');
                 console.log("Login Response:", data);
 
-                // ✅ Redirect users correctly based on role
+                // Redirect users correctly based on role
                 if (data.role === 'admin') {
                     navigate('/admin/dashboard');
                 } else if (data.role === 'user') {

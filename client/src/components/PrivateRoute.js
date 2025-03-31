@@ -32,12 +32,12 @@ const PrivateRoute = ({ children, allowedRoles }) => {
   }
 
   if (isUserRoute && auth.role !== 'user') {
-    return <Navigate to="/admin" replace />;
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   // Role-specific checks for access
   if (allowedRoles && !allowedRoles.includes(auth.role)) {
-    return <Navigate to={auth.role === 'admin' ? '/admin' : '/user-dashboard'} replace />;
+    return <Navigate to={auth.role === 'admin' ? '/admin/dashboard' : '/user-dashboard'} replace />;
   }
 
   return children;
